@@ -19,12 +19,12 @@ public class Format {
 	* see {@link #getCompatibleFormats()}, more formats will be support when moving to annother video processing
 	* API.
 	* 
-	* <p>Compatible video formats: mp4, m4v, mov, gif.
+	* <p>Compatible video formats: mp4, mov, m4v, avi, gif, webm, mkv, wmv, ts, m3u8.
 	* 
 	* @return A String list containing all compatible video formats.
 	*/
 	
 	public static List<String> getCompatibleFormats() {
-		return Arrays.asList(new String[] { "mp4", "m4v", "mov", "gif" });
+		return Arrays.asList(new String[] { "mp4", "mov", "m4v", "avi", "webm", "mkv", "gif", "m3u8", "ts", "wmv" });
 	}
 }

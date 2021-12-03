@@ -31,6 +31,9 @@ public class MapUtilVersion {
 		
         final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
+        if(serverVersion.equals("v1_18_R1")) {
+        	return new v1_17_R1();
+        }
         if(serverVersion.equals("v1_17_R1")) {
         	return new v1_17_R1();
         }

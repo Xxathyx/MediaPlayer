@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -134,19 +133,19 @@ public class PlayerInteractImage implements Listener {
 								return;
 							}
 							
-					        String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 					        boolean visible = true;
 					        
-					        if(serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") || serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1")) {
+					        if(plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_17_R1") || plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") || plugin.getServerVersion().equals("v1_16_R1")) {
 					        	visible = false;
 					        }
 					        
 							for(int i = 0; i < frames.size(); i++) {
 								
-								if(serverVersion.equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
-								if(serverVersion.equals("v1_16_R3")) ((org.bukkit.craftbukkit.v1_16_R3.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
-								if(serverVersion.equals("v1_16_R2")) ((org.bukkit.craftbukkit.v1_16_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
-								if(serverVersion.equals("v1_16_R1")) ((org.bukkit.craftbukkit.v1_16_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
+								if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
+								if(plugin.getServerVersion().equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
+								if(plugin.getServerVersion().equals("v1_16_R3")) ((org.bukkit.craftbukkit.v1_16_R3.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
+								if(plugin.getServerVersion().equals("v1_16_R2")) ((org.bukkit.craftbukkit.v1_16_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
+								if(plugin.getServerVersion().equals("v1_16_R1")) ((org.bukkit.craftbukkit.v1_16_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								
 								frames.get(i).setItem(itemStacks.getMap(image.getIds().get(i)));
 							}

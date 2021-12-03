@@ -17,8 +17,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.map.MapView;
 
 import fr.xxathyx.mediaplayer.Main;
-import fr.xxathyx.mediaplayer.image.ImageRenderer;
 import fr.xxathyx.mediaplayer.image.helpers.ImageHelper;
+import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 import fr.xxathyx.mediaplayer.util.ImageUtil;
@@ -90,7 +90,7 @@ public class VideoData {
 	*/
 	
 	public void createThumbnail() throws IOException {
-		
+				
 		File file = new File(video.getFramesFolder(), (int) Math.floor(Math.random()*((video.getTotalFrames()-1)-1+1)+1) + video.getFramesExtension());
 		
 		BufferedImage frame = ImageIO.read(file);

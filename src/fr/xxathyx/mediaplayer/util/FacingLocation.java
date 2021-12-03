@@ -68,4 +68,16 @@ public class FacingLocation {
         }
         return null;
     }
+	
+	public static String getPitchDirection(LivingEntity livingEntity) {
+		
+		if(livingEntity.getLocation().getPitch() < -60) {
+			return "U";
+		}
+		
+		if(livingEntity.getLocation().getPitch() > 60) {
+			return "D";
+		}
+        return null;
+    }
 }

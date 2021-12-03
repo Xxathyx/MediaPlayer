@@ -2,6 +2,8 @@ package fr.xxathyx.mediaplayer.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -27,7 +29,9 @@ public class Configuration {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	
-	private final File file = new File(plugin.getDataFolder() + "/configuration/", "configuration.yml");
+	private final File configurationFile = new File(plugin.getDataFolder() + "/configuration/", "configuration.yml");
+	
+	private final File librariesFolder = new File(plugin.getDataFolder() + "/libraries/");
 	
 	private final File videosFolder = new File(plugin.getDataFolder() + "/videos/");
 	private final File mapsFolder = new File(plugin.getDataFolder() + "/images/maps/");
@@ -45,9 +49,9 @@ public class Configuration {
      * @throws InvalidConfigurationException When non-respect of YAML syntax.
      */
 	
-	public void setup() throws IOException, InvalidConfigurationException {
+	public void setup() {
 		
-		if(!file.exists()) {
+		if(!configurationFile.exists()) {
 			
 			fileconfiguration = new YamlConfiguration();
 			
@@ -57,7 +61,6 @@ public class Configuration {
 			
 			fileconfiguration.set("plugin.screen-block", "BARRIER");
 			
-			fileconfiguration.set("plugin.maximum-registered-videos", 54);
 			fileconfiguration.set("plugin.maximum-playing-videos", 10);
 			fileconfiguration.set("plugin.maximum-loading-videos", 3);
 			
@@ -124,6 +127,7 @@ public class Configuration {
 			fileconfiguration.set("messages.videos-reload-requested", "&aRequête de rechargement des vidéos reçue.");
 			fileconfiguration.set("messages.videos-reloaded", "&aLa liste des vidéos enregistrées vient d'être rafraichie.");
 			fileconfiguration.set("messages.videos-empty-registered", "&cAucune vidéo n'a été détectée et enregistrée.");
+			fileconfiguration.set("messages.videos-canceled-tasks", "&aToutes les tâches en cours d'exécution ont été annulées. &8(%tasks%)");
 			fileconfiguration.set("messages.videos-notice", "&7(Vous pouvez effectuer la même action, simplement à travers une interface graphique : /videos)");
 			
 			fileconfiguration.set("messages.screen-created", "&aVous venez de créer un écran de dimension : &l%dimension%&a.");
@@ -144,6 +148,15 @@ public class Configuration {
 			fileconfiguration.set("messages.image-invalid-screen", "&cL'écran sélectionné ne contient pas un nombre suffisant de cadre.");
 			fileconfiguration.set("messages.image-already-rendered", "&cLe rendue de l'image &l%image% &ca déjà été fait, faîtes /image give &l%image%&c.");
 			
+			fileconfiguration.set("messages.item.previous-page.name", "&4&lPage précédente");
+			fileconfiguration.set("messages.item.previous-page.lore", "&cCliquez-ici pour acceder à la page précédente.");
+			
+			fileconfiguration.set("messages.item.refresh-page.name", "&6&lActualiser");
+			fileconfiguration.set("messages.item.refresh-page.lore", "&eCliquez-ici pour actualiser la page.");
+			
+			fileconfiguration.set("messages.item.next-page.name", "&2&lPage suivante");
+			fileconfiguration.set("messages.item.next-page.lore", "&aCliquez-ici pour acceder à la page suivante.");
+			
 			fileconfiguration.set("messages.item.play.name", "&2&lJouer");
 			fileconfiguration.set("messages.item.play.lore", "&aCliquez-ici pour jouer la vidéo.");
 			
@@ -158,22 +171,56 @@ public class Configuration {
 			fileconfiguration.set("messages.item.poster.lore-2", "&esupérieur gauche de l'écran pour étaler l'image.");
 			fileconfiguration.set("messages.item.poster.lore-3", "&ePour enlever l'image, s'accroupir puis, cliquez-");
 			fileconfiguration.set("messages.item.poster.lore-4", "&edroit sur le coin supérieur gauche de l'écran.");
-			fileconfiguration.set("messages.age-limite-warning", "&c[!] Contient du contenu explicite.");
+			fileconfiguration.set("messages.age-limit-warning", "&c[!] Contient du contenu explicite.");
 			fileconfiguration.set("messages.incompatible", "&4[!] Cette vidéo n'est pas compatible.");
+			fileconfiguration.set("messages.no-page-left", "&cVous ne pouvez pas tourner la page car cette page semble inexistante.");
 			fileconfiguration.set("messages.too-much-loading", "&cChargement impossible, trop de vidéos sont en cours de chargements.");
 			fileconfiguration.set("messages.too-much-playing", "&cLancement impossible, trop de vidéos sont jouées.");
 			fileconfiguration.set("messages.no-screen-playing", "&cAucun écran n'est en train de jouer une vidéo.");
 			fileconfiguration.set("messages.not-number", "&cLe nombre choisi est invalide.");
 			fileconfiguration.set("messages.available-images", "&2Liste des images disponnibles:");
 			fileconfiguration.set("messages.available-videos", "&2Liste des vidéos disponnibles:");
+			fileconfiguration.set("messages.loaded", "&aChargée.");
+			fileconfiguration.set("messages.not-loaded", "&cNon-chargée.");
 			fileconfiguration.set("messages.negative-number", "&cLe nombre choisi ne peut pas etre negatif.");
 			fileconfiguration.set("messages.offline-player", "&cLe joueur %player% est hors ligne.");
 			fileconfiguration.set("messages.invalid-url", "&cL'url saisit : &l%url% &cest invalide.");
 			fileconfiguration.set("messages.invalid-sender", "&cCette commande n'est disponible qu'en jeu.");
 			fileconfiguration.set("messages.insufficient-permissions", "&cVous n'avez pas la permission d'executer cette commande.");
 			
-			fileconfiguration.save(file);
+			try {
+				fileconfiguration.save(configurationFile);
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		File ffmpeg = new File(librariesFolder, "ffmpeg.exe");
+		File ffprobe = new File(librariesFolder, "ffprobe.exe");
+		
+		if(!librariesFolder.exists() | !ffmpeg.exists()) {
+			
+			librariesFolder.mkdir();
+						
+			if(!ffmpeg.exists()) {
+			     InputStream inputStream = Main.class.getResourceAsStream("libraries/ffmpeg.exe");
+			     try {
+					Files.copy(inputStream, ffmpeg.getAbsoluteFile().toPath());
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(!ffprobe.exists()) {
+			     InputStream inputStream = Main.class.getResourceAsStream("libraries/ffprobe.exe");
+			     try {
+					Files.copy(inputStream, ffprobe.getAbsoluteFile().toPath());
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		if(!videosFolder.exists()) {
 			videosFolder.mkdir();
 		}
@@ -196,7 +243,7 @@ public class Configuration {
 		fileconfiguration = new YamlConfiguration();
 		
 		try {
-			fileconfiguration.load(file);
+			fileconfiguration.load(configurationFile);
 		}catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -263,6 +310,10 @@ public class Configuration {
 		
 		if(a.contains("%player%")) {
 			a = a.replaceAll("%player%", b);
+		}
+		
+		if(a.contains("%tasks%")) {
+			a = a.replaceAll("%tasks%", b);
 		}
 		return ChatColor.translateAlternateColorCodes('&', a);
 	}
@@ -335,10 +386,6 @@ public class Configuration {
 		String material = getConfigFile().getString("plugin.screen-block");
 		if(material.equalsIgnoreCase("BARRIER") && plugin.isOld()) material = "GLASS"; 
 		return material;
-	}
-	
-	public int maximum_registered_videos() {
-		return getConfigFile().getInt("plugin.maximum-registered-videos");
 	}
 	
 	public int maximum_playing_videos() {
@@ -549,6 +596,10 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.videos-empty-registered"));
 	}
 	
+	public String videos_canceled_tasks() {
+		return getMessage(getConfigFile().getString("messages.videos-canceled-tasks"));
+	}
+	
 	public String videos_notice() {
 		return getMessage(getConfigFile().getString("messages.videos-notice"));
 	}
@@ -617,6 +668,30 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.image-already-rendered"), image);
 	}
 	
+	public String item_previous_page_name() {
+		return getMessage(getConfigFile().getString("messages.item.previous-page.name"));
+	}
+	
+	public String item_previous_page_lore() {
+		return getMessage(getConfigFile().getString("messages.item.previous-page.lore"));
+	}
+	
+	public String item_refresh_page_name() {
+		return getMessage(getConfigFile().getString("messages.item.refresh-page.name"));
+	}
+	
+	public String item_refresh_page_lore() {
+		return getMessage(getConfigFile().getString("messages.item.refresh-page.lore"));
+	}
+	
+	public String item_next_page_name() {
+		return getMessage(getConfigFile().getString("messages.item.next-page.name"));
+	}
+	
+	public String item_next_page_lore() {
+		return getMessage(getConfigFile().getString("messages.item.next-page.lore"));
+	}
+	
 	public String item_play_name() {
 		return getMessage(getConfigFile().getString("messages.item.play.name"));
 	}
@@ -662,11 +737,15 @@ public class Configuration {
 	}
 	
 	public String age_limit_warning() {
-		return getMessage(getConfigFile().getString("messages.age-limite-warning"));
+		return getMessage(getConfigFile().getString("messages.age-limit-warning"));
 	}
 	
 	public String incompatible() {
 		return getMessage(getConfigFile().getString("messages.incompatible"));
+	}
+	
+	public String no_page_left() {
+		return getMessage(getConfigFile().getString("messages.no-page-left"));
 	}
 	
 	public String too_much_loading() {
@@ -707,6 +786,14 @@ public class Configuration {
 	
 	public String available_videos() {
 		return getMessage(getConfigFile().getString("messages.available-videos"));
+	}
+	
+	public String loaded() {
+		return getMessage(getConfigFile().getString("messages.loaded"));
+	}
+	
+	public String not_loaded() {
+		return getMessage(getConfigFile().getString("messages.not-loaded"));
 	}
 	
 	public String negative_number() {

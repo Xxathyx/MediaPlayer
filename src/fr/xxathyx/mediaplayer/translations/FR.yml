@@ -1,0 +1,146 @@
+messages:
+  plugin-outdated: "&cLa version utilisée du plugin n'est plus à jour, activez l'option
+    auto-update depuis la configuration, ou faîtes le manuellement depuis: https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1"
+  video-load-requested: "&aRequête de chargement envoyé, vous serez informé sur la
+    progression du chargement."
+  video-load-notice: "&7(Plus une vidéo est longue plus le chargement en est de même)"
+  video-unloaded: "&aLa vidéo &l%video% &avient d'être déchargée."
+  video-downloaded: "&aVous venez de télécharger la video &l%video%&a."
+  video-deleted: "&aLa vidéo &l%video% &aa été supprimée avec succès."
+  video-already-loaded: "&cLa vidéo &l%video% &cest déjà chargée."
+  video-already-loading: "&cLa vidéo &l%video% &cest déjà en train d'être chargée."
+  video-not-loaded: "&cLa vidéo &l%video% &cn'est pas chargée, &l/video load %video%."
+  video-invalid: "&cLa vidéo &l%video% &cest introuvable."
+  video-invalid-index: "&cLa vidéo d'index &l%index% &cest introuvable."
+  video-selected: "&aVous venez de sélectionner la video &l%video%&a, affectez la
+    en cliquant sur le coin supérieur gauche d'un écran."
+  video-already-selected: "&cVeuillez affecter d'abord &l%video% &cavant d'en choisir
+    une nouvelle."
+  video-assigned: "&aVous venez d'assigner la video &l%video% &aà cet écran, &l/video
+    start &apour la jouer."
+  video-not-enought-space: "&cVous n'avez pas assez d'espace pour charger &l%video%&c."
+  video-description-updated: "&aVous venez de mettre à jour la description de &l%video%
+    &aen %description%&a."
+  video-framerate-updated: "&aVous venez de mettre à jour le temps de raffraichissement
+    de &l%video% &aà &l%framerate%&a."
+  video-speed-updated: "&aVous venez de mettre à jour la vitesse de lecture de &l%video%
+    &aen &l%speed%x&a."
+  video-volume-updated: "&aVous venez de mettre à jour le volume de &l%video% &aà
+    &l%volume%x&a."
+  video-age-limit-disabled: "&aLa vidéo &l%video% &an'est plus réservée à un certain
+    publique."
+  video-age-limit-enabled: "&aLa vidéo &l%video% &aest maintenant réservée à un certain
+    publique."
+  video-audio-disabled: "&aVous venez de désactiver la piste audio de &l%video%&a."
+  video-audio-enabled: "&aVous venez d'activer la piste audio de &l%video%&a."
+  video-loop-enabled: "&aVous venez d'activer la répétition de &l%video%&a."
+  video-loop-disabled: "&aVous venez de désactiver la répétition de &l%video%&a."
+  video-real-time-rendering-enabled: "&aVous venez d'activer le rendu en temps réel
+    de &l%video%&a."
+  video-real-time-rendering-disabled: "&aVous venez de désactiver le rendu en temps
+    réel de &l%video%&a."
+  video-skip-duplicated-frames-enabled: "&aVous venez d'activer le saut d'image
+    dupliquées de &l%video%&a."
+  video-skip-duplicated-frames-disabled: "&aVous venez de désactiver le saut d'image
+    dupliquées de &l%video%&a."
+  video-show-informations-enabled: "&aVous venez d'activer l'affichage d'informations
+    de &l%video%&a."
+  video-show-informations-disabled: "&aVous venez de désactiver l'affichage d'informations
+    de &l%video%&a."
+  video-show-fps-enabled: "&aVous venez d'activer l'affichage du nombre d'image
+    par seconde de &l%video%&a."
+  video-show-fps-disabled: "&aVous venez de désactiver l'affichage du nombre d'image
+    par seconde de &l%video%&a."
+  video-run-on-startup-enabled: "&aVous venez d'activer le lancement au démarrage
+    de &l%video%&a."
+  video-run-on-startup-disabled: "&aVous venez de désactiver le lancement au démarrage
+    de &l%video%&a."
+  video-processing-frames-starting: "&7L'extraction des images de &l%video% &7vient
+    de commencer. (1/3)"
+  video-processing-frames-finished: "&7L'extraction des images de &l%video% &7s'est
+    terminée."
+  video-processing-estimated-time: "&7(Durée totale du chargement estimée à : &l%time%±1
+    &7minutes)"
+  video-processing-audio-starting: "&7L'extraction du fichier audio de &l%video%
+    &7vient de commencer. (2/3)"
+  video-processing-audio-finished: "&7L'extraction du fichier audio de &l%video%
+    &7s'est terminée."
+  video-processing-minecraft-starting: "&7La conversion vers Minecraft de &l%video%
+    &7vient de commencer. (3/3)"
+  video-processing-minecraft-finished: "&7La conversion vers Minecraft de &l%video%
+    &7s'est terminée. (3/3)"
+  video-processing-finished: "&7Chargement de la vidéo &l%video% &7effectué en &l%time%
+    &7minute(s)."
+  video-instance-started: "&aVous venez de lancer la vidéo &l%video% &asur l'écran
+    d'ID: &l%id%&a."
+  video-instance-stopped: "&aVous venez d'arrêter la vidéo &l%video%&a."
+  video-instance-not-on-screen: "&cCette vidéo n'est affectée à aucun écran, affectez-la
+    avec le /screen create."
+  videos-reload-requested: "&aRequête de rechargement des vidéos reçue."
+  videos-reloaded: "&aLa liste des vidéos enregistrées vient d'être rafraichie."
+  videos-empty-registered: "&cAucune vidéo n'a été détectée et enregistrée."
+  videos-canceled-tasks: "&aToutes les tâches en cours d'exécution ont été annulées.
+    &8(%tasks%)"
+  videos-notice: "&7(Vous pouvez effectuer la même action, simplement à travers une
+    interface graphique : /videos)"
+  screen-created: "&aVous venez de créer un écran de dimension : &l%dimension%&a."
+  screen-removed: "&aVous venez de retirer l'écran d'index: &l%index%&a."
+  screen-teleport: "&aVous venez de vous téléporter sur l'écran d'index: &l%index%&a."
+  screen-invalid-index: "&cL'écran d'index &l%index% &cest introuvable."
+  screen-cannot-create: "&cImpossible de créer un écran à cet emplacement, des blocs
+    gênent sans doute la place."
+  image-rendered: "&aLe rendu de l'image &l%image% &aest terminé."
+  image-deleted: "&aVous venez de supprimer l'image &l%image%&a."
+  image-received: "&aVous venez de recevoir le poster de l'image : &l%image%&a."
+  image-gived: "&aVous d'envoyez un poster de l'image &l%image% &aà &l%player%&a."
+  image-placed: "&aVous venez de placer l'image : &l%image%&a."
+  image-removed: "&aVous venez de retirer l'image : &l%image%&a."
+  image-not-found: "&cL'image spécifiée est introuvable."
+  image-invalid: "&cL'adresse, l'index ou le nom de fichier renseigné est invalide."
+  image-cannot-read: "&cImpossible de récupérer l'image saisit, vérifiez la redirection
+    de l'url."
+  image-invalid-screen: "&cL'écran sélectionné ne contient pas un nombre suffisant
+    de cadre."
+  image-already-rendered: "&cLe rendue de l'image &l%image% &ca déjà été fait, faîtes
+    /image give &l%image%&c."
+  item:
+    previous-page:
+      name: "&4&lPage précédente"
+      lore: "&cCliquez-ici pour acceder à la page précédente."
+    refresh-page:
+      name: "&6&lActualiser"
+      lore: "&eCliquez-ici pour actualiser la page."
+    next-page:
+      name: "&2&lPage suivante"
+      lore: "&aCliquez-ici pour acceder à la page suivante."
+    play:
+      name: "&2&lJouer"
+      lore: "&aCliquez-ici pour jouer la vidéo."
+    load:
+      name: "&6&lCharger"
+      lore: "&eCliquez-ici pour charger la video."
+    delete:
+      name: "&4&lSupprimer"
+      lore-1: "&cCliquez-ici pour supprimer la vidéo."
+      lore-2: "&c&l[!] Aucun retour en arrière une fois supprimée."
+    poster:
+      lore-1: "&eCliquez-droit avec la carte sur le cadre du coin"
+      lore-2: "&esupérieur gauche de l'écran pour étaler l'image."
+      lore-3: "&ePour enlever l'image, s'accroupir puis, cliquez-"
+      lore-4: "&edroit sur le coin supérieur gauche de l'écran."
+  age-limit-warning: "&c[!] Contient du contenu explicite."
+  incompatible: "&4[!] Cette vidéo n'est pas compatible."
+  no-page-left: "&cVous ne pouvez pas tourner la page car cette page semble inexistante."
+  too-much-loading: "&cChargement impossible, trop de vidéos sont en cours de chargements."
+  too-much-playing: "&cLancement impossible, trop de vidéos sont jouées."
+  no-screen-playing: "&cAucun écran n'est en train de jouer une vidéo."
+  not-number: "&cLe nombre choisi est invalide."
+  available-images: "&2Liste des images disponnibles:"
+  available-videos: "&2Liste des vidéos disponnibles:"
+  loaded: "&aChargée."
+  not-loaded: "&cNon-chargée."
+  negative-number: "&cLe nombre choisi ne peut pas etre negatif."
+  offline-player: "&cLe joueur %player% est hors ligne."
+  invalid-url: "&cL'url saisit : &l%url% &cest invalide."
+  invalid-sender: "&cCette commande n'est disponible qu'en jeu."
+  insufficient-permissions: "&cVous n'avez pas la permission d'executer cette commande."

@@ -16,7 +16,6 @@ import javax.imageio.ImageReader;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
@@ -24,17 +23,19 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import org.jcodec.common.DemuxerTrack;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
-
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
+import fr.xxathyx.mediaplayer.stream.m3u8.Reader;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 import fr.xxathyx.mediaplayer.util.Format;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.data.cache.Cache;
+
+import net.bramp.ffmpeg.FFprobe;
+import net.bramp.ffmpeg.probe.FFmpegProbeResult;
+import net.bramp.ffmpeg.probe.FFmpegStream;
 
 /** 
 * The Video class is essential in the good functioning of things, its used
@@ -57,6 +58,8 @@ import fr.xxathyx.mediaplayer.video.data.cache.Cache;
 public class Video {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	
+	private final Configuration configuration = new Configuration();
 	private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 	
 	private File file;
@@ -70,7 +73,12 @@ public class Video {
 	*/
 	
 	public Video(URL url) {
-		
+		try {
+			FileUtils.copyURLToFile(url, new File(configuration.getVideosFolder(), FilenameUtils.getName(url.getPath())));
+			return;
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -124,8 +132,13 @@ public class Video {
 		fileconfiguration = new YamlConfiguration();
 		
 		LocalDateTime date = LocalDateTime.now();
+		
 		String format = FilenameUtils.getExtension(videoFile.getName());
-				
+		
+        FFprobe ffprobe = new FFprobe(new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe").getPath());
+        FFmpegProbeResult probeResult = ffprobe.probe(videoFile.getAbsolutePath());        
+        FFmpegStream stream = probeResult.getStreams().get(0);
+		
 		int originalWidth = 0;
 		int originalHeight = 0;
 		
@@ -136,17 +149,40 @@ public class Video {
 				
 		if(Format.getCompatibleFormats().contains(format)) {
 			
-			if(format.equalsIgnoreCase("mp4") || format.equalsIgnoreCase("mov") || format.equalsIgnoreCase("m4v")) {
+			originalWidth = stream.width;
+			originalHeight = stream.height;
+			
+			framerate = Math.round(stream.r_frame_rate.doubleValue());
+			duration = stream.duration;
+			
+			if(format.equalsIgnoreCase("webm") || format.equalsIgnoreCase("mkv") || format.equalsIgnoreCase("wmv")) {
+				duration = probeResult.format.duration;
+				frames = (int) (duration*framerate)-1;
+			}
+			
+			frames = (int) stream.nb_frames;
+			
+			if(format.equalsIgnoreCase("m3u8")) {
 				
-				DemuxerTrack videoTrack =  MP4Demuxer.createMP4Demuxer(NIOUtils.readableFileChannel(videoFile.getAbsolutePath())).getVideoTrack();
+				Reader reader = new Reader(videoFile);
+				reader.read();
 				
-		        originalWidth = videoTrack.getMeta().getVideoCodecMeta().getSize().getWidth();
-		        originalHeight = videoTrack.getMeta().getVideoCodecMeta().getSize().getHeight();
-		        
-		        framerate = Math.round(videoTrack.getMeta().getTotalFrames()/videoTrack.getMeta().getTotalDuration());
-		        
-		        duration = videoTrack.getMeta().getTotalDuration();
-		        frames = videoTrack.getMeta().getTotalFrames();
+				File sequencesFolder = new File(file.getParent() + "/sequences/");
+				
+				sequencesFolder.mkdirs();
+				getFramesFolder().mkdir();
+				
+				for(URL url : reader.getSequences()) {
+					FileUtils.copyURLToFile(url, new File(sequencesFolder, sequencesFolder.listFiles().length + ".ts"));
+				}
+				
+				File[] sequences = sequencesFolder.listFiles();
+				
+				for(int i = 0; i < sequences.length; i++) {
+					String[] cmd = {new File(plugin.getDataFolder(), "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", sequences[i].getAbsolutePath(), "-q:v", "1",
+							"-start_number", "0", new File(getFramesFolder().getPath(), i + "-%03d.jpg").getAbsolutePath()};
+					Runtime.getRuntime().exec(cmd);
+				}
 			}
 			
 			if(format.equalsIgnoreCase("gif")) {
@@ -162,7 +198,7 @@ public class Video {
 			    frames = reader.getNumImages(true);
 			    framerate = 20;
 			    
-			    duration = frames*framerate;
+			    duration = frames/framerate;
 			}
 		}
         
@@ -175,7 +211,7 @@ public class Video {
 		fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 		fileconfiguration.set("video.frame-rate", framerate);
 		fileconfiguration.set("video.frames", frames);
-		fileconfiguration.set("video.format", FilenameUtils.getExtension(videoFile.getName()));
+		fileconfiguration.set("video.format", format);
 		fileconfiguration.set("video.width", originalWidth);
 		fileconfiguration.set("video.height", originalHeight);
 		fileconfiguration.set("video.duration", decimalFormat.format(duration/3600) + "h");
@@ -192,8 +228,8 @@ public class Video {
 		fileconfiguration.set("video.run-on-startup", false);
 		fileconfiguration.set("video.minecraft-width", 0);
 		fileconfiguration.set("video.minecraft-height", 0);
+		fileconfiguration.set("video.loaded", false);
 		fileconfiguration.set("video.views", 0);
-		fileconfiguration.set("video.index", plugin.getRegisteredVideos().size());
 		
 		fileconfiguration.save(file);
 		
@@ -474,6 +510,25 @@ public class Video {
 	}
 	
 	/**
+	* Sets whether a video is loaded, its used for texts purposes, see {@link #getStatus()}.
+	* 
+	* @param loaded Whether a video is loaded.
+	* 
+	* @throws FileNotFoundException When the configuration {@link File#exists()} return false.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void setLoaded(boolean loaded) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("video.loaded", loaded);
+		fileconfiguration.save(file);
+	}
+	
+	/**
 	* Sets the total amount of views, views corresponds to The number of times a video
 	* has been viewed
 	* 
@@ -511,9 +566,12 @@ public class Video {
 	* thread, since its thread-safe and performs a lot of I/O opperations.
 	* 
 	* @throws IOException When failed or interrupted I/O operations occurs.
+	* @throws InvalidConfigurationException When non-respect of YAML syntax.
 	*/
 	
-	public void unload() throws IOException {
+	public void unload() throws IOException, InvalidConfigurationException {
+		
+		setLoaded(false);
 		
 		getVideoData().getThumbnail().delete();
 		
@@ -571,7 +629,6 @@ public class Video {
 	public boolean isLoaded() {
 		
 		if(getFramesFolder().listFiles().length >= getTotalFrames()) {
-			
 			if(getFormat().equalsIgnoreCase("gif")) {
 				if(!getVideoData().getRealTimeRendering()) {
 					if(getVideoData().getCacheFolder().listFiles().length >= getTotalFrames()) {
@@ -838,18 +895,13 @@ public class Video {
 	}
 	
 	/**
-	* Gets the video index created has.
-	* 
-	* <p> <strong>Note: </strong>The video index is the one used at
-	* the time of the configuration-file creation, the index does not
-	* change if a video is deleted in later, it is not reliable to use
-	* it as a video valid index.
+	* Gets the video index registered has.
 	* 
 	* @return The video index created has.
 	*/
 	
 	public int getIndex() {
-		return getConfigFile().getInt("video.index");
+		return plugin.getRegisteredVideos().indexOf(this)+1;
 	}
 	
 	/**
@@ -876,8 +928,8 @@ public class Video {
 	*/
 	
 	public String getStatus() {
-		if(isLoaded()) return ChatColor.GREEN + "CHARGEE";
-		return ChatColor.RED + "PAS CHARGEE";
+		if(getConfigFile().getBoolean("video.loaded")) return new Configuration().loaded();
+		return new Configuration().not_loaded();
 	}
 	
 	/**

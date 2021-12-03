@@ -9,7 +9,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
+import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.video.Video;
 
 /** 
@@ -24,7 +26,11 @@ import fr.xxathyx.mediaplayer.video.Video;
 public class InventoryClickVideos implements Listener {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	
+	private final Configuration configuration = new Configuration();
+	
 	private final Interfaces interfaces = new Interfaces();
+	private final ItemStacks items = new ItemStacks();
 	
     /**
      * Called whenever a {@link Player} clicks in an inventory, specially in
@@ -38,7 +44,7 @@ public class InventoryClickVideos implements Listener {
 	@EventHandler
 	public void onClick(InventoryClickEvent event) {
 		
-		if(event.getView().getTitle().equals(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Videos (" + plugin.getRegisteredVideos().size() + ")")) {
+		if(event.getView().getTitle().contains(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Videos")) {
 						
 			event.setCancelled(true);
 						
@@ -61,10 +67,49 @@ public class InventoryClickVideos implements Listener {
 	        	return;
 	        }
 	        
-	        event.getWhoClicked().closeInventory();        
-	        plugin.getVideoPanels().put(event.getWhoClicked().getUniqueId(), plugin.getRegisteredVideos().get(event.getSlot()));
+	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.previous().getItemMeta().getDisplayName())) {
+	        	
+	        	if(plugin.getPages().get(event.getWhoClicked().getUniqueId())-1 < 0) {
+	        		event.getWhoClicked().sendMessage(configuration.no_page_left());
+	        		return;
+	        	}
+	        	
+	        	plugin.getPages().replace(event.getWhoClicked().getUniqueId(), plugin.getPages().get(event.getWhoClicked().getUniqueId())-1);
+		        event.getWhoClicked().closeInventory();
+				event.getWhoClicked().openInventory(interfaces.getVideos(plugin.getPages().get(event.getWhoClicked().getUniqueId())));
+				return;
+	        }
 	        
-	        event.getWhoClicked().openInventory(interfaces.getVideoPanel(plugin.getRegisteredVideos().get(event.getSlot())));
+	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.refresh().getItemMeta().getDisplayName())) {      	
+		        event.getWhoClicked().closeInventory();
+				event.getWhoClicked().openInventory(interfaces.getVideos(plugin.getPages().get(event.getWhoClicked().getUniqueId())));
+				return;
+	        }
+	        
+	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.next().getItemMeta().getDisplayName())) {
+	        	
+	        	if(plugin.getPages().get(event.getWhoClicked().getUniqueId())+1 > (int) (plugin.getRegisteredVideos().size() / 45)) {
+	        		event.getWhoClicked().sendMessage(configuration.no_page_left());
+	        		return;
+	        	}
+	        	
+	        	plugin.getPages().replace(event.getWhoClicked().getUniqueId(), plugin.getPages().get(event.getWhoClicked().getUniqueId())+1);
+		        event.getWhoClicked().closeInventory();
+				event.getWhoClicked().openInventory(interfaces.getVideos(plugin.getPages().get(event.getWhoClicked().getUniqueId())));
+				return;
+	        }
+	        
+	        if(event.getCurrentItem().getType() == Material.ITEM_FRAME) {
+	        	
+		        event.getWhoClicked().closeInventory();        
+		        plugin.getVideoPanels().put(event.getWhoClicked().getUniqueId(), plugin.getRegisteredVideos().get(event.getSlot() +
+		        		plugin.getPages().get(event.getWhoClicked().getUniqueId())*45));
+		        		        
+		        event.getWhoClicked().openInventory(interfaces.getVideoPanel(plugin.getRegisteredVideos().get(event.getSlot() +
+		        		plugin.getPages().get(event.getWhoClicked().getUniqueId())*45)));
+		        
+	        	plugin.getPages().replace(event.getWhoClicked().getUniqueId(), 0);
+	        }
 		}
 	}
 }

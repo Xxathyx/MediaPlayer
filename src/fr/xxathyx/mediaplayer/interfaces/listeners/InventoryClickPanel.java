@@ -19,6 +19,7 @@ import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
+
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -51,7 +52,7 @@ public class InventoryClickPanel implements Listener {
      */
 	
 	@EventHandler
-	public void onClick(InventoryClickEvent event) throws IOException {
+	public void onClick(InventoryClickEvent event) {
 		
 		if(plugin.getVideoPanels().containsKey(event.getWhoClicked().getUniqueId())) {
 			
@@ -81,11 +82,17 @@ public class InventoryClickPanel implements Listener {
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.play().getItemMeta().getDisplayName())) {
 				
-	        	if(!video.isLoaded()) {
-					player.sendMessage(configuration.video_not_loaded(video.getName()));
-					SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
-					return;
-				}
+	    		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+
+	    			@Override
+	    			public void run() {
+	    	        	if(!video.isLoaded()) {
+	    					player.sendMessage(configuration.video_not_loaded(video.getName()));
+	    					SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+	    					return;
+	    				}
+	    			}
+	    		});
 	        	
 	        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
 	        		

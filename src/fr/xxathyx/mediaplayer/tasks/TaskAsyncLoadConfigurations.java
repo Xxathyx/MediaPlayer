@@ -52,49 +52,62 @@ public class TaskAsyncLoadConfigurations extends BukkitRunnable {
 		plugin.getRegisteredVideos().clear();
 		
 		for(File file : files) {
-			if(plugin.getRegisteredVideos().size() <= configuration.maximum_registered_videos()) {
-				if(!file.isDirectory()) {
-					
-					File videoConfiguration = new File(configuration.getVideosFolder() + "/" + FilenameUtils.removeExtension(file.getName()), 
-							FilenameUtils.removeExtension(file.getName()) + ".yml");
-					
-					if(Format.getCompatibleFormats().contains(FilenameUtils.getExtension(file.getName()))) {
-						if(!videoConfiguration.exists()) {
-							try {
-								new Video(videoConfiguration).createConfiguration(file);
-							}catch (IOException | IllegalArgumentException | InvalidConfigurationException e) {
-								e.printStackTrace();
-							}
+			if(!file.isDirectory()) {
+				
+				File videoConfiguration = new File(configuration.getVideosFolder() + "/" + FilenameUtils.removeExtension(file.getName()), 
+						FilenameUtils.removeExtension(file.getName()) + ".yml");
+				
+				if(Format.getCompatibleFormats().contains(FilenameUtils.getExtension(file.getName()))) {
+					if(!videoConfiguration.exists()) {
+						try {
+							new Video(videoConfiguration).createConfiguration(file);
+						}catch (IOException | IllegalArgumentException | InvalidConfigurationException e) {
+							e.printStackTrace();
 						}
-						
-						Video video = new Video(videoConfiguration);
-						
-						if(video.isLoaded()) {
-							
-							VideoData videoData = video.getVideoData();
-							
-							Bukkit.getScheduler().runTask(plugin, new Runnable() {
-								@Override
-								public void run() {
-									videoData.loadThumbnail();
-								}
-							});
-														
-							if(videoData.getRunOnStartup()) {
-								
-								try {
-									Screen screen = new Screen(new VideoInstance(video), new ArrayList<>());
-									screen.setRunning(true);
-									screen.display();
-									
-									plugin.getRegisteredScreens().add(screen);
-								}catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}
-						if(plugin.getRegisteredVideos().size() < configuration.maximum_registered_videos()) plugin.getRegisteredVideos().add(video);
 					}
+					
+					Video video = new Video(videoConfiguration);
+					
+					if(video.getFormat().equals("m3u8")) {
+						
+						File[] decodedFrames = video.getFramesFolder().listFiles();
+						
+						for(int i = 0; i < decodedFrames.length; i++) {
+							
+					        File oldfile = decodedFrames[i];
+					        File newfile = new File(video.getFramesFolder(), i + ".jpg");
+
+					        oldfile.renameTo(newfile);
+						}
+					}
+					
+					if(video.isLoaded()) {
+						
+						VideoData videoData = video.getVideoData();
+						
+						Bukkit.getScheduler().runTask(plugin, new Runnable() {
+							@Override
+							public void run() {
+								videoData.loadThumbnail();
+							}
+						});
+													
+						if(videoData.getRunOnStartup()) {
+							
+							Screen screen = new Screen(new VideoInstance(video), new ArrayList<>());
+							screen.setRunning(true);
+							screen.display();
+							
+							plugin.getRegisteredScreens().add(screen);
+						}
+					}else {
+						try {
+							video.setLoaded(false);
+						}catch (IOException | InvalidConfigurationException e) {
+							e.printStackTrace();
+						}
+					}
+					plugin.getRegisteredVideos().add(video);
 				}
 			}
 		}

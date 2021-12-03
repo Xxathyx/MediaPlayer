@@ -2,11 +2,14 @@ package fr.xxathyx.mediaplayer.video.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-
+import org.apache.commons.io.IOUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -58,7 +61,7 @@ public class VideoCommands implements CommandExecutor {
 		
 		if(cmd.getName().equalsIgnoreCase("video")) {
 			if(sender.hasPermission("mediaplayer.command.video")) {
-				
+								
 				if(arg3.length >= 2) {
 					if(arg3[0].equalsIgnoreCase("download")) {
 						Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -67,6 +70,7 @@ public class VideoCommands implements CommandExecutor {
 								if(ImageHelper.isURL(arg3[1])) {
 									try {
 										URL url = new URL(arg3[1]);
+										
 										FileUtils.copyURLToFile(url, new File(configuration.getVideosFolder(), FilenameUtils.getName(url.getPath())));
 																				
 										new TaskAsyncLoadConfigurations().runTaskLaterAsynchronously(plugin, 20L);
@@ -75,6 +79,43 @@ public class VideoCommands implements CommandExecutor {
 									}catch (IOException e) {
 										e.printStackTrace();
 									}
+								}
+								sender.sendMessage(configuration.invalid_url(arg3[1]));
+								return;
+							}
+						});
+						return true;
+					}
+										
+					if(arg3[0].equalsIgnoreCase("live")) {
+						Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+							@Override
+							public void run() {
+								if(ImageHelper.isURL(arg3[1])) {
+
+									try {
+										URL url = new URL(arg3[1]);
+										
+										InputStream inputStream = null;
+										OutputStream outputStream = null;
+										
+										inputStream = url.openStream();
+										
+									    File file = new File(configuration.getVideosFolder(), UUID.randomUUID().toString() + ".m3u8");
+									    
+									    outputStream = FileUtils.openOutputStream(file);
+									    
+									    IOUtils.copy(inputStream, outputStream);
+									    
+									    IOUtils.closeQuietly(inputStream);
+									    IOUtils.closeQuietly(outputStream);
+									    
+										new TaskAsyncLoadConfigurations().runTaskLaterAsynchronously(plugin, 20L);
+										sender.sendMessage("c'est dans la boite hbibi");
+										return;
+									}catch (IOException e) {
+										e.printStackTrace();
+									}	
 								}
 								sender.sendMessage(configuration.invalid_url(arg3[1]));
 								return;
@@ -208,82 +249,56 @@ public class VideoCommands implements CommandExecutor {
 					if(video != null) {
 						if(arg3[0].equalsIgnoreCase("play")) {
 							
-				        	if(!video.isLoaded()) {
-								player.sendMessage(configuration.video_not_loaded(video.getName()));
-								SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
-								return false;
-							}
-				        	
-				        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
-				        		
-				        		if(plugin.getSelectedVideos().containsKey(player.getUniqueId())) {
-				        			player.sendMessage(configuration.video_already_selected(video.getName()));
-									SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
-				        			return false;
-				        		}
-				        		
-				        		plugin.getPlayingVideos().add(video.getName());
-								
-				        		VideoInstance videoInstance = new VideoInstance(video);
-				        		
-				        		plugin.getSelectedVideos().put(player.getUniqueId(), videoInstance);
-				        		
-				        		player.sendMessage(configuration.video_selected(video.getName()));
-				        		
-								TextComponent dimension = new TextComponent(ChatColor.GRAY + "(Dimension: " + video.getVideoData().getMinecraftWidth() + "x" + video.getVideoData().getMinecraftHeight() + " -> " + ChatColor.BOLD + "/screen create " +
-										video.getVideoData().getMinecraftWidth() + " " + video.getVideoData().getMinecraftHeight() + ChatColor.GRAY + ")");
-								dimension.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "" + ChatColor.BOLD + "/" + ChatColor.GRAY +
-										"screen create " + video.getVideoData().getMinecraftWidth() + " " + video.getVideoData().getMinecraftHeight()).create()));
-								dimension.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/screen create " + video.getVideoData().getMinecraftWidth() + " " +
-										video.getVideoData().getMinecraftHeight()));
-								
-								player.spigot().sendMessage(dimension);
-				        		
-								player.sendMessage(configuration.videos_notice());
-								SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
-								return true;
-				        	}
-				        	player.sendMessage(configuration.too_much_playing());
-				        	return false;
+							Video[] videoTask = {video};
+							
+							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+
+								@Override
+								public void run() {
+									
+						        	if(!videoTask[0].isLoaded()) {
+										player.sendMessage(configuration.video_not_loaded(videoTask[0].getName()));
+										SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+										return;
+									}
+						        	
+						        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
+						        		
+						        		if(plugin.getSelectedVideos().containsKey(player.getUniqueId())) {
+						        			player.sendMessage(configuration.video_already_selected(videoTask[0].getName()));
+											SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+						        			return;
+						        		}
+						        		
+						        		plugin.getPlayingVideos().add(videoTask[0].getName());
+										
+						        		VideoInstance videoInstance = new VideoInstance(videoTask[0]);
+						        		
+						        		plugin.getSelectedVideos().put(player.getUniqueId(), videoInstance);
+						        		
+						        		player.sendMessage(configuration.video_selected(videoTask[0].getName()));
+						        		
+										TextComponent dimension = new TextComponent(ChatColor.GRAY + "(Dimension: " + videoTask[0].getVideoData().getMinecraftWidth() + "x" + videoTask[0].getVideoData().getMinecraftHeight() + " -> " + ChatColor.BOLD + "/screen create " +
+												videoTask[0].getVideoData().getMinecraftWidth() + " " + videoTask[0].getVideoData().getMinecraftHeight() + ChatColor.GRAY + ")");
+										dimension.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "" + ChatColor.BOLD + "/" + ChatColor.GRAY +
+												"screen create " + videoTask[0].getVideoData().getMinecraftWidth() + " " + videoTask[0].getVideoData().getMinecraftHeight()).create()));
+										dimension.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/screen create " + videoTask[0].getVideoData().getMinecraftWidth() + " " +
+												videoTask[0].getVideoData().getMinecraftHeight()));
+										
+										player.spigot().sendMessage(dimension);
+						        		
+										player.sendMessage(configuration.videos_notice());
+										SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+										return;
+						        	}
+						        	player.sendMessage(configuration.too_much_playing());
+						        	return;
+								}
+							});
+							return true;
 						}
 						
 						if(arg3[0].equalsIgnoreCase("load")) {
-							
-							if(!video.isLoaded()) {
-								if(plugin.getLoadingVideos().size() <= configuration.maximum_loading_videos()) {
-									if(!plugin.getLoadingVideos().contains(video.getName())) {
-										
-							        	if(!video.hasEnoughtSpace()) {
-							        		player.sendMessage(configuration.video_not_enought_space(video.getName()));
-											SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
-							        		return false;
-							        	}
-										
-										video.load();
-										
-								    	player.sendMessage(configuration.video_load_requested());
-								    	player.sendMessage(configuration.video_load_notice());
-										player.sendMessage(configuration.videos_notice());
-										SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
-										return true;
-									}
-									player.sendMessage(configuration.video_already_loading(video.getName()));
-									return false;
-								}
-								player.sendMessage(configuration.too_much_loading());
-								return false;
-							}
-							player.sendMessage(configuration.video_already_loaded(video.getName()));
-							SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
-							return false;
-						}
-						
-						if(arg3[0].equalsIgnoreCase("unload")) {
-							
-							if(!video.isLoaded()) {
-								player.sendMessage(configuration.video_not_loaded(video.getName()));
-								return false;
-							}
 							
 							Video[] videoTask = {video};
 							
@@ -291,11 +306,58 @@ public class VideoCommands implements CommandExecutor {
 
 								@Override
 								public void run() {
+									
+									if(!videoTask[0].isLoaded()) {
+										if(plugin.getLoadingVideos().size() <= configuration.maximum_loading_videos()) {
+											if(!plugin.getLoadingVideos().contains(videoTask[0].getName())) {
+												
+									        	if(!videoTask[0].hasEnoughtSpace()) {
+									        		player.sendMessage(configuration.video_not_enought_space(videoTask[0].getName()));
+													SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+									        		return;
+									        	}
+												
+									        	videoTask[0].load();
+												
+										    	player.sendMessage(configuration.video_load_requested());
+										    	player.sendMessage(configuration.video_load_notice());
+												player.sendMessage(configuration.videos_notice());
+												SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+												return;
+											}
+											player.sendMessage(configuration.video_already_loading(videoTask[0].getName()));
+											return;
+										}
+										player.sendMessage(configuration.too_much_loading());
+										return;
+									}
+									player.sendMessage(configuration.video_already_loaded(videoTask[0].getName()));
+									SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+									return;
+								}
+							});
+							return true;
+						}
+						
+						if(arg3[0].equalsIgnoreCase("unload")) {
+														
+							Video[] videoTask = {video};
+							
+							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+
+								@Override
+								public void run() {
+									
+									if(!videoTask[0].isLoaded()) {
+										player.sendMessage(configuration.video_not_loaded(videoTask[0].getName()));
+										return;
+									}
+									
 									try {
 										videoTask[0].unload();
 										player.sendMessage(configuration.video_unloaded(videoTask[0].getName()));
 										SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
-									}catch (IOException e) {
+									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
 									}
 								}
@@ -649,11 +711,15 @@ public class VideoCommands implements CommandExecutor {
 			if(sender.hasPermission("mediaplayer.command.videos")) {
 				
 				if(arg3.length == 1) {
-					if(arg3[0].equalsIgnoreCase("reload")) {
-						
+					if(arg3[0].equalsIgnoreCase("reload")) {		
 						new TaskAsyncLoadConfigurations().runTaskAsynchronously(plugin);
-						
 						sender.sendMessage(configuration.videos_reload_requested());
+						return true;
+					}
+					
+					if(arg3[0].equalsIgnoreCase("cancel-tasks")) {
+						Bukkit.getScheduler().cancelTasks(plugin);
+						sender.sendMessage(configuration.videos_canceled_tasks());
 						return true;
 					}
 				}
@@ -665,12 +731,9 @@ public class VideoCommands implements CommandExecutor {
 				
 				Player player = (Player) sender;
 				
-				try {
-					player.openInventory(interfaces.getVideos());
-					return true;
-				}catch (IOException e) {
-					e.printStackTrace();
-				}
+				player.openInventory(interfaces.getVideos(0));
+				plugin.getPages().put(player.getUniqueId(), 0);
+				return true;
 			}
 			sender.sendMessage(configuration.insufficient_permissions());
 			return false;
@@ -722,5 +785,6 @@ public class VideoCommands implements CommandExecutor {
 		sender.sendMessage("");
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /videos");
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /videos" + ChatColor.AQUA + " reload");
+		sender.sendMessage(ChatColor.DARK_AQUA + "» /videos" + ChatColor.AQUA + " cancel-tasks");
 	}
 }

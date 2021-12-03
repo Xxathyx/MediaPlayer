@@ -21,6 +21,7 @@ import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
 import fr.xxathyx.mediaplayer.util.FacingLocation;
 import fr.xxathyx.mediaplayer.video.Video;
+
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;

@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.ConcurrentModificationException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,7 +16,9 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.image.commands.ImageCommands;
+import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
+
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;

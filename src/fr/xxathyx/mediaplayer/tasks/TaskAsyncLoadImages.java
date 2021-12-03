@@ -11,8 +11,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.image.Image;
-import fr.xxathyx.mediaplayer.image.ImageRenderer;
 import fr.xxathyx.mediaplayer.image.helpers.ImageHelper;
+import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 
 import org.bukkit.World;
 

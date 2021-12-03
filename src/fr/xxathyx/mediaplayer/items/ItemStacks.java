@@ -36,6 +36,60 @@ public class ItemStacks {
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
+	@SuppressWarnings("deprecation")
+	public ItemStack glass() {
+		
+		String material = "BLACK_STAINED_GLASS_PANE";
+		if(plugin.isLegacy()) material = "STAINED_GLASS_PANE";
+		
+  	    ItemStack glass = new ItemStack(Material.getMaterial(material), 1, (byte) 15);;
+	    ItemMeta glass_meta = glass.getItemMeta();
+	    
+	    glass_meta.setDisplayName(ChatColor.BLACK + ".");
+	    glass.setItemMeta(glass_meta);
+		
+	    return glass;
+	}
+	
+	public ItemStack previous() {
+		
+	    ItemStack previous = new ItemStack(Material.PAPER, 1);
+	    ItemMeta previous_meta = previous.getItemMeta();
+	    
+	    previous_meta.setDisplayName(configuration.item_previous_page_name());
+	    previous_meta.setLore(Arrays.asList(new String[] { configuration.item_previous_page_lore() }));
+	    previous.setItemMeta(previous_meta);
+	    
+	    return previous;
+	}
+	
+	public ItemStack refresh() {
+		
+		String material = "SUNFLOWER";
+		if(plugin.isLegacy()) material = "DOUBLE_PLANT";
+		
+	    ItemStack refresh = new ItemStack(Material.getMaterial(material), 1);
+	    ItemMeta refresh_meta = refresh.getItemMeta();
+	    
+	    refresh_meta.setDisplayName(configuration.item_refresh_page_name());
+	    refresh_meta.setLore(Arrays.asList(new String[] { configuration.item_refresh_page_lore() }));
+	    refresh.setItemMeta(refresh_meta);
+		
+	    return refresh;
+	}
+	
+	public ItemStack next() {
+		
+	    ItemStack next = new ItemStack(Material.PAPER, 1);
+	    ItemMeta next_meta = next.getItemMeta();
+	    
+	    next_meta.setDisplayName(configuration.item_next_page_name());
+	    next_meta.setLore(Arrays.asList(new String[] { configuration.item_next_page_lore() }));
+	    next.setItemMeta(next_meta);
+		
+	    return next;
+	}
+	
 	/** 
 	* Gets an {@link ItemStack} corresponding to a play icon in a interface {@link Inventory}.
 	*

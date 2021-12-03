@@ -1,10 +1,5 @@
 package fr.xxathyx.mediaplayer.tasks;
 
-import it.sauronsoftware.jave.AudioAttributes;
-import it.sauronsoftware.jave.Encoder;
-import it.sauronsoftware.jave.EncoderException;
-import it.sauronsoftware.jave.EncodingAttributes;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,16 +12,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import org.jcodec.api.FrameGrab;
-import org.jcodec.api.JCodecException;
-
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.group.Group;
-import fr.xxathyx.mediaplayer.image.ImageRenderer;
+import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.notification.Notification;
 import fr.xxathyx.mediaplayer.notification.NotificationType;
-import fr.xxathyx.mediaplayer.util.AWTUtil;
 import fr.xxathyx.mediaplayer.util.GIFUtil;
 import fr.xxathyx.mediaplayer.util.ImageUtil;
 import fr.xxathyx.mediaplayer.video.Video;
@@ -48,6 +39,7 @@ import fr.xxathyx.mediaplayer.video.data.cache.Cache;
 public class TaskAsyncLoadVideo extends BukkitRunnable {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	
 	private final Configuration configuration = new Configuration();
 		
     private Video video;
@@ -76,14 +68,34 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
         new Notification(NotificationType.VIDEO_PROCESSING_ESTIMATED_TIME, false).send(new Group("mediaplayer.permission.admin"), new String[] { String.valueOf(Math.round((video.getVideoFile().length()*Math.pow(10, -6)))) });
         
         String framesExtension = video.getFramesExtension(); 
+        VideoData videoData = new VideoData(video);
+        
+		String[] videoCommand = {new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", video.getVideoFile().getAbsolutePath(), "-q:v", "0",
+				"-start_number", "0", new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath()};
+        
+        ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
+        
+        try {
+			Process process = videoProcessBuilder.inheritIO().start();
+			process.waitFor();
+		}catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });        
+        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
         
         if(!video.getFormat().equalsIgnoreCase("gif")) {
-    		for(int i = video.getFramesFolder().listFiles().length; i < video.getTotalFrames(); i++) {	
-    	        try {
-    				ImageIO.write(AWTUtil.toBufferedImage(FrameGrab.getFrameFromFile(video.getVideoFile(), i)), "jpg", new File(video.getFramesFolder(), i + ".jpg"));
-    			}catch (IOException | JCodecException e) {
-    				e.printStackTrace();
-    			}
+        	        	
+    		String[] audioCommand = {new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", video.getVideoFile().getAbsolutePath(),
+    				"-f", "ogg", "-ab", "192000", "-vn", new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath()};
+        	
+            ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
+            try {
+    			Process process = audioProcessBuilder.inheritIO().start();
+    			process.waitFor();
+    		}catch (IOException | InterruptedException e) {
+    			e.printStackTrace();
     		}
         }else {
         	try {
@@ -92,34 +104,10 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 				e.printStackTrace();
 			}
         }
-		
-        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });        
-        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
-        
-        if(!video.getFormat().equalsIgnoreCase("gif")) {
-        	
-    		AudioAttributes audioAttributes = new AudioAttributes();
-    		audioAttributes.setCodec("vorbis");
-    		audioAttributes.setBitRate(new Integer(128000));
-    		audioAttributes.setChannels(new Integer(2));
-    		audioAttributes.setSamplingRate(new Integer(44100));
-    		
-    		EncodingAttributes encodingAttributes = new EncodingAttributes();
-    		encodingAttributes.setFormat("ogg");
-    		encodingAttributes.setAudioAttributes(audioAttributes);
-    		
-    		try {
-    			new Encoder().encode(video.getVideoFile(), new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg"), encodingAttributes);
-    		}catch (IllegalArgumentException | EncoderException e) {
-    			e.printStackTrace();
-    		}
-        }
         		
         new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
         new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
-		        
-        VideoData videoData = new VideoData(video);
-                
+		                
         try {
         	if(!videoData.getThumbnail().exists()) {
         		
@@ -190,12 +178,18 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     				e.printStackTrace();
     			}
         	}
-    				
+    		
+        	try {
+				video.setLoaded(true);
+			}catch (IOException | InvalidConfigurationException e) {
+				e.printStackTrace();
+			}
+        	
             if(configuration.video_delete_on_loaded()) {
             	video.getVideoFile().delete();
             }
         }
-		
+        
         new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
         new Notification(NotificationType.VIDEO_PROCESSING_FINISHED, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName(), String.valueOf(Math.round(((System.currentTimeMillis() - time) / 1000)/60)) });
 		

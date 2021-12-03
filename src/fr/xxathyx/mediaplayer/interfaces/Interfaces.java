@@ -45,14 +45,36 @@ public class Interfaces {
 	* @return An inventory containing registered videos.
 	*/
 	
-	public Inventory getVideos() throws FileNotFoundException, IOException {
+	public Inventory getVideos(int index) {
 		
 		Inventory videos = Bukkit.createInventory(null, 54, ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Videos (" + plugin.getRegisteredVideos().size() + ")");
 		
-		for(int i = 0; i < plugin.getRegisteredVideos().size(); i++) {
+		ArrayList<ArrayList<Video>> packets = new ArrayList<>();
+		ArrayList<Video> packet = new ArrayList<>();
+		
+		int first = 45;
+		if(plugin.getRegisteredVideos().size() < 45) first = plugin.getRegisteredVideos().size();
+		
+		packet.addAll(plugin.getRegisteredVideos().subList(0, first));
+		packets.add(packet);
+				
+		if(plugin.getRegisteredVideos().size() > 45) {
 			
-			Video video = plugin.getRegisteredVideos().get(i);
+			packet = new ArrayList<>();
 			
+			for(int i = 45; i < plugin.getRegisteredVideos().size(); i++) {
+				if(i % 45 == 0) {	
+					packet = new ArrayList<>();
+					packets.add(packet);
+				}			
+				packets.get(packets.size()-1).add(plugin.getRegisteredVideos().get(i));
+			}
+		}
+		
+		packet = packets.get(index);
+		
+		for(Video video : packet) {
+						
 			ItemStack item = new ItemStack(Material.ITEM_FRAME, 1);
 			ItemMeta item_meta = item.getItemMeta();
 		    
@@ -86,11 +108,20 @@ public class Interfaces {
 			
 			item_meta.setLore(lore);
 			item.setItemMeta(item_meta);
-			
-			if(i < configuration.maximum_registered_videos()) {
-				videos.addItem(item);
-			}
+						
+			videos.addItem(item);
 		}
+		
+		videos.setItem(45, items.glass());
+	    videos.setItem(46, items.glass());
+	    videos.setItem(47, items.glass());
+	    videos.setItem(51, items.glass());
+	    videos.setItem(52, items.glass());
+	    videos.setItem(53, items.glass());
+	    videos.setItem(48, items.previous());
+	    videos.setItem(49, items.refresh());
+	    videos.setItem(50, items.next());
+		
 		return videos;
 	}
 	

@@ -17,7 +17,7 @@ public class v1_8_R2 implements ActionBar {
 	
 	@Override
 	public void send(Player player, String text) {
-        ((org.bukkit.craftbukkit.v1_8_R2.entity.CraftPlayer) player).getHandle().playerConnection.sendPacket(new net.minecraft.server.v1_8_R2.PacketPlayOutChat(
+        ((org.bukkit.craftbukkit.v1_8_R2.entity.CraftPlayer)player).getHandle().playerConnection.sendPacket(new net.minecraft.server.v1_8_R2.PacketPlayOutChat(
         		net.minecraft.server.v1_8_R2.IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + text + "\"}"), (byte) 2));
 	}
 }

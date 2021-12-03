@@ -1,6 +1,7 @@
 package fr.xxathyx.mediaplayer;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,8 +9,8 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
@@ -29,6 +30,7 @@ import fr.xxathyx.mediaplayer.screen.listeners.PlayerDamageScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerInteractScreen;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadImages;
+import fr.xxathyx.mediaplayer.translation.Translater;
 import fr.xxathyx.mediaplayer.update.Updater;
 import fr.xxathyx.mediaplayer.util.ActionBar;
 import fr.xxathyx.mediaplayer.util.MapUtil;
@@ -92,6 +94,8 @@ public class Main extends JavaPlugin {
 	
 	private final ArrayList<Group> groups = new ArrayList<>();
 	
+	private final Map<UUID, Integer> pages = new HashMap<>();
+	
 	private final Map<UUID, Video> videoPanels = new HashMap<>();
 	private final Map<UUID, VideoInstance> selectedVideos = new HashMap<>();
 	
@@ -99,6 +103,8 @@ public class Main extends JavaPlugin {
 	private final ArrayList<String> playingVideos = new ArrayList<>();
 	
 	private Configuration configuration;
+	private Translater translater;
+	
 	private Updater updater;
 	
 	private MapUtil mapUtil;
@@ -118,11 +124,22 @@ public class Main extends JavaPlugin {
 		
 		configuration = new Configuration();
 		
-		try {
-			configuration.setup();
-		}catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
+		configuration.setup();
+		
+        translater = new Translater();
+
+        try {
+            translater.createTranslationFile("GB");
+            //translater.createTranslationFile("AR");
+            translater.createTranslationFile("DE");
+            translater.createTranslationFile("ES");
+            translater.createTranslationFile("FR");
+            translater.createTranslationFile("IT");
+            //translater.createTranslationFile("RU");
+            //translater.createTranslationFile("TR");
+        }catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
+        }
 		
 		updater = new Updater();
 		updater.update();
@@ -132,14 +149,14 @@ public class Main extends JavaPlugin {
 		
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
-        if(serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") || serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1")
+        if(serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") || serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1")
         		|| serverVersion.equals("v1_14_R1") || serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
         
         if(serverVersion.equals("v1_7_R4") || serverVersion.equals("v1_7_R3") || serverVersion.equals("v1_7_R2") || serverVersion.equals("v1_7_R1")) {
         	old = true;
-	        Bukkit.getLogger().warning("[MediaPlayer]: The server running version is old and isn't well supported, you may encounter future issues.");
+	        Bukkit.getLogger().warning("[MediaPlayer]: The server running version is old and isn't well supported, you may encounter future issues while playing videos.");
         }
         
         getCommand("video").setExecutor(new VideoCommands());
@@ -176,6 +193,11 @@ public class Main extends JavaPlugin {
 	*/
 	
 	public void onDisable() {
+		
+		for(Player player : Bukkit.getOnlinePlayers()) {
+			player.closeInventory();
+		}
+		
 		for(Screen screen : registeredScreens) {
 			screen.end();
 			if(configuration.remove_screen_on_restart()) {
@@ -277,6 +299,11 @@ public class Main extends JavaPlugin {
 	public ArrayList<Group> getGroups() {
 		return groups;
 	}
+	
+	public Map<UUID, Integer> getPages() {
+		return pages;
+	}
+	
 	
     /**
      * Gets all players uuid that are actually in an video panel inventory {@link Interfaces#getVideoPanel(Video)}.

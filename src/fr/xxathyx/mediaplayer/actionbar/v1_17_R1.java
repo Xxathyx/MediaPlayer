@@ -3,8 +3,6 @@ package fr.xxathyx.mediaplayer.actionbar;
 import org.bukkit.entity.Player;
 
 import fr.xxathyx.mediaplayer.util.ActionBar;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * The v1_17_R1 class implements {@link ActionBar}, it can only be defined once if
@@ -18,7 +16,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class v1_17_R1 implements ActionBar {
 	
 	@Override
-    public void send(Player player, String text) {    	
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(text));
-    }
+    public void send(Player player, String text) { 			
+		((org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer)player).getHandle().b.sendPacket(new net.minecraft.network.protocol.game.PacketPlayOutChat(
+				net.minecraft.network.chat.IChatBaseComponent.ChatSerializer.a( "{\"text\": \"" + text + "\"}"), net.minecraft.network.chat.ChatMessageType.b, player.getUniqueId()));
+	}
 }

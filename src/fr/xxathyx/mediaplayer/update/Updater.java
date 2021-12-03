@@ -51,6 +51,9 @@ public class Updater {
 					Updater.createFolders();
 					if(configuration.plugin_auto_update()) {
 						download();
+						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "The new plugin version has been downloaded,"
+								+ " and will be applied on the next server restart.");
+						return;
 					}
 				    Bukkit.getLogger().warning("[MediaPlayer]: Plugin version is out of date. Please enable auto-update in configuration, or update it manually from: " + plugin.getDescription().getWebsite());
 				    return;

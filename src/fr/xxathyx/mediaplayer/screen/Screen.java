@@ -25,7 +25,7 @@ import org.bukkit.map.MapPalette;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
-import fr.xxathyx.mediaplayer.image.ImageRenderer;
+import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
 import fr.xxathyx.mediaplayer.video.Video;
@@ -62,7 +62,7 @@ public class Screen {
 	private ArrayList<ItemFrame> frames = new ArrayList<>();
 	private ArrayList<Block> blocks = new ArrayList<>();
 		
-	public Screen(VideoInstance videoInstance, ArrayList<ItemFrame> frames) throws IOException {
+	public Screen(VideoInstance videoInstance, ArrayList<ItemFrame> frames) {
 		
 		Video video = videoInstance.getVideo();
 		
@@ -112,7 +112,7 @@ public class Screen {
                 						settings.count++;
                 					}
                 				}else {
-		                			System.out.print(settings.framerate-settings.fps + " frames added");
+                					Bukkit.broadcastMessage(settings.framerate-settings.fps + " frames added");
 		                			settings.count = settings.count + (settings.framerate-settings.fps);
                 				}
 	                		}
@@ -245,7 +245,7 @@ public class Screen {
 		
 		Bukkit.getScheduler().cancelTask(task[0]);
 		running = false;
-		
+				
 		video.getVideoData().loadThumbnail();
 		
 		for(int i = 0; i < frames.size(); i++) {

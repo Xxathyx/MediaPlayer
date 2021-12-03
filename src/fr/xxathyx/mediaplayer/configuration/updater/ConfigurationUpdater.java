@@ -35,9 +35,13 @@ public class ConfigurationUpdater {
     * @throws InvalidConfigurationException When non-respect of YAML syntax.
 	*/
 	
-	public ConfigurationUpdater(File file) throws FileNotFoundException, IOException, InvalidConfigurationException {
+	public ConfigurationUpdater(File file)  {
 		fileconfiguration = new YamlConfiguration();
-		fileconfiguration.load(file);
+		try {
+			fileconfiguration.load(file);
+		}catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
 		this.file = file;
 	}
 	
@@ -65,8 +69,12 @@ public class ConfigurationUpdater {
     * @throws InvalidConfigurationException When non-respect of YAML syntax.
 	*/
 	
-	public void update(String section, Object object) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		YamlConfigurationManager.add(file, section, object);
+	public void update(String section, Object object) {
+		try {
+			YamlConfigurationManager.add(file, section, object);
+		}catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

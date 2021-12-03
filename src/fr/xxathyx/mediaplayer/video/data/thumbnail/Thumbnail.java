@@ -13,7 +13,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import fr.xxathyx.mediaplayer.image.ImageRenderer;
+import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 
 public class Thumbnail {
 		
