@@ -64,26 +64,31 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     	
         long time = System.currentTimeMillis();
         
-        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_STARTING, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
-        new Notification(NotificationType.VIDEO_PROCESSING_ESTIMATED_TIME, false).send(new Group("mediaplayer.permission.admin"), new String[] { String.valueOf(Math.round((video.getVideoFile().length()*Math.pow(10, -6)))) });
+        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_STARTING, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+        new Notification(NotificationType.VIDEO_PROCESSING_ESTIMATED_TIME, false).send(new Group("mediaplayer.permission.admin"), new String[] { String.valueOf(Math.round((video.getVideoFile().length()*Math.pow(10, -6)))) }, true);
         
-        String framesExtension = video.getFramesExtension(); 
+        String framesExtension = video.getFramesExtension();
+        int framesCount = video.getFramesFolder().listFiles().length;
+        
         VideoData videoData = new VideoData(video);
         
-		String[] videoCommand = {new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", video.getVideoFile().getAbsolutePath(), "-q:v", "0",
-				"-start_number", "0", new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath()};
-        
-        ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
-        
-        try {
-			Process process = videoProcessBuilder.inheritIO().start();
-			process.waitFor();
-		}catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
+        if(framesCount < video.getTotalFrames()) {
+        	
+    		String[] videoCommand = {new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", video.getVideoFile().getAbsolutePath(), "-q:v", "0",
+    				"-start_number", String.valueOf(framesCount), new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath()};
+            
+            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
+            
+            try {
+    			Process process = videoProcessBuilder.inheritIO().start();
+    			process.waitFor();
+    		}catch (IOException | InterruptedException e) {
+    			e.printStackTrace();
+    		}
+        }
 		
-        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });        
-        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
+        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);        
+        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
         
         if(!video.getFormat().equalsIgnoreCase("gif")) {
         	        	
@@ -105,8 +110,8 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 			}
         }
         		
-        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
-        new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
+        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+        new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
 		                
         try {
         	if(!videoData.getThumbnail().exists()) {
@@ -130,26 +135,28 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     			video.setMinecraftHeight(imageRenderer.lines);
         	}
         	
-			if(!new File(video.getFramesFolder(), "duplicated.txt").exists()) {
-				
-				new File(video.getFramesFolder(), "duplicated.txt").createNewFile();
-				
-			    FileWriter fileWriter = new FileWriter(video.getFramesFolder().getPath() + "/duplicated.txt", true);
-			    
-			    final double max = configuration.ressemblance_to_skip();
-			    final int total = video.getTotalFrames()-1;
-			    
-			    for(int i = 0; i < total; i++) {
-			    	
-			    	BufferedImage original = ImageIO.read(new File(video.getFramesFolder(), i + framesExtension));
-			    	BufferedImage next = ImageIO.read(new File(video.getFramesFolder(), (i+1) + framesExtension));
-			    			    			    	
-			    	if(ImageUtil.getResemblance(original, next) > max) {
-			    		fileWriter.write((i+1) + "\n");
-			    	}
-			    }
-			    fileWriter.close();	
-			}    
+        	if(configuration.detect_duplicated_frames()) {
+    			if(!new File(video.getFramesFolder(), "duplicated.txt").exists()) {
+    				
+    				new File(video.getFramesFolder(), "duplicated.txt").createNewFile();
+    				
+    			    FileWriter fileWriter = new FileWriter(video.getFramesFolder().getPath() + "/duplicated.txt", true);
+    			    
+    			    final double max = configuration.ressemblance_to_skip();
+    			    final int total = video.getTotalFrames()-1;
+    			    
+    			    for(int i = 0; i < total; i++) {
+    			    	
+    			    	BufferedImage original = ImageIO.read(new File(video.getFramesFolder(), i + framesExtension));
+    			    	BufferedImage next = ImageIO.read(new File(video.getFramesFolder(), (i+1) + framesExtension));
+    			    			    			    	
+    			    	if(ImageUtil.getResemblance(original, next) > max) {
+    			    		fileWriter.write((i+1) + "\n");
+    			    	}
+    			    }
+    			    fileWriter.close();	
+    			}
+        	} 
 		}catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -190,8 +197,8 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
             }
         }
         
-        new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() });
-        new Notification(NotificationType.VIDEO_PROCESSING_FINISHED, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName(), String.valueOf(Math.round(((System.currentTimeMillis() - time) / 1000)/60)) });
+        new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+        new Notification(NotificationType.VIDEO_PROCESSING_FINISHED, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName(), String.valueOf(Math.round(((System.currentTimeMillis() - time) / 1000)/60)) }, true);
 		
         plugin.getLoadingVideos().remove(video.getName());
         

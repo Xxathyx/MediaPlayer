@@ -160,12 +160,15 @@ public class Main extends JavaPlugin {
         }
         
         getCommand("video").setExecutor(new VideoCommands());
+        getCommand("video").setTabCompleter(new VideoCommands());
         getCommand("videos").setExecutor(new VideoCommands());   
         
         getCommand("screen").setExecutor(new ScreenCommands());
+        getCommand("screen").setTabCompleter(new ScreenCommands());
         getCommand("screens").setExecutor(new ScreenCommands());
         
         getCommand("image").setExecutor(new ImageCommands());
+        getCommand("image").setTabCompleter(new ImageCommands());
         getCommand("images").setExecutor(new ImageCommands());
         
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickVideos(), this);
@@ -300,10 +303,15 @@ public class Main extends JavaPlugin {
 		return groups;
 	}
 	
+    /**
+     * Gets all players uuid and their current page index of videos section.
+     *
+     * @return Players that are in videos section and their current page index.
+     */
+	
 	public Map<UUID, Integer> getPages() {
 		return pages;
 	}
-	
 	
     /**
      * Gets all players uuid that are actually in an video panel inventory {@link Interfaces#getVideoPanel(Video)}.

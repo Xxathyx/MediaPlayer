@@ -32,10 +32,14 @@ public class MapUtilVersion {
         final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
         if(serverVersion.equals("v1_18_R1")) {
-        	return new v1_17_R1();
+        	return new v1_18_R1();
         }
         if(serverVersion.equals("v1_17_R1")) {
-        	return new v1_17_R1();
+        	try {
+				return new v1_17_R1(net.minecraft.server.network.PlayerConnection.class.getMethod("sendPacket", net.minecraft.network.protocol.Packet.class));
+			}catch (NoSuchMethodException | SecurityException e) {
+				e.printStackTrace();
+			}
         }
         if(serverVersion.equals("v1_16_R3")) {
         	return new v1_16_R3();

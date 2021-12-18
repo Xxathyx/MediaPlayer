@@ -1,6 +1,9 @@
 package fr.xxathyx.mediaplayer.screen.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,9 +12,11 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 import org.bukkit.util.Vector;
 
 import fr.xxathyx.mediaplayer.Main;
@@ -36,10 +41,12 @@ import net.md_5.bungee.api.chat.TextComponent;
 * @since   2021-08-23 
 */
 
-public class ScreenCommands implements CommandExecutor {
+public class ScreenCommands implements CommandExecutor, TabCompleter {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
+	
+    private final String[] commands = { "create", "info", "teleport", "remove" };
 	
 	/**
 	* See Bukkit documentation : {@link CommandExecutor#onCommand(CommandSender, Command, String, String[])}
@@ -264,8 +271,8 @@ public class ScreenCommands implements CommandExecutor {
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					
+					ItemFrame itemFrame = null;			        
 					Location locBlock = new Location(location.getWorld(), location.getX(), location.getY()+j, location.getZ());
-					ItemFrame itemFrame = null;
 					
 					if(FacingLocation.getCardinalDirection(player).equals("N")) {
 						locBlock.add(i, 0, 0);
@@ -287,7 +294,6 @@ public class ScreenCommands implements CommandExecutor {
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
 						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()+1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.ITEM_FRAME);
 					}
-					
 					frames.add(itemFrame);
 					
 					plugin.getScreensBlocks().add(locBlock.getBlock());
@@ -299,6 +305,34 @@ public class ScreenCommands implements CommandExecutor {
 		}
 		return frames;
 	}
+	
+	/**
+	* See Bukkit documentation : {@link TabCompleter}
+	* 
+	* <p>Called every time a player is try to auto-complete command.
+	*/
+	
+	@Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		
+        List<String> completions = new ArrayList<>();        
+        
+        StringUtil.copyPartialMatches(args[0], Arrays.asList(commands), completions);
+        
+        if(args.length > 1) {
+        	
+        	ArrayList<String> ids = new ArrayList<>();
+        	
+			for(Screen screen : plugin.getRegisteredScreens()) {
+				ids.add(String.valueOf(screen.getId()));
+			}
+            StringUtil.copyPartialMatches(args[1], ids, completions);
+        }
+        
+        Collections.sort(completions);
+        
+        return completions;
+    }
 	
 	/**
 	* Sends help messages to a {@link CommandSender} concerning screen commands.

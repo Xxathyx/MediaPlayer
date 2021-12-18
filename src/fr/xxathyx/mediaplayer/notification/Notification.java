@@ -46,7 +46,10 @@ public class Notification {
 	* @param args The arguments that can replace values in a {@link NotificationType#toString(String[])}.
 	*/
 	
-	public void send(Group group, String args[]) {
+	public void send(Group group, String args[], boolean console) {
+		
+		if(console) Bukkit.getConsoleSender().sendMessage(notificationType.toString(args));
+		
 		for(UUID uuid : group.getPlayers()) {
 			Bukkit.getPlayer(uuid).sendMessage(notificationType.toString(args));
 			if(ping) {

@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.util.Host;
 
 /** 
 * The Configuration class allow a direct bridge between plugin configuration and
@@ -56,10 +58,17 @@ public class Configuration {
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
+	    	fileconfiguration.set("plugin.langage", "GB");
+	    	
+		    Host host = new Host(Bukkit.getServer().getIp());
+		    if(host.getOfficials().contains(host.getCountryCode())) fileconfiguration.set("plugin.langage", host.getCountryCode());
+			
 			fileconfiguration.set("plugin.ping-sound", true);
 			fileconfiguration.set("plugin.delete-video-on-loaded", false);
 			
 			fileconfiguration.set("plugin.screen-block", "BARRIER");
+			
+			fileconfiguration.set("plugin.maximum-distance-to-receive", 10);
 			
 			fileconfiguration.set("plugin.maximum-playing-videos", 10);
 			fileconfiguration.set("plugin.maximum-loading-videos", 3);
@@ -67,8 +76,9 @@ public class Configuration {
 			fileconfiguration.set("plugin.remove-screen-structure-on-restart", false);
 			fileconfiguration.set("plugin.remove-screen-structure-on-end", false);
 			
+			fileconfiguration.set("plugin.detect-duplicated-frames", false);
 			fileconfiguration.set("plugin.ressemblance-to-skip", 90);
-			
+						
 			fileconfiguration.set("messages.plugin-outdated", "&cLa version utilisée du plugin n'est plus à jour, activez l'option auto-update depuis la configuration,"
 					+ " ou faîtes le manuellement depuis: " + plugin.getDescription().getWebsite());
 			
@@ -374,6 +384,10 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.auto-update");
 	}
 	
+	public String plugin_langage() {
+		return getConfigFile().getString("plugin.langage");
+	}
+	
 	public boolean plugin_ping_sound() {
 		return getConfigFile().getBoolean("plugin.ping-sound");
 	}
@@ -386,6 +400,10 @@ public class Configuration {
 		String material = getConfigFile().getString("plugin.screen-block");
 		if(material.equalsIgnoreCase("BARRIER") && plugin.isOld()) material = "GLASS"; 
 		return material;
+	}
+	
+	public int maximum_distance_to_receive() {
+		return getConfigFile().getInt("plugin.maximum-distance-to-receive");
 	}
 	
 	public int maximum_playing_videos() {
@@ -402,6 +420,10 @@ public class Configuration {
 	
 	public boolean remove_screen_on_restart() {
 		return getConfigFile().getBoolean("plugin.remove-screen-structure-on-restart");
+	}
+	
+	public boolean detect_duplicated_frames() {
+		return getConfigFile().getBoolean("plugin.detect-duplicated-frames");
 	}
 	
 	public double ressemblance_to_skip() {
@@ -596,8 +618,8 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.videos-empty-registered"));
 	}
 	
-	public String videos_canceled_tasks() {
-		return getMessage(getConfigFile().getString("messages.videos-canceled-tasks"));
+	public String videos_canceled_tasks(String tasks) {
+		return getMessage(getConfigFile().getString("messages.videos-canceled-tasks"), tasks);
 	}
 	
 	public String videos_notice() {
@@ -801,7 +823,7 @@ public class Configuration {
 	}
 	
 	public String offline_player(String player) {
-		return getMessage(getConfigFile().getString("messages.offline-player"));
+		return getMessage(getConfigFile().getString("messages.offline-player"), player);
 	}
 	
 	public String invalid_url(String url) {

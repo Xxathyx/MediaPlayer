@@ -112,7 +112,7 @@ public class Screen {
                 						settings.count++;
                 					}
                 				}else {
-                					Bukkit.broadcastMessage(settings.framerate-settings.fps + " frames added");
+                					System.out.print(settings.framerate-settings.fps + " frames added");
 		                			settings.count = settings.count + (settings.framerate-settings.fps);
                 				}
 	                		}
@@ -135,7 +135,7 @@ public class Screen {
 						for(int i = 0; i < settings.max; i++) {
 							if(settings.count < settings.total && settings.fps < settings.framerate) {
 								
-								Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), 10);
+								Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
 								
 								Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 									@SuppressWarnings("deprecation")
@@ -288,7 +288,7 @@ public class Screen {
 	}
 	
 	public String getTimeLeft(int frame) {
-		/*
+		
 		int leftFrames = video.getTotalFrames()-frame;
 		int seconds = (int) Math.round((double) leftFrames/video.getFrameRate());
 		
@@ -314,7 +314,7 @@ public class Screen {
 				return String.valueOf(hours) + " heure";
 			}
 			return String.valueOf(hours) + " heures";
-		}*/
+		}
 		return settings.count + "/" + video.getTotalFrames();
 	}
 	public String getStatus() {

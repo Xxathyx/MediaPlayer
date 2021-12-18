@@ -1,5 +1,7 @@
 package fr.xxathyx.mediaplayer.map.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
@@ -18,11 +20,22 @@ import fr.xxathyx.mediaplayer.util.MapUtil;
  */
 
 public class v1_17_R1 implements MapUtil {
-
+	
+	private Method method;
+	
+	public v1_17_R1(Method method) {
+		method.setAccessible(true);
+		this.method = method;
+	}
+	
 	@Override
 	public void update(Player player, int id, byte[] buffer) {
-    	((org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer)player).getHandle().b.sendPacket(new net.minecraft.network.protocol.game.PacketPlayOutMap(id, (byte) 4, false,
-    			new ArrayList<>(), new net.minecraft.world.level.saveddata.maps.WorldMap.b(0, 0, 128, 128, buffer)));
+		try {
+			method.invoke(((org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer)player).getHandle().b,
+					new net.minecraft.network.protocol.game.PacketPlayOutMap(id, (byte) 4, false, new ArrayList<>(), new net.minecraft.world.level.saveddata.maps.WorldMap.b(0, 0, 128, 128, buffer)));
+		}catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@SuppressWarnings("deprecation")

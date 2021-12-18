@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -15,8 +19,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
@@ -43,12 +49,14 @@ import net.md_5.bungee.api.chat.TextComponent;
 * @since   2021-08-23 
 */
 
-public class VideoCommands implements CommandExecutor {
+public class VideoCommands implements CommandExecutor, TabCompleter {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
 	private final Interfaces interfaces = new Interfaces();
+	
+    private final String[] commands = { "play", "load", "unload", "info", "delete", "start",  "stop", "pause", "resume", "download", "stop", "list" };
 	
 	/**
 	* See Bukkit documentation : {@link CommandExecutor#onCommand(CommandSender, Command, String, String[])}
@@ -125,12 +133,11 @@ public class VideoCommands implements CommandExecutor {
 					}
 				}
 				
-				if(!(sender instanceof Player)) {
-					sender.sendMessage(configuration.invalid_sender());
-					return false;
-				}
+				Player player = null;
 				
-				Player player = (Player) sender;
+				if(sender instanceof Player) {
+					player = (Player) sender;
+				}
 				
 				if(arg3.length == 1) {
 					
@@ -141,6 +148,11 @@ public class VideoCommands implements CommandExecutor {
 					
 					if(arg3[0].equalsIgnoreCase("play")) {
 						sender.sendMessage(ChatColor.RED + "/video play <video>");
+						return false;
+					}
+					
+					if(arg3[0].equalsIgnoreCase("download")) {
+						sender.sendMessage(ChatColor.RED + "/video download <url>");
 						return false;
 					}
 					
@@ -167,7 +179,7 @@ public class VideoCommands implements CommandExecutor {
 					if(arg3[0].equalsIgnoreCase("list")) {
 						
 						if(plugin.getRegisteredVideos().isEmpty()) {
-							player.sendMessage(configuration.videos_empty_registered());
+							sender.sendMessage(configuration.videos_empty_registered());
 							return false;
 						}
 						
@@ -180,38 +192,40 @@ public class VideoCommands implements CommandExecutor {
 							String video = ChatColor.GREEN + plugin.getRegisteredVideos().get(i).getName() + "\n";
 							videosList = (videosList + "\n" + ChatColor.GREEN + index + ". " +  video);
 						}
-						player.sendMessage(videosList);
-					    player.sendMessage(configuration.videos_notice());
+						sender.sendMessage(videosList);
+					    if(sender instanceof Player) player.sendMessage(configuration.videos_notice());
 						return true;
 					}
 					
-					if(plugin.getVideoPlayers().containsKey(player.getUniqueId())) {
-						
-						VideoPlayer videoPlayer = plugin.getVideoPlayers().get(player.getUniqueId());
-						
-						if(arg3[0].equalsIgnoreCase("start")) {
+					if(sender instanceof Player) {
+						if(plugin.getVideoPlayers().containsKey(player.getUniqueId())) {
 							
-							//if(!Bukkit.getScheduler().isCurrentlyRunning(videoPlayer.getScreen().task[0])) videoPlayer.getScreen().setSettings(new ScreenSettings(videoPlayer.getScreen().getVideo())); videoPlayer.getScreen().display();
+							VideoPlayer videoPlayer = plugin.getVideoPlayers().get(player.getUniqueId());
 							
-							videoPlayer.getScreen().setRunning(true);
-							player.sendMessage(configuration.video_instance_started(videoPlayer.getScreen().getVideoInstance().getVideo().getName(), String.valueOf(videoPlayer.getScreen().getId())));
-							SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
-							return true;
-						}
-						
-						if(arg3[0].equalsIgnoreCase("stop")) {
-							videoPlayer.getScreen().end();
-							plugin.getVideoPlayers().remove(player.getUniqueId());
-							player.sendMessage(configuration.video_instance_stopped(videoPlayer.getScreen().getVideoInstance().getVideo().getName()));
-							return true;
-						}
-						
-						if(arg3[0].equalsIgnoreCase("pause")) {
+							if(arg3[0].equalsIgnoreCase("start")) {
+								
+								//if(!Bukkit.getScheduler().isCurrentlyRunning(videoPlayer.getScreen().task[0])) videoPlayer.getScreen().setSettings(new ScreenSettings(videoPlayer.getScreen().getVideo())); videoPlayer.getScreen().display();
+								
+								videoPlayer.getScreen().setRunning(true);
+								player.sendMessage(configuration.video_instance_started(videoPlayer.getScreen().getVideoInstance().getVideo().getName(), String.valueOf(videoPlayer.getScreen().getId())));
+								if(sender instanceof Player) SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+								return true;
+							}
 							
-						}
-						
-						if(arg3[0].equalsIgnoreCase("resume")) {
+							if(arg3[0].equalsIgnoreCase("stop")) {
+								videoPlayer.getScreen().end();
+								plugin.getVideoPlayers().remove(player.getUniqueId());
+								player.sendMessage(configuration.video_instance_stopped(videoPlayer.getScreen().getVideoInstance().getVideo().getName()));
+								return true;
+							}
 							
+							if(arg3[0].equalsIgnoreCase("pause")) {
+								
+							}
+							
+							if(arg3[0].equalsIgnoreCase("resume")) {
+								
+							}
 						}
 					}
 				}
@@ -240,7 +254,7 @@ public class VideoCommands implements CommandExecutor {
 				        }
 				        
 				        if(Integer.parseInt(arg3[1])-1 >= plugin.getRegisteredVideos().size()) {
-				        	player.sendMessage(configuration.video_invalid_index(arg3[1]));
+				        	sender.sendMessage(configuration.video_invalid_index(arg3[1]));
 				        	return false;
 				        }
 				        video = plugin.getRegisteredVideos().get(Integer.parseInt(arg3[1])-1);
@@ -249,6 +263,12 @@ public class VideoCommands implements CommandExecutor {
 					if(video != null) {
 						if(arg3[0].equalsIgnoreCase("play")) {
 							
+							if(!(sender instanceof Player)) {
+								sender.sendMessage(configuration.invalid_sender());
+								return false;
+							}
+							
+							Player[] players = {player};
 							Video[] videoTask = {video};
 							
 							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -257,16 +277,16 @@ public class VideoCommands implements CommandExecutor {
 								public void run() {
 									
 						        	if(!videoTask[0].isLoaded()) {
-										player.sendMessage(configuration.video_not_loaded(videoTask[0].getName()));
-										SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+						        		players[0].sendMessage(configuration.video_not_loaded(videoTask[0].getName()));
+										SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_DOWN);
 										return;
 									}
 						        	
 						        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
 						        		
-						        		if(plugin.getSelectedVideos().containsKey(player.getUniqueId())) {
-						        			player.sendMessage(configuration.video_already_selected(videoTask[0].getName()));
-											SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+						        		if(plugin.getSelectedVideos().containsKey(players[0].getUniqueId())) {
+						        			players[0].sendMessage(configuration.video_already_selected(videoTask[0].getName()));
+											SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_DOWN);
 						        			return;
 						        		}
 						        		
@@ -274,9 +294,9 @@ public class VideoCommands implements CommandExecutor {
 										
 						        		VideoInstance videoInstance = new VideoInstance(videoTask[0]);
 						        		
-						        		plugin.getSelectedVideos().put(player.getUniqueId(), videoInstance);
+						        		plugin.getSelectedVideos().put(players[0].getUniqueId(), videoInstance);
 						        		
-						        		player.sendMessage(configuration.video_selected(videoTask[0].getName()));
+						        		players[0].sendMessage(configuration.video_selected(videoTask[0].getName()));
 						        		
 										TextComponent dimension = new TextComponent(ChatColor.GRAY + "(Dimension: " + videoTask[0].getVideoData().getMinecraftWidth() + "x" + videoTask[0].getVideoData().getMinecraftHeight() + " -> " + ChatColor.BOLD + "/screen create " +
 												videoTask[0].getVideoData().getMinecraftWidth() + " " + videoTask[0].getVideoData().getMinecraftHeight() + ChatColor.GRAY + ")");
@@ -285,13 +305,13 @@ public class VideoCommands implements CommandExecutor {
 										dimension.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/screen create " + videoTask[0].getVideoData().getMinecraftWidth() + " " +
 												videoTask[0].getVideoData().getMinecraftHeight()));
 										
-										player.spigot().sendMessage(dimension);
+										players[0].spigot().sendMessage(dimension);
 						        		
-										player.sendMessage(configuration.videos_notice());
-										SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+										if(sender instanceof Player) players[0].sendMessage(configuration.videos_notice());
+										SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_UP);
 										return;
 						        	}
-						        	player.sendMessage(configuration.too_much_playing());
+						        	players[0].sendMessage(configuration.too_much_playing());
 						        	return;
 								}
 							});
@@ -300,6 +320,7 @@ public class VideoCommands implements CommandExecutor {
 						
 						if(arg3[0].equalsIgnoreCase("load")) {
 							
+							Player[] players = {player};
 							Video[] videoTask = {video};
 							
 							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -312,27 +333,27 @@ public class VideoCommands implements CommandExecutor {
 											if(!plugin.getLoadingVideos().contains(videoTask[0].getName())) {
 												
 									        	if(!videoTask[0].hasEnoughtSpace()) {
-									        		player.sendMessage(configuration.video_not_enought_space(videoTask[0].getName()));
-													SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+									        		sender.sendMessage(configuration.video_not_enought_space(videoTask[0].getName()));
+													if(sender instanceof Player) SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_DOWN);
 									        		return;
 									        	}
 												
 									        	videoTask[0].load();
 												
-										    	player.sendMessage(configuration.video_load_requested());
-										    	player.sendMessage(configuration.video_load_notice());
-												player.sendMessage(configuration.videos_notice());
-												SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+									        	sender.sendMessage(configuration.video_load_requested());
+										    	sender.sendMessage(configuration.video_load_notice());
+										    	if(sender instanceof Player) players[0].sendMessage(configuration.videos_notice());
+										    	if(sender instanceof Player) SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_UP);
 												return;
 											}
-											player.sendMessage(configuration.video_already_loading(videoTask[0].getName()));
+											sender.sendMessage(configuration.video_already_loading(videoTask[0].getName()));
 											return;
 										}
-										player.sendMessage(configuration.too_much_loading());
+										sender.sendMessage(configuration.too_much_loading());
 										return;
 									}
-									player.sendMessage(configuration.video_already_loaded(videoTask[0].getName()));
-									SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+									sender.sendMessage(configuration.video_already_loaded(videoTask[0].getName()));
+									if(sender instanceof Player) SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_DOWN);
 									return;
 								}
 							});
@@ -340,7 +361,8 @@ public class VideoCommands implements CommandExecutor {
 						}
 						
 						if(arg3[0].equalsIgnoreCase("unload")) {
-														
+									
+							Player[] players = {player};
 							Video[] videoTask = {video};
 							
 							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -349,14 +371,14 @@ public class VideoCommands implements CommandExecutor {
 								public void run() {
 									
 									if(!videoTask[0].isLoaded()) {
-										player.sendMessage(configuration.video_not_loaded(videoTask[0].getName()));
+										sender.sendMessage(configuration.video_not_loaded(videoTask[0].getName()));
 										return;
 									}
 									
 									try {
 										videoTask[0].unload();
-										player.sendMessage(configuration.video_unloaded(videoTask[0].getName()));
-										SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+										sender.sendMessage(configuration.video_unloaded(videoTask[0].getName()));
+										if(sender instanceof Player) SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_UP);
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
 									}
@@ -395,8 +417,9 @@ public class VideoCommands implements CommandExecutor {
 							return true;
 						}
 											
-						if(arg3[0].equalsIgnoreCase("delete")) {
+						if(arg3[0].equalsIgnoreCase("delete") | arg3[0].equalsIgnoreCase("del")) {
 							
+							Player[] players = {player};
 							Video[] videoTask = {video};
 							
 							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -408,15 +431,15 @@ public class VideoCommands implements CommandExecutor {
 									}catch (IOException e) {
 										e.printStackTrace();
 									}
-									player.sendMessage(configuration.video_deleted(name));
-									SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
-									player.sendMessage(configuration.videos_notice());
+									sender.sendMessage(configuration.video_deleted(name));
+									if(sender instanceof Player) SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_UP);
+									if(sender instanceof Player) players[0].sendMessage(configuration.videos_notice());
 								}
 							});
 							return true;
 						}
 					}
-					player.sendMessage(configuration.video_invalid(arg3[1]));
+					sender.sendMessage(configuration.video_invalid(arg3[1]));
 					return false;
 				}
 								
@@ -446,14 +469,14 @@ public class VideoCommands implements CommandExecutor {
 					        }
 					        
 					        if(Integer.parseInt(arg3[0])-1 >= plugin.getRegisteredVideos().size()) {
-					        	player.sendMessage(configuration.video_invalid_index(String.valueOf(Integer.parseInt(arg3[0])-1)));
+					        	sender.sendMessage(configuration.video_invalid_index(String.valueOf(Integer.parseInt(arg3[0])-1)));
 					        	return false;
 					        }
 					        video = plugin.getRegisteredVideos().get(Integer.parseInt(arg3[0])-1);
 						}
 						
 						if(video != null) {
-							if(arg3[2].equalsIgnoreCase("description")) {
+							if(arg3[2].equalsIgnoreCase("description") | arg3[2].equalsIgnoreCase("desc")) {
 								
 								String description = "";
 								
@@ -465,7 +488,7 @@ public class VideoCommands implements CommandExecutor {
 					    		
 					    		try {
 									video.setDescription(description);
-									player.sendMessage(configuration.video_description_updated(video.getName(), description));
+									sender.sendMessage(configuration.video_description_updated(video.getName(), description));
 									return true;
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
@@ -489,7 +512,7 @@ public class VideoCommands implements CommandExecutor {
 						        
 						        try {
 									video.setSpeed(speed);
-									player.sendMessage(configuration.video_speed_updated(video.getName(), String.valueOf(speed)));
+									sender.sendMessage(configuration.video_speed_updated(video.getName(), String.valueOf(speed)));
 									return true;
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
@@ -513,18 +536,18 @@ public class VideoCommands implements CommandExecutor {
 						        
 						        try {
 									video.setVolume(volume);
-									player.sendMessage(configuration.video_volume_updated(video.getName(), String.valueOf(volume)));
+									sender.sendMessage(configuration.video_volume_updated(video.getName(), String.valueOf(volume)));
 									return true;
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
 								}
 							}
 							
-							if(arg3[2].equalsIgnoreCase("age-limit")) {
+							if(arg3[2].equalsIgnoreCase("age-limit") | arg3[2].equalsIgnoreCase("al")) {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setRestricted(true);
-										player.sendMessage(configuration.video_age_limit_enabled(video.getName()));
+										sender.sendMessage(configuration.video_age_limit_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -534,7 +557,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setRestricted(false);
-										player.sendMessage(configuration.video_age_limit_disabled(video.getName()));
+										sender.sendMessage(configuration.video_age_limit_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -546,7 +569,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setEnableAudio(true);
-										player.sendMessage(configuration.video_audio_enabled(video.getName()));
+										sender.sendMessage(configuration.video_audio_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -556,7 +579,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setEnableAudio(false);
-										player.sendMessage(configuration.video_audio_disabled(video.getName()));
+										sender.sendMessage(configuration.video_audio_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -568,7 +591,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setLooping(true);
-										player.sendMessage(configuration.video_loop_enabled(video.getName()));
+										sender.sendMessage(configuration.video_loop_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -578,7 +601,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setLooping(false);
-										player.sendMessage(configuration.video_loop_disabled(video.getName()));
+										sender.sendMessage(configuration.video_loop_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -586,11 +609,11 @@ public class VideoCommands implements CommandExecutor {
 								}	
 							}
 							
-							if(arg3[2].equalsIgnoreCase("real-time-rendering")) {
+							if(arg3[2].equalsIgnoreCase("real-time-rendering") | arg3[2].equalsIgnoreCase("rtr")) {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setRealTimeRendering(true);
-										player.sendMessage(configuration.video_skip_frames_enabled(video.getName()));
+										sender.sendMessage(configuration.video_skip_frames_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -600,7 +623,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setRealTimeRendering(false);
-										player.sendMessage(configuration.video_skip_frames_disabled(video.getName()));
+										sender.sendMessage(configuration.video_skip_frames_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -608,11 +631,11 @@ public class VideoCommands implements CommandExecutor {
 								}	
 							}
 							
-							if(arg3[2].equalsIgnoreCase("skip-duplicated-frames")) {
+							if(arg3[2].equalsIgnoreCase("skip-duplicated-frames") | arg3[2].equalsIgnoreCase("sdf")) {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setSkipDuplicatedFrames(true);
-										player.sendMessage(configuration.video_skip_duplicated_frames_enabled(video.getName()));
+										sender.sendMessage(configuration.video_skip_duplicated_frames_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -622,7 +645,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setSkipDuplicatedFrames(false);
-										player.sendMessage(configuration.video_skip_duplicated_frames_disabled(video.getName()));
+										sender.sendMessage(configuration.video_skip_duplicated_frames_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -630,11 +653,11 @@ public class VideoCommands implements CommandExecutor {
 								}	
 							}
 							
-							if(arg3[2].equalsIgnoreCase("show-informations")) {
+							if(arg3[2].equalsIgnoreCase("show-informations") | arg3[2].equalsIgnoreCase("si")) {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setShowInformations(true);
-										player.sendMessage(configuration.video_show_informations_enabled(video.getName()));
+										sender.sendMessage(configuration.video_show_informations_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -644,7 +667,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setShowInformations(false);
-										player.sendMessage(configuration.video_show_informations_disabled(video.getName()));
+										sender.sendMessage(configuration.video_show_informations_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -656,7 +679,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setShowFPS(true);
-										player.sendMessage(configuration.video_show_fps_enabled(video.getName()));
+										sender.sendMessage(configuration.video_show_fps_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -666,7 +689,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setShowFPS(false);
-										player.sendMessage(configuration.video_show_fps_disabled(video.getName()));
+										sender.sendMessage(configuration.video_show_fps_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -674,11 +697,11 @@ public class VideoCommands implements CommandExecutor {
 								}	
 							}
 							
-							if(arg3[2].equalsIgnoreCase("run-on-startup")) {
+							if(arg3[2].equalsIgnoreCase("run-on-startup") | arg3[2].equalsIgnoreCase("ros")) {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setRunOnStartup(true);
-										player.sendMessage(configuration.video_run_on_startup_enabled(video.getName()));
+										sender.sendMessage(configuration.video_run_on_startup_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -688,7 +711,7 @@ public class VideoCommands implements CommandExecutor {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setRunOnStartup(false);
-										player.sendMessage(configuration.video_run_on_startup_disabled(video.getName()));
+										sender.sendMessage(configuration.video_run_on_startup_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -696,7 +719,7 @@ public class VideoCommands implements CommandExecutor {
 								}	
 							}
 						}
-						player.sendMessage(configuration.video_invalid(arg3[0]));
+						sender.sendMessage(configuration.video_invalid(arg3[0]));
 						return false;
 					}
 				}
@@ -717,23 +740,23 @@ public class VideoCommands implements CommandExecutor {
 						return true;
 					}
 					
-					if(arg3[0].equalsIgnoreCase("cancel-tasks")) {
+					if(arg3[0].equalsIgnoreCase("cancel-tasks") | arg3[0].equalsIgnoreCase("ct")) {
 						Bukkit.getScheduler().cancelTasks(plugin);
-						sender.sendMessage(configuration.videos_canceled_tasks());
+						sender.sendMessage(configuration.videos_canceled_tasks(String.valueOf(Bukkit.getScheduler().getActiveWorkers().size())));
 						return true;
 					}
 				}
 				
-				if(!(sender instanceof Player)) {
-					sender.sendMessage(configuration.invalid_sender());
-					return false;
+				if(sender instanceof Player) {
+					
+					Player player = (Player) sender;
+					
+					player.openInventory(interfaces.getVideos(0));
+					plugin.getPages().put(player.getUniqueId(), 0);
+					return true;
 				}
-				
-				Player player = (Player) sender;
-				
-				player.openInventory(interfaces.getVideos(0));
-				plugin.getPages().put(player.getUniqueId(), 0);
-				return true;
+				sendHelp(sender, name);
+				return false;
 			}
 			sender.sendMessage(configuration.insufficient_permissions());
 			return false;
@@ -741,6 +764,56 @@ public class VideoCommands implements CommandExecutor {
 		sendHelp(sender, name);
 		return false;
 	}
+	
+	/**
+	* See Bukkit documentation : {@link TabCompleter}
+	* 
+	* <p>Called every time a player is try to auto-complete command.
+	*/
+	
+	@Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+				
+        List<String> completions = new ArrayList<>();  
+        
+    	ArrayList<String> arguments = new ArrayList<>();
+    	ArrayList<String> videos = new ArrayList<>();
+    	
+    	for(Video video : plugin.getRegisteredVideos()) {
+    		videos.add(video.getName());
+    		videos.add(String.valueOf(plugin.getRegisteredVideos().indexOf(video)));
+    	}
+    	
+		arguments.addAll(Arrays.asList(commands));
+		arguments.addAll(videos);
+    	
+        StringUtil.copyPartialMatches(args[0], arguments, completions);
+                
+        if(args.length > 1) {
+        	
+            String[] commands = { "play", "load", "unload", "info", "delete" };
+        	
+            if(Arrays.asList(commands).contains(args[0])) {
+                StringUtil.copyPartialMatches(args[1], videos, completions);
+            }
+            
+            String[] subcommands = { "set" };
+        	
+            StringUtil.copyPartialMatches(args[1], Arrays.asList(subcommands), completions);
+            
+            if(args.length > 2) {
+            	
+                String[] modifiers = { "description", "frame-rate", "speed", "volume", "age-limit", "audio",  "looping", "real-time-rendering",
+                		"skip-duplicated-frames", "show-informations", "show-fps", "run-on-startup" };
+                
+                StringUtil.copyPartialMatches(args[2], Arrays.asList(modifiers), completions);
+            }
+        }
+        
+        Collections.sort(completions);
+        
+        return completions;
+    }
 	
 	/**
 	* Sends help messages to a {@link CommandSender} concerning video commands.
@@ -755,7 +828,6 @@ public class VideoCommands implements CommandExecutor {
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " play <video>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " load <video>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " unload <video>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " link <video>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " info <video>");
 		sender.sendMessage("");
 		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " delete <video>");

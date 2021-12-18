@@ -112,6 +112,6 @@ public class TaskAsyncLoadConfigurations extends BukkitRunnable {
 			}
 		}
 	    Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GRAY + "Videos successfully registered. (" + plugin.getRegisteredVideos().size() + ")");
-        new Notification(NotificationType.VIDEOS_RELOADED, true).send(new Group("mediaplayer.permission.admin"), new String[] { "" });       
+        new Notification(NotificationType.VIDEOS_RELOADED, true).send(new Group("mediaplayer.permission.admin"), new String[] { "" }, true);       
 	}
 }

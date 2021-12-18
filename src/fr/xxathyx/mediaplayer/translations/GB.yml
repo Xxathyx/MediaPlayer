@@ -18,13 +18,12 @@ messages:
     a new one."
   video-assigned: "&aYou have just assigned the video &l%video% &a to this screen, &l/video
     start &ato play it."
-  video-not-enought-space: "&cYou don"t have enough space to load &l%video%&c."
+  video-not-enought-space: "&cYou don't have enough space to load &l%video%&c."
   video-description-updated: "&aYou have just updated the description of &l%video%
     &ainto %description%&a."
   video-framerate-updated: "&aYou have just updated the refresh time
     of &l%video% &ato &l%framerate%&a."
-  video-speed-updated: "&aYou have just updated the playback speed of &l%video%&a to &l%speed%&a."
-    &ato &l%speed%x&a."
+  video-speed-updated: "&aYou have just updated the playback speed of &l%video%&a to &l%speed%x&a."
   video-volume-updated: "&aYou have just updated the volume of &l%video% &a to
     &l%volume%x&a."
   video-age-limit-disabled: "&aThe &l%video% &a is no longer restricted to a certain

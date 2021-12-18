@@ -36,6 +36,15 @@ public class ItemStacks {
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
+	/** 
+	* Gets an {@link ItemStack} corresponding to a black-glass icon in a interface {@link Inventory}.
+	* 
+	* <p> <strong>Note: </strong> The returned ItemStack Material name is different if the server
+	* is running under a legacy version of Minecraft (< 1.13), see {@link Main#isLegacy()}.
+	*
+	* @return A black-glass icon.
+	*/
+	
 	@SuppressWarnings("deprecation")
 	public ItemStack glass() {
 		
@@ -51,6 +60,12 @@ public class ItemStacks {
 	    return glass;
 	}
 	
+	/** 
+	* Gets an {@link ItemStack} corresponding to a previous-page icon in a interface {@link Inventory}.
+	*
+	* @return A previous-page icon.
+	*/
+	
 	public ItemStack previous() {
 		
 	    ItemStack previous = new ItemStack(Material.PAPER, 1);
@@ -62,6 +77,15 @@ public class ItemStacks {
 	    
 	    return previous;
 	}
+	
+	/** 
+	* Gets an {@link ItemStack} corresponding to a refresh-current-page icon in a interface {@link Inventory}.
+	* 
+	* <p> <strong>Note: </strong> The returned ItemStack Material name is different if the server
+	* is running under a legacy version of Minecraft (< 1.13), see {@link Main#isLegacy()}.
+	*
+	* @return A refresh-current-page icon.
+	*/
 	
 	public ItemStack refresh() {
 		
@@ -77,6 +101,12 @@ public class ItemStacks {
 		
 	    return refresh;
 	}
+	
+	/** 
+	* Gets an {@link ItemStack} corresponding to a next-page icon in a interface {@link Inventory}.
+	*
+	* @return A next-page icon.
+	*/
 	
 	public ItemStack next() {
 		

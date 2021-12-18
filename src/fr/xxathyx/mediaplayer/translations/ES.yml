@@ -9,7 +9,7 @@ mensajes:
   video-deleted: "&aEl video &l%video% &ha sido eliminado con éxito."
   video-already-loaded: "&cEl video &l%video% &ya está cargado."
   video-already-loading: "&cEl video &l%video% &se está cargando ya."
-  video-not-loaded: "&cEl video &l%video% &cn""no está cargado, &l/video load %video%."
+  video-not-loaded: "&cEl video &l%video% &cnno está cargado, &l/video load %video%."
   video-invalid: "&cEl video &l%video% &cis no se encuentra."
   video-invalid-index: "&cIndex video &l%index% &cis no encontrado."
   video-seleccionado: "&aAcabas de seleccionar el video &l%video%&a, asignalo
@@ -57,18 +57,18 @@ mensajes:
     de &l%video%&a."
   video-processing-frames-starting: "&7La extracción de fotogramas de &l%video% &7acaba de
     acaba de empezar. (1/3)"
-  video-processing-frames-finished: "&7La extracción de las imágenes de &l%video% &7s" es
+  video-processing-frames-finished: "&7La extracción de las imágenes de &l%video% &7 es
     terminado."
   video-processing-estimated-time: "&7(Tiempo total de carga estimado de : &l%time%±1
     &7minutos)"
   video-processing-audio-starting: "&7La extracción del archivo de audio de &l%video%.
     &7acaba de empezar. (2/3)"
-  video-processing-audio-finished: "&7L""extracción del archivo de audio de &l%video% &7s""ha terminado.
-    &7s""está terminado".
+  video-processing-audio-finished: "&7L'extracción del archivo de audio de &l%video% &7ha terminado.
+    &7está terminado"
   video-processing-minecraft-starting: "&7La conversión a Minecraft de &l%video%.
     &7acaba de empezar. (3/3)"
   video-processing-minecraft-finished: "&7La conversión a Minecraft de &l%video%.
-    &7s"" se ha completado. (3/3)"
+    &7 se ha completado. (3/3)"
   video-processing-finished: "&7El video &l%video% &7s fue subido en &l%time%
     &7minuto(s)."
   video-instance-started: "&aAcabas de iniciar el video &l%video% &en el
@@ -96,7 +96,7 @@ mensajes:
   image-placed: "&aAcabas de colocar la imagen: &l%image%&a."
   image-removed: "&aAcabas de eliminar la imagen: &l%image%&a."
   image-not-found: "&cLa imagen especificada no se encuentra."
-  image-invalid: "&cL""la dirección, el índice o el nombre de archivo introducidos no son válidos."
+  image-invalid: "&cLa dirección, el índice o el nombre de archivo introducidos no son válidos."
   image-cannot-read: "&cNo se puede recuperar la imagen introducida, compruebe el
     de la url."
   image-invalid-screen: "&cLa pantalla seleccionada no contiene un número suficiente

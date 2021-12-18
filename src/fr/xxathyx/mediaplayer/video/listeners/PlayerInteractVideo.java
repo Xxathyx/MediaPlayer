@@ -2,11 +2,13 @@ package fr.xxathyx.mediaplayer.video.listeners;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.bukkit.Location;
 import org.bukkit.Rotation;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,7 +38,7 @@ public class PlayerInteractVideo implements Listener {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
-		
+    
     /**
      * Same as {@link PlayerInteractImage}, Called whenever a {@link Player}
      * interact with an {@link Entity}, see Bukkit documentation : {@link PlayerInteractEntityEvent}.
@@ -49,7 +51,7 @@ public class PlayerInteractVideo implements Listener {
 	public void interactVideo(PlayerInteractEntityEvent event) {
 		
 		if(event.getRightClicked() instanceof ItemFrame) {
-			
+						
 			Player player = event.getPlayer();
 						
 			if(plugin.getSelectedVideos().containsKey(player.getUniqueId())) {
@@ -89,7 +91,7 @@ public class PlayerInteractVideo implements Listener {
 								if(k % videoInstance.getVideo().getVideoData().getMinecraftWidth() == 0) c++;
 							}
 				        }
-										        
+						
 						if(FacingLocation.getCardinalDirection(player).equals("N")) {
 							if(getNearbyEntities(event.getRightClicked().getLocation().add(k, y, c), 0).toArray().length <= 0) {
 								player.sendMessage(configuration.image_invalid_screen());
@@ -130,28 +132,36 @@ public class PlayerInteractVideo implements Listener {
 							itemFrame = (ItemFrame) getNearbyEntities(event.getRightClicked().getLocation().add(c, y, -k), 0).toArray()[0];
 							if(down) itemFrame.setRotation(Rotation.CLOCKWISE_135);
 							if(up) itemFrame.setRotation(Rotation.CLOCKWISE_135);
-						}									
+						}							
 						if(itemFrame != null) {
 							frames.add(itemFrame);
 						}
 					}
 				}
-								
+				
 				if(up) {
-					/*			
-					for(int i = 0; i < frames.size(); i++) {
-						if((i % 2) == 0) {
-							ItemFrame actual = frames.get(i);
-							ItemFrame last = frames.get((frames.size()-1)-i);
-							
-							frames.set(i, actual);
-							frames.set((frames.size()-1)-i, last);
+					
+					ArrayList<ItemFrame[]> sequences = new ArrayList<>();
+					
+					for(int i = 0; i < videoInstance.getVideo().getVideoData().getMinecraftWidth(); i++) {
+						
+						ItemFrame[] sequence = new ItemFrame[videoInstance.getVideo().getVideoData().getMinecraftHeight()];
+						
+						for(int j = 0; j < videoInstance.getVideo().getVideoData().getMinecraftHeight(); j++) {
+							sequence[j] = frames.get(i + j * videoInstance.getVideo().getVideoData().getMinecraftWidth());
 						}
-					}*/
+						sequences.add(sequence);
+					}
+					
+					Collections.reverse(sequences);
+					
+					for(ItemFrame[] sequence : sequences) {
+						for(int i = 0; i < sequence.length; i++) {
+							frames.set(sequences.indexOf(sequence) + i * videoInstance.getVideo().getVideoData().getMinecraftWidth(), sequence[i]);
+						}
+					}
 				}
-								
-				//ClassCastException
-			    				
+											    				
 				if(frames.size() < videoInstance.getVideo().getVideoData().getMinecraftWidth()*videoInstance.getVideo().getVideoData().getMinecraftHeight()) {
 					player.sendMessage(configuration.image_invalid_screen());
 					SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
@@ -165,7 +175,7 @@ public class PlayerInteractVideo implements Listener {
 		        }
 		        
 				for(int i = 0; i < frames.size(); i++) {
-					if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
+					if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_18_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 					if(plugin.getServerVersion().equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 					if(plugin.getServerVersion().equals("v1_16_R3")) ((org.bukkit.craftbukkit.v1_16_R3.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 					if(plugin.getServerVersion().equals("v1_16_R2")) ((org.bukkit.craftbukkit.v1_16_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
@@ -186,7 +196,7 @@ public class PlayerInteractVideo implements Listener {
 	}
 	
     /**
-     * Gets the entities that are located in a specified radius from a {@link Location}.
+     * Gets the entities {@link ItemFrame} that are located in a specified radius from a {@link Location}.
      * 
      * <p>This method is used instead of the given one with the API, in order to support
      * older Minecraft versions.
@@ -206,8 +216,11 @@ public class PlayerInteractVideo implements Listener {
 		        for(int chunkZ = 0 - chunkRadius; chunkZ <= chunkRadius; chunkZ++) {
 		            int x = (int) location.getX(), y = (int) location.getY(), z = (int) location.getZ();
 		            for(Entity entity : new Location(location.getWorld(), x + (chunkX * 16), y, z + (chunkZ * 16)).getChunk().getEntities()) {
-		                if(entity.getLocation().distance(location) <= radius && entity.getLocation().getBlock() != location.getBlock())
-		                    radiusEntities.add(entity);
+		                if(entity.getLocation().distance(location) <= radius && entity.getLocation().getBlock() != location.getBlock()) {
+		                	if(entity.getType() == EntityType.ITEM_FRAME) {
+			                    radiusEntities.add(entity);
+		                	}
+		                }
 		            }
 		        }
 		    }

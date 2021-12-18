@@ -45,7 +45,7 @@ public class PlayerJoinUpdate implements Listener {
 			if(updater.isOutdated()) {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
 					event.getPlayer().sendMessage(configuration.plugin_outdated());
-					new Notification(NotificationType.PLUGIN_OUTDATED, true).send(new Group("mediaplayer.permission.admin"), new String[] { "" });     
+					new Notification(NotificationType.PLUGIN_OUTDATED, true).send(new Group("mediaplayer.permission.admin"), new String[] { "" }, true);     
 				}, 60L);
 			}
 		}

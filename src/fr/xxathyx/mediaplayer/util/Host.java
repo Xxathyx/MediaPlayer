@@ -31,6 +31,10 @@ public class Host {
 		return getObjectString("countryCode");
 	}
 	
+	public List<String> getOfficials() {
+		return officials;
+	}
+	
 	public String getObjectString(String obj) {
 		try {
 			return object.get(obj).getAsString();

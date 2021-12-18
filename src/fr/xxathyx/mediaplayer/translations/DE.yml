@@ -1,9 +1,9 @@
 messages:
   plugin-outdated: "&cDie verwendete Version des Plugins ist nicht mehr aktuell.
-    auto-update in der Konfiguration oder manuell unter: https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1".
+    auto-update in der Konfiguration oder manuell unter: https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1"
   video-load-requested: "&aUpload-Anfrage gesendet, Sie werden über den Fortschritt informiert.
     über den Fortschritt des Ladevorgangs informiert."
-  video-load-notice: "&7(Je länger ein Video ist, desto länger ist der Ladevorgang)".
+  video-load-notice: "&7(Je länger ein Video ist, desto länger ist der Ladevorgang)"
   video-unloaded: "&aDas Video &l%video% &wird gerade heruntergeladen."
   video-downloaded: "&aSie haben gerade das Video &l%video%&a heruntergeladen."
   video-deleted: "&aDas Video &l%video%&a wurde erfolgreich gelöscht."
@@ -17,7 +17,7 @@ messages:
   video-already-selected: "&cBitte weisen Sie zuerst &l%video%& zu, bevor Sie ein neues Video auswählen.
     ein neues zu wählen.
   video-assigned: "&aSie haben soeben das Video &l%video% &a diesem Bildschirm zugewiesen, &l/video
-    start &um es abzuspielen."
+    start es abzuspielen."
   video-not-enought-space: "&cSie haben nicht genug Platz, um &l%video%&c zu laden."
   video-description-updated: "&aDu hast gerade die Beschreibung von &l%video% aktualisiert.
     &ain %description%&a."

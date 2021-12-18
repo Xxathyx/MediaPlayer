@@ -13,14 +13,13 @@ messages:
   video-invalid: "&cThe video &l%video% &cis not found."
   video-invalid-index: "&cIndex video &l%index% &cis non trovato."
   video-selected: "&aHai appena selezionato il video &l%video%&a, assegnalo
-    cliccando sull"angolo in alto a sinistra di uno schermo."
+    cliccando sull'angolo in alto a sinistra di uno schermo."
   video-already-selected: "&cPer favore assegna &l%video%&a prima di sceglierne uno nuovo.
     una nuova"
   video-assegnato: "&aHai appena assegnato il video &l%video% &a a questo schermo, &l/video
     iniziare a suonare"
-  video-not-enought-space: "&cYou don"t have enough space to load &l%video%&c."
-  video-description-updated: "&aHai appena aggiornato la descrizione di &l%video%&c."
-    &ainto %description%&a."
+  video-not-enought-space: "&cYou don't have enough space to load &l%video%&c."
+  video-description-updated: "&aHai appena aggiornato la descrizione di &l%video%ainto &l%description%&a."
   video-framerate-updated: "&aYou have just updated the refresh time
     di &l%video% &ato &l%framerate%&a."
   video-speed-updated: "&aYou have just updated the playback speed of &l%video%&a to &l%speed%&a.
@@ -55,16 +54,16 @@ messages:
     di &l%video%&a."
   video-run-on-startup-disabled: "&aYou have just disabled the startup of &l%video%&a.
     di &l%video%&a."
-  video-processing-frames-starting: "&7L"estrazione di fotogrammi da &l%video% &7ha appena
+  video-processing-frames-starting: "&7L'estrazione di fotogrammi da &l%video% &7ha appena
     è appena iniziato. (1/3)"
-  video-processing-frames-finished: "&7L"estrazione di immagini &l%video% &7s" è
+  video-processing-frames-finished: "&7L'estrazione di immagini &l%video% &7s' è
     finito"
   video-processing-estimated-time: "&7(tempo totale di caricamento stimato di : &l%time%±1
     &7minuti)"
-  video-processing-audio-starting: "&7L"estrazione del file audio da &l%video%
+  video-processing-audio-starting: "&7L'estrazione del file audio da &l%video%
     &7ha appena iniziato. (2/3)"
   video-processing-audio-finished: "&7L'estrazione del file audio da &l%video% &7s'è finita.
-    &7s'è finito".
+    &7s'è finito"
   video-processing-minecraft-starting: "&7La conversione in Minecraft di &l%video%
     &7ha appena iniziato. (3/3)"
   video-processing-minecraft-finished: "&7La conversione in Minecraft di &l%video%
@@ -78,28 +77,26 @@ messages:
     con il /screen create"
   videos-reload-requested: "&aRichiesta di ricaricare i video ricevuta."
   videos-reload-requested: "&aRichiesta di ricaricare i video ricevuta."
-  videos-reloaded: "&aL"elenco dei video registrati è stato appena aggiornato."
+  videos-reloaded: "&aL'elenco dei video registrati è stato appena aggiornato."
   videos-empty-registered: "&cNessun video è stato rilevato e registrato."
-  videos-canceled-tasks: "&aTutti i compiti in esecuzione sono stati cancellati."
-    &8(%tasks%)
+  videos-canceled-tasks: "&aTutti i compiti in esecuzione sono stati cancellati &8(%tasks%)"
   video-notice: "&7(È possibile eseguire la stessa azione, semplicemente attraverso un grafico
     interfaccia grafica: /video)"
   screen-created: "&aHai appena creato una schermata di dimensione: &l%dimension%&a."
   screen-removed: "&aYou have just removed the index screen: &l%index%&a."
   screen-teleport: "&aYou have just teleported to the index screen: &l%index%&a."
   screen-invalid-index: "&cThe index screen &l%index% &cis not found."
-  screen-cannot-create: "&cCannot create a screen in this location, blocks are probably in the way."
-    i blocchi stanno probabilmente bloccando lo spazio."
+  screen-cannot-create: "&cCannot create a screen in this location, blocks are probably in the way i blocchi stanno probabilmente bloccando lo spazio."
   image-rendered: "&aIl rendering della &l%image% &a è completo."
   image-deleted: "&aYou have just deleted image &l%image%&a."
-  image-received: "&aHai appena ricevuto il poster dell"immagine: &l%image%&a."
-  image-gived: "&aHai appena inviato un poster dell"immagine &l%image%&a a &l%player%&a."
+  image-received: "&aHai appena ricevuto il poster dell'immagine: &l%image%&a."
+  image-gived: "&aHai appena inviato un poster dell'immagine &l%image%&a a &l%player%&a."
   image-placed: "&aYou have just placed the image: &l%image%&a."
   image-removed: "&aYou have just removed the image: &l%image%&a."
-  image-not-found: "&cL"immagine specificata non può essere trovata."
+  image-not-found: "&cL'immagine specificata non può essere trovata."
   image-invalid: "&cL'indirizzo, indice o nome di file inserito non è valido."
-  image-cannot-read: "&cNon è possibile recuperare l"immagine inserita, controllare il
-    dell"url"
+  image-cannot-read: "&cNon è possibile recuperare l'immagine inserita, controllare il
+    dell'url"
   image-invalid-screen: "&cLo schermo selezionato non contiene un numero sufficiente
     di cornici"
   image-already-rendered: "&cIl rendering della &l%image% &è già stato fatto, fare
@@ -125,10 +122,10 @@ messages:
       lore-1: "&Clicca qui per cancellare il video."
       lore-2: "&c&l[!] Non si torna indietro una volta cancellato."
     poster:
-      lore-1: "&eClicca a destra con la carta sulla cornice d"angolo"
-      lore-2: "&eTop a sinistra dello schermo per diffondere l"immagine."
-      lore-3: "&ePer rimuovere l"immagine, accovacciati e clicca-"
-      lore-4: "&destra nell"angolo superiore sinistro dello schermo."
+      lore-1: "&eClicca a destra con la carta sulla cornice d'angolo"
+      lore-2: "&eTop a sinistra dello schermo per diffondere l'immagine."
+      lore-3: "&ePer rimuovere l'immagine, accovacciati e clicca-"
+      lore-4: "&destra nell'angolo superiore sinistro dello schermo."
   age-limit-warning: "&c[!] contiene contenuti espliciti."
   incompatible: "&4[!] Questo video non è compatibile."
   no-page-left: "&cYou cannot turn the page because this page seems to be non-existent."

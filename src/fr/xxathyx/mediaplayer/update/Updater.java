@@ -91,12 +91,12 @@ public class Updater {
 	* Downloads the latest version of the plugin.
 	* 
 	* <p> <strong>Note: </strong>For the moment the plugin link will change on every update, because it is stored
-	* on Dropbox.
+	* on Spigot.
 	* 
 	* <p>The actual link is: <a href="https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1">https
 	* :https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1</a>.
 	* 
-	* The server need to be connected to internet and <a href="https://www.dropbox.com">https://www.dropbox.com</a>
+	* The server need to be connected to internet and <a href="https://www.spigotmc.org">https://www.spigotmc.org</a>
 	* have to be responding to the server.
 	* 
 	* @throws IOException When failed or interrupted I/O operations occurs.

@@ -20,8 +20,8 @@ import fr.xxathyx.mediaplayer.util.MapUtil;
 public class v1_18_R1 implements MapUtil {
 
 	@Override
-	public void update(Player player, int id, byte[] buffer) {
-    	((org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer)player).getHandle().b.sendPacket(new net.minecraft.network.protocol.game.PacketPlayOutMap(id, (byte) 4, false,
+	public void update(Player player, int id, byte[] buffer) {	    	
+    	((org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer)player).getHandle().b.a(new net.minecraft.network.protocol.game.PacketPlayOutMap(id, (byte) 4, false,
     			new ArrayList<>(), new net.minecraft.world.level.saveddata.maps.WorldMap.b(0, 0, 128, 128, buffer)));
 	}
 	
