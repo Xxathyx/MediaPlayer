@@ -77,7 +77,7 @@ public class Configuration {
 			fileconfiguration.set("plugin.remove-screen-structure-on-end", false);
 			
 			fileconfiguration.set("plugin.detect-duplicated-frames", false);
-			fileconfiguration.set("plugin.ressemblance-to-skip", 90);
+			fileconfiguration.set("plugin.ressemblance-to-skip", 100);
 						
 			fileconfiguration.set("messages.plugin-outdated", "&cLa version utilisée du plugin n'est plus à jour, activez l'option auto-update depuis la configuration,"
 					+ " ou faîtes le manuellement depuis: " + plugin.getDescription().getWebsite());

@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FilenameUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -62,23 +63,32 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     
 	public void run() {
     	
+		plugin.getTasks().add(getTaskId());
+		
         long time = System.currentTimeMillis();
-        
+                
         new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_STARTING, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
         new Notification(NotificationType.VIDEO_PROCESSING_ESTIMATED_TIME, false).send(new Group("mediaplayer.permission.admin"), new String[] { String.valueOf(Math.round((video.getVideoFile().length()*Math.pow(10, -6)))) }, true);
         
         String framesExtension = video.getFramesExtension();
         int framesCount = video.getFramesFolder().listFiles().length;
         
-        VideoData videoData = new VideoData(video);
+        VideoData videoData = new VideoData(video); 
         
         if(framesCount < video.getTotalFrames()) {
         	
-    		String[] videoCommand = {new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", video.getVideoFile().getAbsolutePath(), "-q:v", "0",
-    				"-start_number", String.valueOf(framesCount), new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath()};
+        	/*
+        	try {
+				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffmpeg").getAbsolutePath())).waitFor();
+			}catch (InterruptedException | IOException e) {
+				e.printStackTrace();
+			}*/
+        	
+    		String[] videoCommand = {FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getAbsolutePath()), "-hide_banner", "-loglevel", "error", "-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()), "-q:v", "0",
+    				"-start_number", String.valueOf(framesCount), FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
             
             ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
-            
+                     
             try {
     			Process process = videoProcessBuilder.inheritIO().start();
     			process.waitFor();

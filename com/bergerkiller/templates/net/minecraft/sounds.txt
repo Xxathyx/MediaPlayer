@@ -1,0 +1,82 @@
+package net.minecraft.sounds;
+
+import net.minecraft.core.IRegistry;
+import net.minecraft.core.RegistryMaterials;
+import net.minecraft.resources.MinecraftKey;
+
+import com.bergerkiller.generated.net.minecraft.core.RegistryMaterialsHandle;
+import com.bergerkiller.generated.net.minecraft.resources.MinecraftKeyHandle;
+import com.bergerkiller.generated.net.minecraft.sounds.SoundEffectHandle;
+import com.bergerkiller.generated.net.minecraft.sounds.SoundCategoryHandle;
+
+optional class SoundCategory {
+#if version >= 1.18
+    public String getName();
+#else
+    public String getName:a();
+#endif
+
+#if version >= 1.13
+    public static (SoundCategoryHandle) SoundCategory byName(String name) {
+        SoundCategory[] categories = SoundCategory.values();
+        for (int i = 0; i < categories.length; i++) {
+            SoundCategory cat = categories[i];
+  #if version >= 1.18
+            if (cat.getName().equals(name)) {
+  #else
+            if (cat.a().equals(name)) {
+  #endif
+                return cat;
+            }
+        }
+        return null;
+    }
+#else
+    public static (SoundCategoryHandle) SoundCategory byName:a(String name);
+#endif
+}
+
+class SoundEffect {
+#if version >= 1.13.1
+    public static final optional (RegistryMaterialsHandle) RegistryMaterials<MinecraftKey, SoundEffect> opt_getRegistry() {
+        return (RegistryMaterials) IRegistry.SOUND_EVENT;
+    }
+
+  #if version >= 1.16
+    private final (MinecraftKeyHandle) MinecraftKey name:b;
+  #else
+    private final (MinecraftKeyHandle) MinecraftKey name:a;
+  #endif
+
+    public (SoundEffectHandle) SoundEffect((MinecraftKeyHandle) MinecraftKey minecraftkey);
+#elseif version >= 1.9
+    public static final optional (RegistryMaterialsHandle) RegistryMaterials<MinecraftKey, SoundEffect> opt_getRegistry() {
+        return SoundEffect.a;
+    }
+
+    private final (MinecraftKeyHandle) MinecraftKey name:b;
+
+    public (SoundEffectHandle) SoundEffect((MinecraftKeyHandle) MinecraftKey minecraftkey);
+#else
+    public static final optional (RegistryMaterialsHandle) RegistryMaterials<MinecraftKey, SoundEffect> opt_getRegistry:###();
+    private final (MinecraftKeyHandle) MinecraftKeyHandle name;
+
+    public (SoundEffectHandle) SoundEffect(MinecraftKeyHandle minecraftkey);
+#endif
+
+    <code>
+    public static SoundEffectHandle byName(String name) {
+        if (T.opt_getRegistry.isAvailable()) {
+            Object mc_key_raw = com.bergerkiller.generated.net.minecraft.resources.MinecraftKeyHandle.T.createNew.raw.invoke(name);
+            if (mc_key_raw != null) {
+                return createHandle(T.opt_getRegistry.invoke().get(mc_key_raw));
+            } else {
+                return null;
+            }
+        } else {
+            return createNew(com.bergerkiller.generated.net.minecraft.resources.MinecraftKeyHandle.createNew(name));
+        }
+    }
+    </code>
+
+}

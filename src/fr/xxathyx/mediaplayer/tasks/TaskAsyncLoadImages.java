@@ -43,6 +43,8 @@ public class TaskAsyncLoadImages extends BukkitRunnable {
 	@Override
 	public void run() {
 		
+		plugin.getTasks().add(getTaskId());
+		
 		File[] files = new File(plugin.getDataFolder() + "/images/maps/").listFiles();
 		
 		for(File file : files) {

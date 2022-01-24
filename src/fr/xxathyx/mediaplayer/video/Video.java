@@ -129,45 +129,49 @@ public class Video {
 	
 	public void createConfiguration(File videoFile) throws FileNotFoundException, IOException, InvalidConfigurationException {
 		
-		fileconfiguration = new YamlConfiguration();
-		
-		LocalDateTime date = LocalDateTime.now();
-		
 		String format = FilenameUtils.getExtension(videoFile.getName());
-		
-        FFprobe ffprobe = new FFprobe(new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe").getPath());
-        FFmpegProbeResult probeResult = ffprobe.probe(videoFile.getAbsolutePath());        
-        FFmpegStream stream = probeResult.getStreams().get(0);
-		
-		int originalWidth = 0;
-		int originalHeight = 0;
-		
-		double framerate = 0;
-		double duration = 0;
-		
-		int frames = 0;
-				
+						
 		if(Format.getCompatibleFormats().contains(format)) {
 			
-			originalWidth = stream.width;
-			originalHeight = stream.height;
+			fileconfiguration = new YamlConfiguration();
 			
-			framerate = Math.round(stream.r_frame_rate.doubleValue());
-			duration = stream.duration;
+			LocalDateTime date = LocalDateTime.now();
 			
-			if(format.equalsIgnoreCase("webm") || format.equalsIgnoreCase("mkv") || format.equalsIgnoreCase("wmv")) {
-				duration = probeResult.format.duration;
-				frames = (int) (duration*framerate)-1;
-			}
+			int originalWidth = 0;
+			int originalHeight = 0;
 			
-			frames = (int) stream.nb_frames;
+			double framerate = 0;
+			double duration = 0;
 			
-			if(format.equalsIgnoreCase("m3u8")) {
+			int frames = 0;
+			
+	        FFprobe ffprobe;
+	        FFmpegProbeResult probeResult;        
+	        FFmpegStream stream;
+			
+			if(!format.equalsIgnoreCase("m3u8")) {
+				
+		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe").getAbsolutePath()));
+		        probeResult = ffprobe.probe(videoFile.getAbsolutePath());        
+		        stream = probeResult.getStreams().get(0);
+		        
+				originalWidth = stream.width;
+				originalHeight = stream.height;
+				
+				framerate = Math.round(stream.r_frame_rate.doubleValue());
+				duration = stream.duration;
+				
+				if(format.equalsIgnoreCase("webm") || format.equalsIgnoreCase("mkv") || format.equalsIgnoreCase("wmv")) {
+					duration = probeResult.format.duration;
+					frames = (int) (duration*framerate)-1;
+				}
+				frames = (int) stream.nb_frames;
+			}else {
 				
 				Reader reader = new Reader(videoFile);
 				reader.read();
 				
-				File sequencesFolder = new File(file.getParent() + "/sequences/");
+				File sequencesFolder = new File(videoFile.getParent() + "/" + FilenameUtils.removeExtension(videoFile.getName()) + "/sequences/");
 				
 				sequencesFolder.mkdirs();
 				getFramesFolder().mkdir();
@@ -178,11 +182,42 @@ public class Video {
 				
 				File[] sequences = sequencesFolder.listFiles();
 				
+		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe").getAbsolutePath()));
+		        probeResult = ffprobe.probe(sequences[0].getAbsolutePath());    
+		        stream = probeResult.getStreams().get(1);
+		        
+				originalWidth = stream.width;
+				originalHeight = stream.height;
+				
+				framerate = Math.round(stream.r_frame_rate.doubleValue());
+		        
 				for(int i = 0; i < sequences.length; i++) {
-					String[] cmd = {new File(plugin.getDataFolder(), "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", sequences[i].getAbsolutePath(), "-q:v", "1",
-							"-start_number", "0", new File(getFramesFolder().getPath(), i + "-%03d.jpg").getAbsolutePath()};
-					Runtime.getRuntime().exec(cmd);
+					
+		    		String[] videoCommand = {FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getAbsolutePath()), "-hide_banner", "-loglevel",
+		    				"error", "-i", FilenameUtils.separatorsToUnix(sequences[i].getAbsolutePath()), "-q:v", "0", "-start_number", "0", FilenameUtils.separatorsToUnix(new File(getFramesFolder().getPath(), i + "-%d.jpg").getAbsolutePath())};
+		            
+		            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
+		                     
+		            try {
+		    			Process process = videoProcessBuilder.inheritIO().start();
+		    			process.waitFor();
+		    		}catch (IOException | InterruptedException e) {
+		    			e.printStackTrace();
+		    		}
 				}
+				
+				File[] decodedFrames = getFramesFolder().listFiles();
+				
+				for(int i = 0; i < decodedFrames.length; i++) {
+					
+			        File oldfile = decodedFrames[i];
+			        File newfile = new File(getFramesFolder(), i + ".jpg");
+
+			        oldfile.renameTo(newfile);
+				}
+				
+				frames = getFramesFolder().listFiles().length;
+				duration = frames/framerate;
 			}
 			
 			if(format.equalsIgnoreCase("gif")) {
@@ -200,46 +235,46 @@ public class Video {
 			    
 			    duration = frames/framerate;
 			}
+			
+			fileconfiguration.set("video.name", FilenameUtils.removeExtension(file.getName()));
+			fileconfiguration.set("video.description", "&a/video " + FilenameUtils.removeExtension(file.getName()) + " set description <message>");
+			fileconfiguration.set("video.file-video-path", videoFile.getPath());
+			fileconfiguration.set("video.enable-audio", true);
+			fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
+			fileconfiguration.set("video.audio-volume", 1.0);
+			fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
+			fileconfiguration.set("video.frame-rate", framerate);
+			fileconfiguration.set("video.frames", frames);
+			fileconfiguration.set("video.format", format);
+			fileconfiguration.set("video.width", originalWidth);
+			fileconfiguration.set("video.height", originalHeight);
+			fileconfiguration.set("video.duration", decimalFormat.format(duration/3600) + "h");
+			fileconfiguration.set("video.speed", 1.0);
+			fileconfiguration.set("video.size", decimalFormat.format(videoFile.length()*Math.pow(10, -6)) + " Mo");
+			fileconfiguration.set("video.age-limit", false);
+			fileconfiguration.set("video.looping", false);
+			fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
+			fileconfiguration.set("video.data-folder", getDataFolder().getPath());
+			fileconfiguration.set("video.real-time-rendering", format.equalsIgnoreCase("m3u8"));
+			fileconfiguration.set("video.skip-duplicated-frames", false);
+			fileconfiguration.set("video.show-informations", true);
+			fileconfiguration.set("video.show-fps", true);
+			fileconfiguration.set("video.run-on-startup", false);
+			fileconfiguration.set("video.minecraft-width", 0);
+			fileconfiguration.set("video.minecraft-height", 0);
+			fileconfiguration.set("video.loaded", false);
+			fileconfiguration.set("video.views", 0);
+			
+			fileconfiguration.save(file);
+			
+			getFramesFolder().mkdir();
+			getAudioFolder().mkdir();
+			getDataFolder().mkdir();
+					
+			new File(file.getParent() + "/data/maps/").mkdir();
+			new File(file.getParent() + "/data/cache/").mkdir();
+			new File(file.getParent() + "/data/resourcepacks/").mkdir();
 		}
-        
-		fileconfiguration.set("video.name", FilenameUtils.removeExtension(file.getName()));
-		fileconfiguration.set("video.description", "&a/video " + FilenameUtils.removeExtension(file.getName()) + " set description <message>");
-		fileconfiguration.set("video.file-video-path", videoFile.getPath());
-		fileconfiguration.set("video.enable-audio", true);
-		fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
-		fileconfiguration.set("video.audio-volume", 1.0);
-		fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
-		fileconfiguration.set("video.frame-rate", framerate);
-		fileconfiguration.set("video.frames", frames);
-		fileconfiguration.set("video.format", format);
-		fileconfiguration.set("video.width", originalWidth);
-		fileconfiguration.set("video.height", originalHeight);
-		fileconfiguration.set("video.duration", decimalFormat.format(duration/3600) + "h");
-		fileconfiguration.set("video.speed", 1.0);
-		fileconfiguration.set("video.size", decimalFormat.format(videoFile.length()*Math.pow(10, -6)) + " Mo");
-		fileconfiguration.set("video.age-limit", false);
-		fileconfiguration.set("video.looping", false);
-		fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
-		fileconfiguration.set("video.data-folder", getDataFolder().getPath());
-		fileconfiguration.set("video.real-time-rendering", false);
-		fileconfiguration.set("video.skip-duplicated-frames", false);
-		fileconfiguration.set("video.show-informations", true);
-		fileconfiguration.set("video.show-fps", true);
-		fileconfiguration.set("video.run-on-startup", false);
-		fileconfiguration.set("video.minecraft-width", 0);
-		fileconfiguration.set("video.minecraft-height", 0);
-		fileconfiguration.set("video.loaded", false);
-		fileconfiguration.set("video.views", 0);
-		
-		fileconfiguration.save(file);
-		
-		getFramesFolder().mkdir();
-		getAudioFolder().mkdir();
-		getDataFolder().mkdir();
-				
-		new File(file.getParent() + "/data/maps/").mkdir();
-		new File(file.getParent() + "/data/cache/").mkdir();
-		new File(file.getParent() + "/data/resourcepacks/").mkdir();
 	}
 	
 	/**
@@ -939,10 +974,8 @@ public class Video {
 	*/
 	
 	public boolean hasEnoughtSpace() {
-
 		long required = getVideoFile().length()*3;
-		if(!getVideoData().getRealTimeRendering()) required = required + ((Math.round((getWidth()*getHeight())/128))*16384*getTotalFrames()); 
-		
+		if(!getVideoData().getRealTimeRendering()) required = required + ((Math.round((getWidth()*getHeight())/128))*16384*getTotalFrames());
 		if(getVideoFile().getUsableSpace() > required) return true;
 		return false;
 	}

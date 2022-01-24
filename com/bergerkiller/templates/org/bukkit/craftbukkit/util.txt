@@ -1,0 +1,208 @@
+package org.bukkit.craftbukkit.util;
+
+import net.minecraft.EnumChatFormat;
+import net.minecraft.network.chat.IChatBaseComponent;
+
+import com.bergerkiller.generated.net.minecraft.network.chat.IChatBaseComponentHandle;
+import com.bergerkiller.generated.org.bukkit.craftbukkit.util.LongObjectHashMapHandle;
+
+class LongObjectHashMap {
+#if version >= 1.14
+    public static (LongObjectHashMapHandle) org.bukkit.craftbukkit.util.LongObjectHashMap createNew() {
+        return new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap();
+    }
+#else
+    public static (LongObjectHashMapHandle) org.bukkit.craftbukkit.util.LongObjectHashMap createNew() {
+        return new LongObjectHashMap();
+    }
+#endif
+
+    public void clear();
+
+    public int size();
+
+    public boolean containsKey(long key);
+
+    public V get(long key);
+
+    public V remove(long key);
+
+    public V put(long key, V value);
+
+#if version >= 1.14
+    public abstract (Collection<V>) it.unimi.dsi.fastutil.objects.ObjectCollection<V> values();
+    public abstract (Set<Long>) it.unimi.dsi.fastutil.longs.LongSet keySet();
+
+    public (LongObjectHashMapHandle) org.bukkit.craftbukkit.util.LongObjectHashMap cloneMap() {
+        return (org.bukkit.craftbukkit.util.LongObjectHashMap) com.bergerkiller.bukkit.common.utils.LogicUtil.clone(instance);
+    }
+#else
+    public Collection<V> values();
+    public Set<Long> keySet();
+
+    // Note: the builtin clone() has a runtime error, we can't use it at all :(
+    public (LongObjectHashMapHandle) org.bukkit.craftbukkit.util.LongObjectHashMap cloneMap() {
+        // Retrieve the data in the original hashmap
+        // We can omit modCount
+        #require org.bukkit.craftbukkit.util.LongObjectHashMap private transient long[][] keys;
+        #require org.bukkit.craftbukkit.util.LongObjectHashMap private transient V[][] values;
+        #require org.bukkit.craftbukkit.util.LongObjectHashMap private transient int size;
+        long[][] keys = instance#keys;
+        Object[][] values = instance#values;
+        int size = instance#size;
+
+        // Deep-clone the keys
+        keys = (long[][]) keys.clone();
+        for (int i = 0; i < keys.length; i++) {
+            long[] arr = keys[i];
+            if (arr != null) {
+                keys[i] = (long[]) arr.clone();
+            }
+        }
+
+        // Deep-clone the values
+        values = (Object[][]) values.clone();
+        for (int i = 0; i < values.length; i++) {
+            Object[] arr = values[i];
+            if (arr != null) {
+                values[i] = (Object[]) arr.clone();
+            }
+        }
+
+        // Create a new instance and apply the values
+        LongObjectHashMap clone = new LongObjectHashMap();
+        clone#keys = keys;
+        clone#values = values;
+        clone#size = size;
+        return clone;
+    }
+#endif
+}
+
+class CraftMagicNumbers {
+    #bootstrap com.bergerkiller.bukkit.common.internal.CommonBootstrap.initServer();
+
+    public static org.bukkit.Material getMaterialFromBlock:getMaterial((Object) net.minecraft.world.level.block.Block nmsBlock);
+
+    public static org.bukkit.Material getMaterialFromItem:getMaterial((Object) net.minecraft.world.item.Item nmsItem);
+
+#if version >= 1.15.2
+    // Workaround for bug since 1.15.2 with legacy materials
+    public static (Object) net.minecraft.world.item.Item getItemFromMaterial(org.bukkit.Material material) {
+        return CraftMagicNumbers.getItem(org.bukkit.craftbukkit.legacy.CraftLegacy.fromLegacy(material));
+    }
+    public static (Object) net.minecraft.world.level.block.Block getBlockFromMaterial(org.bukkit.Material material) {
+        return CraftMagicNumbers.getBlock(org.bukkit.craftbukkit.legacy.CraftLegacy.fromLegacy(material));
+    }
+#else
+    public static (Object) net.minecraft.world.item.Item getItemFromMaterial:getItem(org.bukkit.Material material);
+    public static (Object) net.minecraft.world.level.block.Block getBlockFromMaterial:getBlock(org.bukkit.Material material);
+#endif
+
+    public static int getDataVersion() {
+#if version >= 1.13
+        return CraftMagicNumbers.INSTANCE.getDataVersion();
+#else
+        return 0;
+#endif
+    }
+
+    <code>
+    public static com.bergerkiller.generated.net.minecraft.world.level.block.state.IBlockDataHandle getBlockDataFromMaterial(org.bukkit.Material material) {
+        return com.bergerkiller.generated.net.minecraft.world.level.block.BlockHandle.T.getBlockData.invoke(getBlockFromMaterial(material));
+    }
+    </code>
+}
+
+class CraftChatMessage {
+
+    // Original was modified so it does not erase a chat color style prefix character
+    public static String fromComponent((IChatBaseComponentHandle) IChatBaseComponent component) {
+        if (component == null) {
+            return "";
+        }
+
+        StringBuilder out = new StringBuilder();
+        java.util.Iterator iter = ((Iterable) component).iterator();
+
+        EnumChatFormat prev_color_format = null;
+        boolean prev_was_bold = false;
+        boolean prev_was_italic = false;
+        boolean prev_was_underlined = false;
+        boolean prev_was_strikeThrough = false;
+        boolean prev_was_obfuscated = false;
+
+        while (iter.hasNext()) {
+            IChatBaseComponent c = (IChatBaseComponent) iter.next();
+#if version >= 1.18
+            net.minecraft.network.chat.ChatModifier modi = c.getStyle();
+#else
+            net.minecraft.network.chat.ChatModifier modi = c.getChatModifier();
+#endif
+
+            // Place reset character when too many style flags are active
+            if ((prev_was_bold && !modi.isBold()) ||
+                (prev_was_italic && !modi.isItalic()) ||
+                (prev_was_underlined && !modi.isUnderlined()) ||
+                (prev_was_strikeThrough && !modi.isStrikethrough()) ||
+#if version >= 1.18
+                (prev_was_obfuscated && !modi.isObfuscated()))
+#else
+                (prev_was_obfuscated && !modi.isRandom()))
+#endif
+            {
+                prev_color_format = null;
+                prev_was_bold = false;
+                prev_was_italic = false;
+                prev_was_underlined = false;
+                prev_was_strikeThrough = false;
+                prev_was_obfuscated = false;
+                out.append(EnumChatFormat.RESET);
+            }
+
+            if (modi.getColor() != null) {
+#if version >= 1.16
+                EnumChatFormat color_format = modi.getColor().format;
+                if (prev_color_format != color_format) {
+                    prev_color_format = color_format;
+                    out.append(color_format);
+                }
+#else
+                out.append(modi.getColor());
+#endif
+            }
+            if (modi.isBold() && !prev_was_bold) {
+                prev_was_bold = true;
+                out.append(EnumChatFormat.BOLD);
+            }
+            if (modi.isItalic() && !prev_was_italic) {
+                prev_was_italic = true;
+                out.append(EnumChatFormat.ITALIC);
+            }
+            if (modi.isUnderlined() && !prev_was_underlined) {
+                prev_was_underlined = true;
+                out.append(EnumChatFormat.UNDERLINE);
+            }
+            if (modi.isStrikethrough() && !prev_was_strikeThrough) {
+                prev_was_strikeThrough = true;
+                out.append(EnumChatFormat.STRIKETHROUGH);
+            }
+#if version >= 1.18
+            if (modi.isObfuscated() && !prev_was_obfuscated) {
+#else
+            if (modi.isRandom() && !prev_was_obfuscated) {
+#endif
+                prev_was_obfuscated = true;
+                out.append(EnumChatFormat.OBFUSCATED);
+            }
+#if version >= 1.18
+            out.append(c.getContents());
+#else
+            out.append(c.getText());
+#endif
+        }
+        return out.toString();
+    }
+
+    public static (IChatBaseComponentHandle[]) IChatBaseComponent[] fromString(String message, boolean keepNewlines);
+}

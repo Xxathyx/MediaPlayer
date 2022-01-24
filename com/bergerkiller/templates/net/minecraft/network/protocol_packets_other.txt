@@ -1,0 +1,2583 @@
+package net.minecraft.network.protocol.game;
+
+import net.minecraft.core.EnumDirection;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.DataWatcher;
+import net.minecraft.network.syncher.DataWatcher.Item;
+import net.minecraft.network.syncher.DataWatcher.WatchableObject;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.sounds.SoundCategory;
+import net.minecraft.world.entity.ai.attributes.AttributeMapBase;
+import net.minecraft.world.entity.ai.attributes.AttributeModifiable;
+import net.minecraft.world.entity.EnumItemSlot;
+import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.EnumHand;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectList;
+import net.minecraft.world.entity.player.EnumChatVisibility;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.entity.TileEntityTypes;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.EnumGamemode;
+import net.minecraft.world.level.dimension.DimensionManager;
+import net.minecraft.world.level.World;
+import net.minecraft.world.phys.MovingObjectPositionBlock;
+import net.minecraft.world.phys.Vec3D;
+
+import com.mojang.authlib.GameProfile;
+
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntLists;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+
+import com.bergerkiller.bukkit.common.wrappers.BlockStateChange;
+import com.bergerkiller.bukkit.common.wrappers.ChatText;
+import com.bergerkiller.bukkit.common.wrappers.UseAction;
+import com.bergerkiller.bukkit.common.wrappers.HumanHand;
+import com.bergerkiller.bukkit.common.resources.BlockStateType;
+import com.bergerkiller.bukkit.common.resources.DimensionType;
+import com.bergerkiller.bukkit.common.wrappers.WindowType;
+import com.bergerkiller.bukkit.common.bases.IntVector3;
+import com.bergerkiller.bukkit.common.nbt.CommonTagCompound;
+
+import com.bergerkiller.generated.com.mojang.authlib.GameProfileHandle;
+
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPlayerInfoHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutEntityDestroyHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPlayerInfoHandle.PlayerInfoDataHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPlayerInfoHandle.EnumPlayerInfoActionHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayInUseEntityHandle.EnumEntityUseActionHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutTitleHandle.EnumTitleActionHandle
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutRemoveEntityEffectHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutMapChunkHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutAttachEntityHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutEntityEquipmentHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutMountHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutEntityMetadataHandle
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayInBlockDigHandle.EnumPlayerDigTypeHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutOpenWindowHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPositionHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPositionHandle.EnumPlayerTeleportFlagsHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutKeepAliveHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutUpdateAttributesHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutTitleHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutTileEntityDataHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutExplosionHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutEntityEffectHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutAbilitiesHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayInSpectateHandle;
+import com.bergerkiller.generated.net.minecraft.sounds.SoundCategoryHandle;
+import com.bergerkiller.generated.net.minecraft.world.effect.MobEffectListHandle;
+import com.bergerkiller.generated.net.minecraft.world.entity.ai.attributes.AttributeModifiableHandle;
+
+class PacketPlayOutPlayerInfo extends Packet {
+#if version >= 1.17
+    private (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction action;
+    private final (List<PlayerInfoDataHandle>) List<PacketPlayOutPlayerInfo.PlayerInfoData> players:entries;
+#else
+    private (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction action:a;
+    private final (List<PlayerInfoDataHandle>) List<PacketPlayOutPlayerInfo.PlayerInfoData> players:b;
+#endif
+
+    public static (PacketPlayOutPlayerInfoHandle) PacketPlayOutPlayerInfo createNew() {
+#if version >= 1.17
+        #require net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo private final List entries;
+        PacketPlayOutPlayerInfo packet = (PacketPlayOutPlayerInfo) PacketPlayOutPlayerInfoHandle.T.newInstanceNull();
+        packet#entries = new java.util.ArrayList();
+        return packet;
+#else
+        return new PacketPlayOutPlayerInfo();
+#endif
+    }
+
+    class PacketPlayOutPlayerInfo.PlayerInfoData {
+        public static (PlayerInfoDataHandle) PacketPlayOutPlayerInfo.PlayerInfoData createNew((PacketPlayOutPlayerInfoHandle) PacketPlayOutPlayerInfo packet, (GameProfileHandle) GameProfile profile, int ping, (org.bukkit.GameMode) EnumGamemode gameMode, (ChatText) IChatBaseComponent listName) {
+#if version >= 1.17
+            return new PacketPlayOutPlayerInfo$PlayerInfoData(profile, ping, gameMode, listName);
+#else
+            return new PacketPlayOutPlayerInfo$PlayerInfoData(packet, profile, ping, gameMode, listName);
+#endif
+        }
+
+#if version >= 1.18
+        public (GameProfileHandle) GameProfile getProfile();
+        public int getPing:getLatency();
+        public (org.bukkit.GameMode) EnumGamemode getGameMode();
+        public (ChatText) IChatBaseComponent getListName:getDisplayName();
+#else
+        public (GameProfileHandle) GameProfile getProfile:a();
+        public int getPing:b();
+        public (org.bukkit.GameMode) EnumGamemode getGameMode:c();
+        public (ChatText) IChatBaseComponent getListName:d();
+#endif
+    }
+
+    class PacketPlayOutPlayerInfo.EnumPlayerInfoAction {
+        enum (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction ADD_PLAYER;
+        enum (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction UPDATE_GAME_MODE;
+        enum (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction UPDATE_LATENCY;
+        enum (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction UPDATE_DISPLAY_NAME;
+        enum (EnumPlayerInfoActionHandle) PacketPlayOutPlayerInfo.EnumPlayerInfoAction REMOVE_PLAYER;    
+    }
+}
+
+class PacketPlayOutEntityDestroy extends Packet {
+#if version >= 1.17.1
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy private it.unimi.dsi.fastutil.ints.IntList entityIds;
+#elseif version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy private final int entityId;
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy private int[] entityIds:a;
+#endif
+
+    <code>
+    public static boolean canDestroyMultiple() {
+        return com.bergerkiller.bukkit.common.internal.CommonCapabilities.PACKET_DESTROY_MULTIPLE;
+    }
+    </code>
+
+    public boolean canSupportMultipleEntityIds() {
+        return com.bergerkiller.bukkit.common.internal.CommonCapabilities.PACKET_DESTROY_MULTIPLE;
+    }
+
+    public boolean hasMultipleEntityIds() {
+#if version >= 1.17.1
+        IntList ids = instance#entityIds;
+        return ids.size() > 1;
+#elseif version >= 1.17
+        return false;
+#else
+        int[] ids = instance#entityIds;
+        return ids != null && ids.length > 1;
+#endif
+    }
+
+    public int getSingleEntityId() {
+#if version >= 1.17.1
+        IntList ids = instance#entityIds;
+        int size = ids.size();
+        if (size == 0) {
+            return -1;
+        } else if (size == 1) {
+            return ids.getInt(0);
+        } else {
+            throw new UnsupportedOperationException("This destroy packet has more than one entity id");
+        }
+#elseif version >= 1.17
+        return instance#entityId;
+#else
+        int[] ids = instance#entityIds;
+        if (ids == null || ids.length == 0) {
+            return -1;
+        } else if (ids.length == 1) {
+            return ids[0];
+        } else {
+            throw new UnsupportedOperationException("This destroy packet has more than one entity id");
+        }
+#endif
+    }
+
+    public int[] getEntityIds() {
+#if version >= 1.17.1
+        IntList ids = instance#entityIds;
+        int[] result = new int[ids.size()];
+        ids.getElements(0, result, 0, result.length);
+        return result;
+#elseif version >= 1.17
+        int id = instance#entityId;
+        if (id >= 0) {
+            int[] ids = new int[1];
+            ids[0] = id;
+            return ids;
+        } else {
+            return new int[0];
+        }
+#else
+        return instance#entityIds;
+#endif
+    }
+
+    public void setSingleEntityId(int entityId) {
+#if version >= 1.17.1
+        int[] arr;
+        if (entityId >= 0) {
+            arr = new int[1];
+            arr[0] = entityId;
+        } else {
+            arr = new int[0];
+        }
+        IntList newIds = new IntArrayList(arr);
+        instance#entityIds = newIds;
+#elseif version >= 1.17
+        instance#entityId = entityId;
+#else
+        if (entityId >= 0) {
+            int[] ids = new int[1];
+            ids[0] = entityId;
+            instance#entityIds = ids;
+        } else {
+            instance#entityIds = new int[0];
+        }
+#endif
+    }
+
+    public void setMultipleEntityIds(int[] multipleEntityIds) {
+#if version >= 1.17.1
+        IntList newIds = new IntArrayList(multipleEntityIds);
+        instance#entityIds = newIds;
+#elseif version >= 1.17
+        if (multipleEntityIds == null || multipleEntityIds.length == 0) {
+            instance#entityId = -1;
+        } else if (multipleEntityIds.length == 1) {
+            instance#entityId = multipleEntityIds[0];
+        } else {
+            throw new UnsupportedOperationException("Multiple entity id's are not supported on Minecraft 1.17 and later");
+        }
+#else
+        instance#entityIds = multipleEntityIds;
+#endif
+    }
+
+    public static (PacketPlayOutEntityDestroyHandle) PacketPlayOutEntityDestroy createNewSingle(int entityId) {
+#if version >= 1.17.1
+        if (entityId >= 0) {
+            int[] ids = new int[1];
+            ids[0] = entityId;
+            return new PacketPlayOutEntityDestroy(ids);
+        } else {
+            return new PacketPlayOutEntityDestroy(new int[0]);
+        }
+#elseif version >= 1.17
+        return new PacketPlayOutEntityDestroy(entityId);
+#else
+        if (entityId >= 0) {
+            int[] ids = new int[1];
+            ids[0] = entityId;
+            return new PacketPlayOutEntityDestroy(ids);
+        } else {
+            return new PacketPlayOutEntityDestroy(new int[0]);
+        }
+#endif
+    }
+
+    public static (PacketPlayOutEntityDestroyHandle) PacketPlayOutEntityDestroy createNewMultiple(int[] multipleEntityIds) {
+#if version >= 1.17 && version < 1.17.1
+        if (multipleEntityIds == null || multipleEntityIds.length == 0) {
+            return new PacketPlayOutEntityDestroy(-1);
+        } else if (multipleEntityIds.length == 1) {
+            return new PacketPlayOutEntityDestroy(multipleEntityIds[0]);
+        } else {
+            throw new UnsupportedOperationException("Multiple entity id's are not supported on Minecraft 1.17 and later");
+        }
+#else
+        return new PacketPlayOutEntityDestroy(multipleEntityIds);
+#endif
+    }
+}
+
+class PacketPlayInKeepAlive extends Packet {
+#if version >= 1.12.2
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayInKeepAlive private final long key:id;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayInKeepAlive private long key:a;
+  #endif
+    public long getKey() {
+        return instance#key;
+    }
+    public void setKey(long key) {
+        instance#key = key;
+    }
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayInKeepAlive private int key:a;
+    public long getKey() {
+        return (long) instance#key;
+    }
+    public void setKey(long key) {
+        instance#key = (int)key;
+    }
+#endif
+}
+
+class PacketPlayOutKeepAlive extends Packet {
+#if version >= 1.12.2
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutKeepAlive private final long key:id;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutKeepAlive private long key:a;
+  #endif
+    public long getKey() {
+        return instance#key;
+    }
+    public void setKey(long key) {
+        instance#key = key;
+    }
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayOutKeepAlive private int key:a;
+    public long getKey() {
+        return (long) instance#key;
+    }
+    public void setKey(long key) {
+        instance#key = (int)key;
+    }
+#endif
+
+    public static (PacketPlayOutKeepAliveHandle) PacketPlayOutKeepAlive createNew(long key) {
+#if version >= 1.12.2
+        return new PacketPlayOutKeepAlive(key);
+#else
+        return new PacketPlayOutKeepAlive((int) key);
+#endif
+    }
+}
+
+class PacketPlayInUseEntity extends Packet {
+#if version >= 1.17
+    private int usedEntityId:entityId;
+#else
+    private int usedEntityId:a;
+#endif
+
+    // Since 1.17 there is an immutable UseType class storing all the details of the packet
+    // It is incorrectly remapped to EnumEntityUseAction (!)
+#if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity private final PacketPlayInUseEntity.UseType action;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity.UseType public abstract (Enum) net.minecraft.network.protocol.game.PacketPlayInUseEntity.EnumEntityUseAction getType:a();
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity.d private final readonly net.minecraft.world.EnumHand interactHand:hand;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity.e private final readonly net.minecraft.world.EnumHand interactAtHand:hand;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity.e private final readonly net.minecraft.world.phys.Vec3D interactAtLocation:location;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity public String getActionName() {
+        return instance#action#getType().name();
+    }
+
+    public boolean isInteract() {
+        return instance#getActionName().equals("INTERACT");
+    }
+
+    public boolean isInteractAt() {
+        return instance#getActionName().equals("INTERACT_AT");
+    }
+
+    public boolean isAttack() {
+        return instance#getActionName().equals("ATTACK");
+    }
+
+    public com.bergerkiller.bukkit.common.wrappers.HumanHand getInteractHand(org.bukkit.entity.HumanEntity humanEntity) {
+        EnumHand hand;
+        Object useAction = instance#action;
+        String name = useAction#getType().name();
+        if (name.equals("INTERACT")) {
+            hand = useAction#interactHand;
+        } else if (name.equals("INTERACT_AT")) {
+            hand = useAction#interactAtHand;
+        } else {
+            return null;
+        }
+
+        return com.bergerkiller.bukkit.common.wrappers.HumanHand.fromNMSEnumHand(humanEntity, hand);
+    }
+
+    public (org.bukkit.util.Vector) Vec3D getInteractAtPosition() {
+        Object useAction = instance#action;
+        if (useAction#getType().name().equals("INTERACT_AT")) {
+            return useAction#interactAtLocation;
+        } else {
+            return null;
+        }
+    }
+
+    public void setAttack() {
+        #require net.minecraft.network.protocol.game.PacketPlayInUseEntity static final PacketPlayInUseEntity.UseType ATTACK_ACTION;
+        instance#action = #ATTACK_ACTION;
+    }
+
+    public void setInteract(org.bukkit.entity.HumanEntity humanEntity, com.bergerkiller.bukkit.common.wrappers.HumanHand hand) {
+        #require net.minecraft.network.protocol.game.PacketPlayInUseEntity.d d createUseTypeInteract:<init>(net.minecraft.world.EnumHand hand);
+        EnumHand hand = (EnumHand) com.bergerkiller.bukkit.common.wrappers.HumanHand.toNMSEnumHand(humanEntity, hand);
+        instance#action = #createUseTypeInteract(hand);
+    }
+#else
+  #if version >= 1.13
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity public PacketPlayInUseEntity.EnumEntityUseAction getType:b();
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity public PacketPlayInUseEntity.EnumEntityUseAction getType:a();
+  #endif
+
+    public boolean isInteract() {
+        return instance#getType() == PacketPlayInUseEntity$EnumEntityUseAction.INTERACT;
+    }
+
+    public boolean isInteractAt() {
+        return instance#getType() == PacketPlayInUseEntity$EnumEntityUseAction.INTERACT_AT;
+    }
+
+    public boolean isAttack() {
+        return instance#getType() == PacketPlayInUseEntity$EnumEntityUseAction.ATTACK;
+    }
+
+    public com.bergerkiller.bukkit.common.wrappers.HumanHand getInteractHand(org.bukkit.entity.HumanEntity humanEntity) {
+  #if version >= 1.9
+    #if version >= 1.13
+        EnumHand hand = instance.c();
+    #else
+        EnumHand hand = instance.b();
+    #endif
+        return com.bergerkiller.bukkit.common.wrappers.HumanHand.fromNMSEnumHand(humanEntity, hand);
+  #else
+        PacketPlayInUseEntity$EnumEntityUseAction type = instance#getType();
+        if (type == PacketPlayInUseEntity$EnumEntityUseAction.INTERACT || type == PacketPlayInUseEntity$EnumEntityUseAction.INTERACT_AT) {
+            return com.bergerkiller.bukkit.common.wrappers.HumanHand.RIGHT;
+        } else {
+            return null;
+        }
+  #endif
+    }
+
+    public (org.bukkit.util.Vector) Vec3D getInteractAtPosition() {
+  #select version >=
+  #case 1.13: return instance.d();
+  #case 1.9:  return instance.c();
+  #case else: return instance.b();
+  #endselect
+    }
+
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity private PacketPlayInUseEntity.EnumEntityUseAction action;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity private net.minecraft.world.phys.Vec3D offset:c;
+  #if version >= 1.9
+    #require net.minecraft.network.protocol.game.PacketPlayInUseEntity private net.minecraft.world.EnumHand hand:d;
+  #endif
+
+    public void setAttack() {
+        instance#action = PacketPlayInUseEntity$EnumEntityUseAction.ATTACK;
+        instance#offset = null;
+  #if version >= 1.9
+        instance#hand = null;
+  #endif
+    }
+
+    public void setInteract(org.bukkit.entity.HumanEntity humanEntity, com.bergerkiller.bukkit.common.wrappers.HumanHand hand) {
+        EnumHand hand = (EnumHand) com.bergerkiller.bukkit.common.wrappers.HumanHand.toNMSEnumHand(humanEntity, hand);
+        instance#action = PacketPlayInUseEntity$EnumEntityUseAction.INTERACT;
+        instance#offset = null;
+  #if version >= 1.9
+        instance#hand = hand;
+  #endif
+    }
+#endif
+
+#if version >= 1.17
+    public static boolean hasSecondaryActionField() {
+        return true;
+    }
+
+  #if version >= 1.18
+    public boolean isUsingSecondaryAction();
+  #else
+    public boolean isUsingSecondaryAction:b();
+  #endif
+
+    public void setUsingSecondaryAction(boolean using) {
+        #require net.minecraft.network.protocol.game.PacketPlayInUseEntity private boolean usingSecondaryAction;
+        instance#usingSecondaryAction = using;
+    }
+#elseif version >= 1.16
+    public static boolean hasSecondaryActionField() {
+        return true;
+    }
+
+    public boolean isUsingSecondaryAction:e();
+
+    public void setUsingSecondaryAction(boolean using) {
+        #require net.minecraft.network.protocol.game.PacketPlayInUseEntity private boolean usingSecondaryOption:e;
+        instance#usingSecondaryOption = using;
+    }
+#else
+    public static boolean hasSecondaryActionField() {
+        return false;
+    }
+
+    public boolean isUsingSecondaryAction() {
+        return false;
+    }
+
+    public void setUsingSecondaryAction(boolean using) {
+    }
+#endif
+}
+
+class PacketPlayInBlockPlace extends Packet {
+#if version >= 1.17
+    private optional (Object) EnumHand enumHand:hand;
+#elseif version >= 1.9
+    private optional (Object) EnumHand enumHand:a;
+#else
+    private optional (Object) EnumHand enumHand:###;
+#endif
+
+    // Spigot only
+    public optional long timestamp;
+
+    <code>
+    @Override
+    public com.bergerkiller.bukkit.common.protocol.PacketType getPacketType() {
+        return com.bergerkiller.bukkit.common.protocol.PacketType.IN_BLOCK_PLACE;
+    }
+
+    public void setTimestamp(long timestamp) {
+        if (T.timestamp.isAvailable()) {
+            T.timestamp.setLong(getRaw(), timestamp);
+        }
+    }
+
+    public com.bergerkiller.bukkit.common.wrappers.HumanHand getHand(org.bukkit.entity.HumanEntity humanEntity) {
+        return internalGetHand(T.enumHand, humanEntity);
+    }
+
+    public void setHand(org.bukkit.entity.HumanEntity humanEntity, com.bergerkiller.bukkit.common.wrappers.HumanHand hand) {
+        internalSetHand(T.enumHand, humanEntity, hand);
+    }
+    </code>
+}
+
+// PacketPlayInBlockPlace on MC 1.8.8 and before when int direction == 255
+class PacketPlayInUseItem extends Packet {
+    // Hand since 1.9
+#if version >= 1.9
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.world.EnumHand enumHand:hand;
+  #elseif version >= 1.14
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.world.EnumHand enumHand:b;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.world.EnumHand enumHand:c;
+  #endif
+    public com.bergerkiller.bukkit.common.wrappers.HumanHand getHand(org.bukkit.entity.HumanEntity humanEntity) {
+        return com.bergerkiller.bukkit.common.wrappers.HumanHand.fromNMSEnumHand(humanEntity, instance#enumHand);
+    }
+
+    public void setHand(org.bukkit.entity.HumanEntity humanEntity, com.bergerkiller.bukkit.common.wrappers.HumanHand hand) {
+        instance#enumHand = (EnumHand) hand.toNMSEnumHand(humanEntity);
+    }
+#else
+    public com.bergerkiller.bukkit.common.wrappers.HumanHand getHand(org.bukkit.entity.HumanEntity humanEntity) {
+        return com.bergerkiller.bukkit.common.wrappers.HumanHand.RIGHT;
+    }
+
+    public void setHand(org.bukkit.entity.HumanEntity humanEntity, com.bergerkiller.bukkit.common.wrappers.HumanHand hand) {
+    }
+#endif
+
+    // Initializes the moving object position block field, when required
+#if version >= 1.18
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem public net.minecraft.world.phys.MovingObjectPositionBlock getHitResult();
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem public net.minecraft.world.phys.MovingObjectPositionBlock initMovingObject() {
+        net.minecraft.world.phys.MovingObjectPositionBlock moving = instance.getHitResult();
+        if (moving != null) {
+            return moving;
+        }
+
+        #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.world.phys.MovingObjectPositionBlock movingObject:blockHit;
+        moving = net.minecraft.world.phys.MovingObjectPositionBlock.miss(Vec3D.ZERO, EnumDirection.DOWN, BlockPosition.ZERO);
+        instance#movingObject = moving;
+        return moving;
+    }
+
+#elseif version >= 1.14
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem public net.minecraft.world.phys.MovingObjectPositionBlock getHitResult:c();
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem public void initMovingObject() {
+        net.minecraft.world.phys.MovingObjectPositionBlock moving = instance.c();
+        if (moving != null) {
+            return moving;
+        }
+
+  #if version >= 1.17
+        #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.world.phys.MovingObjectPositionBlock movingObject:blockHit;
+  #else
+        #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.world.phys.MovingObjectPositionBlock movingObject:a;
+  #endif
+
+  #if version >= 1.17
+        Vec3D origin = Vec3D.ZERO;
+  #elseif version >= 1.16.3
+        Vec3D origin = Vec3D.ORIGIN;
+  #else
+        Vec3D origin = Vec3D.a;
+  #endif
+
+        moving = net.minecraft.world.phys.MovingObjectPositionBlock.a(origin, EnumDirection.DOWN, BlockPosition.ZERO);
+        instance#movingObject = moving; 
+        return moving;
+    }
+
+#endif
+
+    // Direction
+#if version >= 1.14
+  #if version >= 1.17
+    #require net.minecraft.world.phys.MovingObjectPositionBlock private final net.minecraft.core.EnumDirection direction_face:direction;
+  #else
+    #require net.minecraft.world.phys.MovingObjectPositionBlock private final net.minecraft.core.EnumDirection direction_face:b;
+  #endif
+    public (org.bukkit.block.BlockFace) EnumDirection getDirection() {
+        MovingObjectPositionBlock result = instance#getHitResult();
+        return (result == null) ? null : result.getDirection();
+    }
+    public void setDirection((org.bukkit.block.BlockFace) EnumDirection direction) {
+        instance#initMovingObject()#direction_face = direction;
+    }
+#elseif version >= 1.9
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.core.EnumDirection direction_face:b;
+    public (org.bukkit.block.BlockFace) EnumDirection getDirection() {
+        return instance#direction_face;
+    }
+    public void setDirection((org.bukkit.block.BlockFace) EnumDirection direction) {
+        instance#direction_face = direction;
+    }
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private int direction_index:c;
+    public (org.bukkit.block.BlockFace) EnumDirection getDirection() {
+        int index = instance#direction_index;
+        return EnumDirection.fromType1(index);
+    }
+    public void setDirection((org.bukkit.block.BlockFace) EnumDirection direction) {
+        instance#direction_index = direction.a();
+    }
+#endif
+
+    // Direction index value of 255 was used for the 'block place' packet on 1.8.8 and before
+#if version >= 1.9
+    public boolean isBlockPlacePacket() {
+        return false;
+    }
+    public void setBlockPlacePacket() {
+    }
+#else
+    public boolean isBlockPlacePacket() {
+        int index = instance#direction_index;
+        return index == 255;
+    }
+    public void setBlockPlacePacket() {
+        instance#direction_index = 255;
+    }
+#endif
+
+#if version >= 1.14
+  #if version >= 1.17
+    #require net.minecraft.world.phys.MovingObjectPosition protected final net.minecraft.world.phys.Vec3D position:location;
+    #require net.minecraft.world.phys.MovingObjectPositionBlock private final net.minecraft.core.BlockPosition blockPosition:blockPos;
+  #else
+    #require net.minecraft.world.phys.MovingObjectPosition protected final net.minecraft.world.phys.Vec3D position:pos;
+    #require net.minecraft.world.phys.MovingObjectPositionBlock private final net.minecraft.core.BlockPosition blockPosition:c;
+  #endif
+    public (IntVector3) BlockPosition getPosition() {
+        MovingObjectPositionBlock result = instance#getHitResult();
+  #if version >= 1.18
+        return (result == null) ? null : result.getBlockPos();
+  #else
+        return (result == null) ? null : result.getBlockPosition();
+  #endif
+    }
+    public void setPosition((IntVector3) BlockPosition blockPosition) {
+        MovingObjectPositionBlock result = instance#initMovingObject();
+
+        // Make sure to preserve deltas
+  #if version >= 1.18
+        Vec3D position = result.getLocation();
+        double new_x = position.x - result.getBlockPos().getX() + blockPosition.getX();
+        double new_y = position.y - result.getBlockPos().getY() + blockPosition.getY();
+        double new_z = position.z - result.getBlockPos().getZ() + blockPosition.getZ();
+  #else
+        Vec3D position = result.getPos();
+        double new_x = position.x - result.getBlockPosition().getX() + blockPosition.getX();
+        double new_y = position.y - result.getBlockPosition().getY() + blockPosition.getY();
+        double new_z = position.z - result.getBlockPosition().getZ() + blockPosition.getZ();
+  #endif
+        Vec3D new_pos = new Vec3D(new_x, new_y, new_z);
+        result#position = new_pos;
+        result#blockPosition = blockPosition;
+    }
+    public float getDeltaX() {
+        MovingObjectPositionBlock result = instance#getHitResult();
+        if (result == null) return 0.0f;
+  #if version >= 1.18
+        return (float) (result.getLocation().x - (double) result.getBlockPos().getX());
+  #else
+        return (float) (result.getPos().x - (double) result.getBlockPosition().getX());
+  #endif
+    }
+    public float getDeltaY() {
+        MovingObjectPositionBlock result = instance#getHitResult();
+        if (result == null) return 0.0f;
+  #if version >= 1.18
+        return (float) (result.getLocation().y - (double) result.getBlockPos().getY());
+  #else
+        return (float) (result.getPos().y - (double) result.getBlockPosition().getY());
+  #endif
+    }
+    public float getDeltaZ() {
+        MovingObjectPositionBlock result = instance#getHitResult();
+        if (result == null) return 0.0f;
+  #if version >= 1.18
+        return (float) (result.getLocation().z - (double) result.getBlockPos().getZ());
+  #else
+        return (float) (result.getPos().z - (double) result.getBlockPosition().getZ());
+  #endif
+    }
+    public void setDeltaX(float dx) {
+        MovingObjectPositionBlock result = instance#initMovingObject();
+  #if version >= 1.18
+        Vec3D old_position = result.getLocation();
+        Vec3D new_position = new Vec3D((double) dx + result.getBlockPos().getX(), old_position.y, old_position.z);
+  #else
+        Vec3D old_position = result.getPos();
+        Vec3D new_position = new Vec3D((double) dx + result.getBlockPosition().getX(), old_position.y, old_position.z);
+  #endif
+        result#position = new_position;
+    }
+    public void setDeltaY(float dy) {
+        MovingObjectPositionBlock result = instance#initMovingObject();
+  #if version >= 1.18
+        Vec3D old_position = result.getLocation();
+        Vec3D new_position = new Vec3D(old_position.x, (double) dy + result.getBlockPos().getY(), old_position.z);
+  #else
+        Vec3D old_position = result.getPos();
+        Vec3D new_position = new Vec3D(old_position.x, (double) dy + result.getBlockPosition().getY(), old_position.z);
+  #endif
+        result#position = new_position;
+    }
+    public void setDeltaZ(float dz) {
+        MovingObjectPositionBlock result = instance#initMovingObject();
+  #if version >= 1.18
+        Vec3D old_position = result.getLocation();
+        Vec3D new_position = new Vec3D(old_position.x, old_position.y, (double) dz + result.getBlockPos().getZ());
+  #else
+        Vec3D old_position = result.getPos();
+        Vec3D new_position = new Vec3D(old_position.x, old_position.y, (double) dz + result.getBlockPosition().getZ());
+  #endif
+        result#position = new_position;
+    }
+#else
+  #if version >= 1.9
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.core.BlockPosition position:a;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private float deltaX:d;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private float deltaY:e;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private float deltaZ:f;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private net.minecraft.core.BlockPosition position:b;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private float deltaX:e;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private float deltaY:f;
+    #require net.minecraft.network.protocol.game.PacketPlayInUseItem private float deltaZ:g;
+  #endif
+    public (IntVector3) BlockPosition getPosition() {
+        return instance#position;
+    }
+    public void setPosition((IntVector3) BlockPosition position) {
+        instance#position = position;
+    }
+    public float getDeltaX() {
+        return instance#deltaX;
+    }
+    public float getDeltaY() {
+        return instance#deltaY;
+    }
+    public float getDeltaZ() {
+        return instance#deltaZ;
+    }
+    public void setDeltaX(float dx) {
+        return instance#deltaX = dx;
+    }
+    public void setDeltaY(float dy) {
+        return instance#deltaY = dy;
+    }
+    public void setDeltaZ(float dz) {
+        return instance#deltaZ = dz;
+    }
+#endif
+
+    // Spigot
+    public optional long timestamp;
+
+    <code>
+    @Override
+    public com.bergerkiller.bukkit.common.protocol.PacketType getPacketType() {
+        return com.bergerkiller.bukkit.common.protocol.PacketType.IN_USE_ITEM;
+    }
+
+    public void setTimestamp(long timestamp) {
+        if (T.timestamp.isAvailable()) {
+            T.timestamp.setLong(getRaw(), timestamp);
+        }
+    }
+    </code>
+}
+
+class PacketPlayInBlockDig extends Packet {
+#if version >= 1.17
+    private (IntVector3) BlockPosition position:pos;
+    private (org.bukkit.block.BlockFace) EnumDirection direction;
+    private (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType digType:action;
+#else
+    private (IntVector3) BlockPosition position:a;
+    private (org.bukkit.block.BlockFace) EnumDirection direction:b;
+    private (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType digType:c;
+#endif
+
+    class PacketPlayInBlockDig.EnumPlayerDigType {
+        enum (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType START_DESTROY_BLOCK;
+        enum (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType ABORT_DESTROY_BLOCK;
+        enum (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType STOP_DESTROY_BLOCK;
+        enum (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType DROP_ALL_ITEMS;
+        enum (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType DROP_ITEM;
+        enum (EnumPlayerDigTypeHandle) PacketPlayInBlockDig.EnumPlayerDigType RELEASE_USE_ITEM;
+        //TODO: SWAP_ITEM_WITH_OFFHAND?
+    }
+}
+
+// Gone since 1.17, we don't use it, it's not worth the time to support this.
+/*
+class PacketPlayOutTitle extends Packet {
+    private (PacketPlayOutTitleHandle.EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction action:a;
+    private (ChatText) IChatBaseComponent title:b;
+
+    // Introduced in newer 1.16.5 paperspigot builds, replacing the "components" field
+    // If this field is set, it overrules the 'title' field
+#if exists net.minecraft.network.protocol.game.PacketPlayOutTitle public net.kyori.adventure.text.Component adventure$text;
+    public unknown net.kyori.adventure.text.Component adventure$text;
+#endif
+
+    private int fadeIn:c;
+    private int stay:d;
+    private int fadeOut:e;
+
+    // Note: paper includes a 'components' field for md_5's chat api
+    //       if this field is set, it overrules the 'title' field
+    // public net.md_5.bungee.api.chat.BaseComponent[] components;
+
+    class PacketPlayOutTitle.EnumTitleAction {
+        enum (EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction TITLE;
+        enum (EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction SUBTITLE;
+        enum optional (EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction ACTIONBAR;
+        enum (EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction TIMES;
+        enum (EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction CLEAR;
+        enum (EnumTitleActionHandle) PacketPlayOutTitle.EnumTitleAction RESET;
+    }
+}
+*/
+
+class PacketPlayOutChat extends Packet {
+#if version >= 1.17
+    private (ChatText) IChatBaseComponent text:message;
+#else
+    private (ChatText) IChatBaseComponent text:a;
+#endif
+
+    // Spigot only
+    public optional (Object[]) net.md_5.bungee.api.chat.BaseComponent[] components;
+
+#if version >= 1.17
+    private (com.bergerkiller.bukkit.common.wrappers.ChatMessageType) net.minecraft.network.chat.ChatMessageType type;
+#elseif version >= 1.12
+    private (com.bergerkiller.bukkit.common.wrappers.ChatMessageType) net.minecraft.network.chat.ChatMessageType type:b;
+#else
+    private (com.bergerkiller.bukkit.common.wrappers.ChatMessageType) byte type:b;
+#endif
+}
+
+class PacketPlayOutCollect extends Packet {
+#if version >= 1.17
+    private int collectedItemId:itemId;
+    private int collectorEntityId:playerId;
+#else
+    private int collectedItemId:a;
+    private int collectorEntityId:b;
+#endif
+
+    // since 1.11.2
+#if version >= 1.17
+    private optional int amount;
+#else
+    private optional int amount:c;
+#endif
+}
+
+class PacketPlayOutSetSlot extends Packet {
+#if version >= 1.17
+    private int windowId:containerId;
+    private int slot;
+    private (org.bukkit.inventory.ItemStack) ItemStack item:itemStack;
+#else
+    private int windowId:a;
+    private int slot:b;
+    private (org.bukkit.inventory.ItemStack) ItemStack item:c;
+#endif
+}
+
+class PacketPlayOutWindowItems extends Packet {
+#if version >= 1.17
+    private int windowId:containerId;
+#else
+    private int windowId:a;
+#endif
+
+#if version >= 1.17
+    private (List<org.bukkit.inventory.ItemStack>) List<ItemStack> items;
+#elseif version >= 1.11
+    private (List<org.bukkit.inventory.ItemStack>) List<ItemStack> items:b;
+#else
+    private (List<org.bukkit.inventory.ItemStack>) ItemStack[] items:b;
+#endif
+}
+
+class PacketPlayOutOpenWindow extends Packet {
+#if version >= 1.17
+    private int windowId:containerId;
+    private (ChatText) IChatBaseComponent windowTitle:title;
+#else
+    private int windowId:a;
+    private (ChatText) IChatBaseComponent windowTitle:c;
+#endif
+
+    public static (PacketPlayOutOpenWindowHandle) PacketPlayOutOpenWindow createNew() {
+#if version >= 1.17
+        return new PacketPlayOutOpenWindow(com.bergerkiller.bukkit.common.internal.logic.NullPacketDataSerializer.INSTANCE);
+#else
+        return new PacketPlayOutOpenWindow();
+#endif
+    }
+
+#if version >= 1.14
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutOpenWindow private int windowTypeId:type;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutOpenWindow private int windowTypeId:b;
+  #endif
+
+    public WindowType getWindowType() {
+        return com.bergerkiller.bukkit.common.wrappers.WindowType.fromWindowTypeId(instance#windowTypeId);
+    }
+
+    public void setWindowType(WindowType windowType) {
+        int id = windowType.getTypeId();
+        if (id == -1) {
+            throw new IllegalArgumentException("Window type " + windowType.name() + " is not supported");
+        }
+        instance#windowTypeId = id;
+    }
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayOutOpenWindow private String windowName:b;
+    #require net.minecraft.network.protocol.game.PacketPlayOutOpenWindow private int slotCount:d;
+
+    public WindowType getWindowType() {
+        String name = instance#windowName;
+        int slotCount = instance#slotCount;
+        return com.bergerkiller.bukkit.common.wrappers.WindowType.fromLegacyName_1_8(name, slotCount);
+    }
+
+    public void setWindowType(WindowType windowType) {
+        String legacyName = windowType.getLegacyName_1_8();
+        if (legacyName == null) {
+            throw new IllegalArgumentException("Window type " + windowType.name() + " is not supported");
+        }
+        instance#windowName = legacyName;
+        instance#slotCount = windowType.getInventorySlots();
+    }
+#endif
+}
+
+class PacketPlayInArmAnimation extends Packet {
+#if version >= 1.17
+    private optional (Object) EnumHand enumHand:hand;
+#elseif version >= 1.9
+    private optional (Object) EnumHand enumHand:a;
+#else
+    private optional (Object) EnumHand enumHand:###;
+#endif
+
+    <code>
+    public com.bergerkiller.bukkit.common.wrappers.HumanHand getHand(org.bukkit.entity.HumanEntity humanEntity) {
+        return internalGetHand(T.enumHand, humanEntity);
+    }
+
+    public void setHand(org.bukkit.entity.HumanEntity humanEntity, com.bergerkiller.bukkit.common.wrappers.HumanHand hand) {
+        internalSetHand(T.enumHand, humanEntity, hand);
+    }
+    </code>
+}
+
+class PacketPlayOutRemoveEntityEffect extends Packet {
+#if version >= 1.17
+    private int entityId;
+#else
+    private int entityId:a;
+#endif
+
+#if version >= 1.17
+    private (MobEffectListHandle) MobEffectList effectList:effect;
+#elseif version >= 1.9
+    private (MobEffectListHandle) MobEffectList effectList:b;
+#else
+    private (MobEffectListHandle) int effectList:b;
+#endif
+
+    public static (PacketPlayOutRemoveEntityEffectHandle) PacketPlayOutRemoveEntityEffect createNew() {
+#if version >= 1.17
+        return new PacketPlayOutRemoveEntityEffect(com.bergerkiller.bukkit.common.internal.logic.NullPacketDataSerializer.INSTANCE);
+#else
+        return new PacketPlayOutRemoveEntityEffect();
+#endif
+    }
+
+    <code>
+    public static PacketPlayOutRemoveEntityEffectHandle createNew(int entityId, MobEffectListHandle mobEffectList) {
+        PacketPlayOutRemoveEntityEffectHandle handle = createNew();
+        handle.setEntityId(entityId);
+        handle.setEffectList(mobEffectList);
+        return handle;
+    }
+    </code>
+}
+
+class PacketPlayOutLogin extends Packet {
+#if version >= 1.17
+    private int playerId;
+#else
+    private int playerId:a;
+#endif
+
+#if version >= 1.17
+    private unknown long encryptedWorldSeed:seed;
+    private boolean hardcore;
+    private (org.bukkit.GameMode) EnumGamemode gameMode:gameType;
+#elseif version >= 1.15
+    private unknown long encryptedWorldSeed:b;
+    private boolean hardcore:c;
+    private (org.bukkit.GameMode) EnumGamemode gameMode:d;
+#else
+    private boolean hardcore:b;
+    private (org.bukkit.GameMode) EnumGamemode gameMode:c;
+#endif
+
+    // Since 1.16 the previous game mode of the player is also sent
+    // This allows the player to toggle back and forth between modes
+#if version >= 1.16
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutLogin private net.minecraft.world.level.EnumGamemode previousGameMode:previousGameType;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutLogin private net.minecraft.world.level.EnumGamemode previousGameMode:e;
+  #endif
+
+    public (org.bukkit.GameMode) EnumGamemode getPreviousGameMode() {
+        EnumGamemode mode = instance#previousGameMode;
+  #if version <= 1.16.5
+        if (mode == EnumGamemode.NOT_SET) {
+            return null;
+        }
+  #endif
+        return mode;
+    }
+
+    public void setPreviousGameMode((org.bukkit.GameMode) EnumGamemode gameMode) {
+  #if version <= 1.16.5
+        if (gameMode == null) {
+            gameMode = EnumGamemode.NOT_SET;
+        }
+  #endif
+        instance#previousGameMode = gameMode;
+    }
+#else
+    public (org.bukkit.GameMode) EnumGamemode getPreviousGameMode() {
+        return null;
+    }
+
+    public void setPreviousGameMode((org.bukkit.GameMode) EnumGamemode gameMode) {
+    }
+#endif
+
+#if version >= 1.17
+    private (DimensionType) DimensionManager dimensionType;
+#elseif version >= 1.16.2
+    private (DimensionType) DimensionManager dimensionType:h;
+#elseif version >= 1.16
+    private (DimensionType) ResourceKey<DimensionManager> dimensionType:h;
+#elseif version >= 1.15
+    private (DimensionType) DimensionManager dimensionType:e;
+#elseif version >= 1.13.1
+    private (DimensionType) DimensionManager dimensionType:d;
+#else
+    private (DimensionType) int dimensionType:d;
+#endif
+
+    // Difficulty field only exists <= 1.13.2
+#if version >= 1.14
+    private optional (org.bukkit.Difficulty) EnumDifficulty difficulty:###;
+#else
+    private optional (org.bukkit.Difficulty) EnumDifficulty difficulty:e;
+#endif
+
+    // View distance field only exists >= 1.14
+#if version >= 1.17
+    private int maxPlayers;
+    private optional int viewDistance:chunkRadius;
+#elseif version >= 1.16
+    private int maxPlayers:j;
+    private optional int viewDistance:k;
+#elseif version >= 1.15
+    private int maxPlayers:f;
+    //TODO: Removed on 1.16. Keep this?
+    // private (org.bukkit.WorldType) WorldType worldType:g;
+    private optional int viewDistance:h;
+#elseif version >= 1.14
+    private int maxPlayers:e;
+    //TODO: Removed on 1.16. Keep this?
+    // private (org.bukkit.WorldType) WorldType worldType:f;
+    private optional int viewDistance:g;
+#else
+    private int maxPlayers:f;
+    //TODO: Removed on 1.16. Keep this?
+    // private (org.bukkit.WorldType) WorldType worldType:g;
+    private optional int viewDistance:###;
+#endif
+
+#if version >= 1.17
+    private boolean reducedDebugInfo;
+    private unknown boolean noImmediateRespawn:showDeathScreen;
+    private unknown boolean isDebugWorld:isDebug;
+    private unknown boolean isFlatWorld:isFlat;
+#elseif version >= 1.16
+    private boolean reducedDebugInfo:l;
+    private unknown boolean noImmediateRespawn:m;
+    private unknown boolean isDebugWorld:n;
+    private unknown boolean isFlatWorld:o;
+#elseif version >= 1.15
+    private boolean reducedDebugInfo:i;
+    private unknown boolean noImmediateRespawn:j;
+#else
+    private boolean reducedDebugInfo:h;
+#endif
+
+    // Encrypted world seed field was added on MC 1.15
+    // It has little meaning, so we just add a method to initialize it
+    public void setEncryptedWorldSeed((org.bukkit.World) WorldServer world) {
+#if version >= 1.18
+        #require net.minecraft.network.protocol.game.PacketPlayOutLogin private long encryptedWorldSeed:seed;
+        instance#encryptedWorldSeed = BiomeManager.obfuscateSeed(world.getSeed());
+#elseif version >= 1.17
+        #require net.minecraft.network.protocol.game.PacketPlayOutLogin private long encryptedWorldSeed:seed;
+        instance#encryptedWorldSeed = BiomeManager.a(world.getSeed());
+#elseif version >= 1.16
+        #require net.minecraft.network.protocol.game.PacketPlayOutLogin private long encryptedWorldSeed:b;
+        instance#encryptedWorldSeed = BiomeManager.a(world.getSeed());
+#elseif version >= 1.15
+        #require net.minecraft.network.protocol.game.PacketPlayOutLogin private long encryptedWorldSeed:b;
+        instance#encryptedWorldSeed = WorldData.c(world.getWorldData().getSeed());
+#endif
+    }
+}
+
+class PacketPlayOutRespawn extends Packet {
+#if version >= 1.17
+    private (DimensionType) DimensionManager dimensionType;
+#elseif version >= 1.16.2
+    private (DimensionType) DimensionManager dimensionType:a;
+#elseif version >= 1.16
+    private (DimensionType) ResourceKey<DimensionManager> dimensionType:a;
+#elseif version >= 1.13.1
+    private (DimensionType) DimensionManager dimensionType:a;
+#else
+    private (DimensionType) int dimensionType:a;
+#endif
+
+    // Since Minecraft 1.16: World environment has a resource key, too!
+#if version >= 1.16
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private net.minecraft.resources.ResourceKey<net.minecraft.world.level.World> worldName:dimension;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private net.minecraft.resources.ResourceKey<net.minecraft.world.level.World> worldName:b;
+  #endif
+
+    public (com.bergerkiller.bukkit.common.resources.ResourceKey<org.bukkit.World>) ResourceKey<World> getWorldName() {
+        return instance#worldName;
+    }
+    
+    public void setWorldName((com.bergerkiller.bukkit.common.resources.ResourceKey<org.bukkit.World>) ResourceKey<World> worldType) {
+        instance#worldName = worldType;
+    }
+#else
+    public (com.bergerkiller.bukkit.common.resources.ResourceKey<org.bukkit.World>) ResourceKey<World> getWorldName() {
+        return null;
+    }
+
+    public void setWorldName((com.bergerkiller.bukkit.common.resources.ResourceKey<org.bukkit.World>) ResourceKey<World> worldType) {
+    }
+#endif
+
+    // Dimension and WorldType are now resource keys
+    // private ResourceKey<World> b;
+
+    // Difficulty field only exists <= 1.13.2
+#if version >= 1.14
+    private optional (org.bukkit.Difficulty) EnumDifficulty difficulty:###;
+#else
+    private optional (org.bukkit.Difficulty) EnumDifficulty difficulty:b;
+#endif
+
+#if version >= 1.17
+    private unknown long encryptedWorldSeed:seed;
+    private (org.bukkit.GameMode) EnumGamemode gamemode:playerGameType;
+
+    private unknown boolean isDebugWorld:isDebug;
+    private unknown boolean isFlatWorld:isFlat;
+    private unknown boolean keepAllPlayerData;
+#elseif version >= 1.16
+    //TODO: private ResourceKey<World> b;
+
+    private unknown long encryptedWorldSeed:c;
+    private (org.bukkit.GameMode) EnumGamemode gamemode:d;
+
+    private unknown boolean isDebugWorld:f;
+    private unknown boolean isFlatWorld:g;
+    private unknown boolean keepAllPlayerData:h;
+#elseif version >= 1.15
+    private unknown long encryptedWorldSeed:b;
+    private (org.bukkit.GameMode) EnumGamemode gamemode:c;
+
+    //TODO: Was removed on 1.16, do anything with this?
+    // private (org.bukkit.WorldType) WorldType worldType:d;
+#elseif version >= 1.14
+    private (org.bukkit.GameMode) EnumGamemode gamemode:b;
+
+    //TODO: Was removed on 1.16, do anything with this?
+    // private (org.bukkit.WorldType) WorldType worldType:c;
+#else
+    private (org.bukkit.GameMode) EnumGamemode gamemode:c;
+
+    //TODO: Was removed on 1.16, do anything with this?
+    // private (org.bukkit.WorldType) WorldType worldType:d;
+#endif
+
+    // Since 1.16 the previous game mode of the player is also sent
+    // This allows the player to toggle back and forth between modes
+#if version >= 1.16
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private net.minecraft.world.level.EnumGamemode previousGameMode:previousPlayerGameType;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private net.minecraft.world.level.EnumGamemode previousGameMode:e;
+  #endif
+
+    public (org.bukkit.GameMode) EnumGamemode getPreviousGameMode() {
+        EnumGamemode mode = instance#previousGameMode;
+  #if version <= 1.16.5
+        if (mode == EnumGamemode.NOT_SET) {
+            return null;
+        }
+  #endif
+        return mode;
+    }
+
+    public void setPreviousGameMode((org.bukkit.GameMode) EnumGamemode gameMode) {
+  #if version <= 1.16.5
+        if (gameMode == null) {
+            gameMode = EnumGamemode.NOT_SET;
+        }
+  #endif
+        instance#previousGameMode = gameMode;
+    }
+#else
+    public (org.bukkit.GameMode) EnumGamemode getPreviousGameMode() {
+        return null;
+    }
+
+    public void setPreviousGameMode((org.bukkit.GameMode) EnumGamemode gameMode) {
+    }
+#endif
+
+    // Encrypted world seed field was added on MC 1.15
+    // It has little meaning, so we just add a method to initialize it
+    public void setEncryptedWorldSeed((org.bukkit.World) WorldServer world) {
+#if version >= 1.18
+        #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private long encryptedWorldSeed:seed;
+        instance#encryptedWorldSeed = BiomeManager.obfuscateSeed(world.getSeed());
+#elseif version >= 1.17
+        #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private long encryptedWorldSeed:seed;
+        instance#encryptedWorldSeed = BiomeManager.a(world.getSeed());
+#elseif version >= 1.16
+        #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private long encryptedWorldSeed:c;
+        instance#encryptedWorldSeed = BiomeManager.a(world.getSeed());
+#elseif version >= 1.15
+        #require net.minecraft.network.protocol.game.PacketPlayOutRespawn private long encryptedWorldSeed:b;
+        instance#encryptedWorldSeed = WorldData.c(world.getWorldData().getSeed());
+#endif
+    }
+}
+
+class PacketPlayOutPlayerListHeaderFooter extends Packet {
+#if version >= 1.13.1
+    private (ChatText) IChatBaseComponent header;
+    private (ChatText) IChatBaseComponent footer;
+#else
+    private (ChatText) IChatBaseComponent header:a;
+    private (ChatText) IChatBaseComponent footer:b;
+#endif
+}
+
+// Is 'ClientboundLevelChunkWithLightPacket' on Minecraft 1.18 and later
+// Then all data is stored in Chunk and Light data fields, not individual fields
+// This is actually the ClientboundLevelChunkWithLightPacket
+//
+//TODO: Shortly a BitSet/int of a mask of sections stored was used
+//      Add it? Same for 'biome storage' and 'has biome data'
+//      On 1.18 and later light data is also stored (also 1.8.8 and before)
+//      I don't use it, so if anyone wants it, PR it.
+class PacketPlayOutMapChunk extends Packet {
+#if version >= 1.17
+    private int x;
+    private int z;
+#else
+    private int x:a;
+    private int z:b;
+#endif
+
+    public static (PacketPlayOutMapChunkHandle) PacketPlayOutMapChunk createNew() {
+        return new PacketPlayOutMapChunk(com.bergerkiller.bukkit.common.internal.logic.NullPacketDataSerializer.INSTANCE);
+    }
+
+    // Heightmap data, not available on MC 1.13.2 and before
+    public (CommonTagCompound) NBTTagCompound getHeightmaps() {
+#if version >= 1.18
+        return instance.getChunkData().getHeightmaps();
+#elseif version >= 1.17
+        return instance.f();
+#elseif version >= 1.14
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private NBTTagCompound heightmapsField:d;
+        return instance#heightmapsField;
+#else
+        return null; // Not available
+#endif
+    }
+
+    public void setHeightmaps((CommonTagCompound) NBTTagCompound heightmapsData) {
+#if version >= 1.18
+        #require net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData private final NBTTagCompound heightmaps;
+        net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData data = instance.getChunkData();
+        data#heightmaps = heightmapsData;
+#elseif version >= 1.17
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private final NBTTagCompound heightmaps;
+        instance#heightmaps = heightmapsData;
+#elseif version >= 1.14
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private NBTTagCompound heightmaps:d;
+        instance#heightmapsField = heightmaps;
+#else
+        // Not available
+#endif
+    }
+
+    // Byte buffer of serialized chunk block data. Use at your own peril.
+    // TODO: Kind of useless without the section mask...
+#if version >= 1.18
+    #require net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData private final byte[] chunkDataBuffer:buffer;
+#elseif version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private byte[] chunkDataBuffer:buffer;
+#elseif version >= 1.15
+    #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private byte[] chunkDataBuffer:f;
+#elseif version >= 1.14
+    #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private byte[] chunkDataBuffer:e;
+#elseif version >= 1.9
+    #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private byte[] chunkDataBuffer:d;
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private PacketPlayOutMapChunk.ChunkMap chunkData:c;
+    #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk.ChunkMap  public byte[] chunkDataBuffer:a;
+#endif
+
+    public byte[] getBuffer() {
+#if version >= 1.18
+        net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData data = instance.getChunkData();
+        return data#chunkDataBuffer;
+#elseif version >= 1.19
+        return instance#chunkDataBuffer;
+#else
+        PacketPlayOutMapChunk$ChunkMap data = instance#chunkData;
+        return data#chunkDataBuffer;
+#endif
+    }
+
+    public void setBuffer(byte[] buffer) {
+#if version >= 1.18
+        net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData data = instance.getChunkData();
+        data#chunkDataBuffer = buffer;
+#elseif version >= 1.19
+        instance#chunkDataBuffer = buffer;
+#else
+        PacketPlayOutMapChunk$ChunkMap data = instance#chunkData;
+        data#chunkDataBuffer = buffer;
+#endif
+    }
+
+    // List of Block states that are inside the chunk. We offer a clean API for this.
+    public List<BlockStateChange> getBlockStates() {
+#if version >= 1.18
+        // Complicated: requires conversion using chunk x/z
+        net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData data = instance.getChunkData();
+        #require net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData private final List<net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData.BlockEntityData> blockEntitiesData;
+        return com.bergerkiller.bukkit.common.conversion.blockstate.ChunkBlockStateChangeConverter.convertList(
+                data#blockEntitiesData, instance.getX(), instance.getZ());
+#elseif version >= 1.9.4
+  #if version >= 1.17
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private (List<BlockStateChange) List<NBTTagCompound> blockEntitiesTags;
+  #elseif version >= 1.15
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private (List<BlockStateChange) List<NBTTagCompound> blockEntitiesTags:g;
+  #elseif version >= 1.14
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private (List<BlockStateChange) List<NBTTagCompound> blockEntitiesTags:f;
+  #else
+        #require net.minecraft.network.protocol.game.PacketPlayOutMapChunk private (List<BlockStateChange) List<NBTTagCompound> blockEntitiesTags:e;
+  #endif
+        return instance#blockEntitiesTags;
+#else
+        // Does not exist, uses update sign packets instead
+        return java.util.Collections.emptyList();
+#endif
+    }
+
+    <code>
+    public void setBlockStates(List<BlockStateChange> states) {
+        List<BlockStateChange> baseStates = this.getBlockStates();
+        int count = states.size();
+        int limit = Math.min(count, baseStates.size());
+        for (int i = 0; i < limit; i++) {
+            BlockStateChange change = states.get(i);
+            if (baseStates.get(i) != change) {
+                baseStates.set(i, change);
+            }
+        }
+        for (int i = limit; i < count; i++) {
+            baseStates.add(states.get(i));
+        }
+        while (baseStates.size() > count) {
+            baseStates.remove(baseStates.size()-1);
+        }
+    }
+    </code>
+}
+
+// Only >= MC 1.9 (MC 1.8.8 relies on clients themselves to unload as needed, for some reason)
+optional class PacketPlayOutUnloadChunk extends Packet {
+#if version >= 1.17
+    private int cx:x;
+    private int cz:z;
+#else
+    private int cx:a;
+    private int cz:b;
+#endif
+}
+
+class PacketPlayOutNamedSoundEffect extends Packet {
+#if version >= 1.17
+    private (com.bergerkiller.bukkit.common.resources.ResourceKey<com.bergerkiller.bukkit.common.resources.SoundEffect>) net.minecraft.sounds.SoundEffect sound;
+    private optional (String) SoundCategory category_1_10_2:source;
+    private int x;
+    private int y;
+    private int z;
+    private float volume;
+    private optional int pitch_1_8_8:###;
+    private optional float pitch_1_10_2:pitch;
+#elseif version >= 1.9
+    private (com.bergerkiller.bukkit.common.resources.ResourceKey<com.bergerkiller.bukkit.common.resources.SoundEffect>) net.minecraft.sounds.SoundEffect sound:a;
+    private optional (String) SoundCategory category_1_10_2:b;
+    private int x:c;
+    private int y:d;
+    private int z:e;
+    private float volume:f;
+    private optional int pitch_1_8_8:###;
+    private optional float pitch_1_10_2:g;
+#else
+    private (com.bergerkiller.bukkit.common.resources.ResourceKey<com.bergerkiller.bukkit.common.resources.SoundEffect>) String sound:a;
+    private optional (String) SoundCategory category_1_10_2:###;
+    private int x:b;
+    private int y:c;
+    private int z:d;
+    private float volume:e;
+    private optional int pitch_1_8_8:f;
+    private optional float pitch_1_10_2:###;
+#endif
+
+    // Accessor functions for pitch
+    <code>
+    public float getPitch() {
+        if (T.pitch_1_10_2.isAvailable()) {
+            return T.pitch_1_10_2.getFloat(getRaw());
+        } else {
+            return (float) T.pitch_1_8_8.getInteger(getRaw()) / 63.0f;
+        }
+    }
+
+    public void setPitch(float pitch) {
+        if (T.pitch_1_10_2.isAvailable()) {
+            T.pitch_1_10_2.setFloat(getRaw(), pitch);
+        } else {
+            T.pitch_1_8_8.setInteger(getRaw(), (int) (pitch * 63.0f));
+        }
+    }
+    </code>
+
+    // Accessor function for sound category (by name)
+    // On MC 1.8.8 this does nothing (always returns "master")
+    <code>
+    public String getCategory() {
+        if (T.category_1_10_2.isAvailable()) {
+            return T.category_1_10_2.get(getRaw());
+        } else {
+            return "master";
+        }
+    }
+
+    public void setCategory(String categoryName) {
+        if (T.category_1_10_2.isAvailable()) {
+            T.category_1_10_2.set(getRaw(), categoryName);
+        } else {
+            // Do nothing, unused
+        }
+    }
+    </code>
+
+}
+
+// Since MC 1.9
+optional class PacketPlayOutCustomSoundEffect extends Packet {
+#if version >= 1.17
+    private (com.bergerkiller.bukkit.common.resources.ResourceKey<com.bergerkiller.bukkit.common.resources.SoundEffect>) net.minecraft.resources.MinecraftKey sound:name;
+#elseif version >= 1.13
+    private (com.bergerkiller.bukkit.common.resources.ResourceKey<com.bergerkiller.bukkit.common.resources.SoundEffect>) net.minecraft.resources.MinecraftKey sound:a;
+#else
+    private (com.bergerkiller.bukkit.common.resources.ResourceKey<com.bergerkiller.bukkit.common.resources.SoundEffect>) String sound:a;
+#endif
+
+#if version >= 1.17
+    private (String) SoundCategory category:source;
+    private int x;
+    private int y;
+    private int z;
+    private float volume;
+#else
+    private (String) SoundCategory category:b;
+    private int x:c;
+    private int y:d;
+    private int z:e;
+    private float volume:f;
+#endif
+
+#if version >= 1.17
+    private optional float opt_pitch_float:pitch;
+    private optional int opt_pitch_integer:###;
+#elseif version >= 1.10.2
+    private optional float opt_pitch_float:g;
+    private optional int opt_pitch_integer:###;
+#else
+    private optional float opt_pitch_float:###;
+    private optional int opt_pitch_integer:g;
+#endif
+
+    <code>
+    public void setPitch(float pitch) {
+        if (T.opt_pitch_float.isAvailable()) {
+            T.opt_pitch_float.setFloat(getRaw(), pitch);
+        } else {
+            T.opt_pitch_integer.setInteger(getRaw(), (int) (pitch * 63.0f));
+        }
+    }
+
+    public float getPitch() {
+        if (T.opt_pitch_float.isAvailable()) {
+            return T.opt_pitch_float.getFloat(getRaw());
+        } else {
+            return (float) T.opt_pitch_integer.getInteger(getRaw()) / 63.0f;
+        }
+    }
+    </code>
+}
+
+class PacketPlayInSteerVehicle extends Packet {
+#if version >= 1.17
+    private final float sideways:xxa;
+    private final float forwards:zza;
+    private final boolean jump:isJumping;
+    private final boolean unmount:isShiftKeyDown;
+#else
+    private float sideways:a;
+    private float forwards:b;
+    private boolean jump:c;
+    private boolean unmount:d;
+#endif
+}
+
+class PacketPlayOutPosition extends Packet {
+#if version >= 1.17
+    private double x:x;
+    private double y:y;
+    private double z:z;
+    private float yaw:yRot;
+    private float pitch:xRot;
+    private (Set<EnumPlayerTeleportFlagsHandle>) Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> teleportFlags:relativeArguments;
+
+    // >= MC 1.9
+    private optional int teleportWaitTimer:id;
+#else
+    private double x:a;
+    private double y:b;
+    private double z:c;
+    private float yaw:d;
+    private float pitch:e;
+    private (Set<EnumPlayerTeleportFlagsHandle>) Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> teleportFlags:f;
+
+    // >= MC 1.9
+    private optional int teleportWaitTimer:g;
+#endif
+
+    <code>
+    public int getTeleportWaitTimer() {
+        if (T.teleportWaitTimer.isAvailable()) {
+            return T.teleportWaitTimer.getInteger(getRaw());
+        } else {
+            return 0;
+        }
+    }
+
+    public void setTeleportWaitTimer(int ticks) {
+        if (T.teleportWaitTimer.isAvailable()) {
+            T.teleportWaitTimer.setInteger(getRaw(), ticks);
+        }
+    }
+
+    public void setRotationRelative(boolean relative) {
+        Set<EnumPlayerTeleportFlagsHandle> flags = getTeleportFlags();
+        if (relative) {
+            flags.add(EnumPlayerTeleportFlagsHandle.Y_ROT);
+            flags.add(EnumPlayerTeleportFlagsHandle.X_ROT);
+        } else {
+            flags.remove(EnumPlayerTeleportFlagsHandle.Y_ROT);
+            flags.remove(EnumPlayerTeleportFlagsHandle.X_ROT);
+        }
+    }
+
+    public void setPositionRelative(boolean relative) {
+        Set<EnumPlayerTeleportFlagsHandle> flags = getTeleportFlags();
+        if (relative) {
+            flags.add(EnumPlayerTeleportFlagsHandle.X);
+            flags.add(EnumPlayerTeleportFlagsHandle.Y);
+            flags.add(EnumPlayerTeleportFlagsHandle.Z);
+        } else {
+            flags.remove(EnumPlayerTeleportFlagsHandle.X);
+            flags.remove(EnumPlayerTeleportFlagsHandle.Y);
+            flags.remove(EnumPlayerTeleportFlagsHandle.Z);
+        }
+    }
+    </code>
+
+    public static (PacketPlayOutPositionHandle) PacketPlayOutPosition createRelative(double dx, double dy, double dz, float dyaw, float dpitch) {
+        java.util.Set flags = com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPositionHandle$EnumPlayerTeleportFlagsHandle.allRelative();
+#if version >= 1.17
+        return new PacketPlayOutPosition(dx, dy, dz, dyaw, dpitch, flags, 0, false);
+#elseif version >= 1.9
+        return new PacketPlayOutPosition(dx, dy, dz, dyaw, dpitch, flags, 0);
+#else
+        return new PacketPlayOutPosition(dx, dy, dz, dyaw, dpitch, flags);
+#endif
+    }
+
+    <code>
+    public static PacketPlayOutPositionHandle createAbsolute(org.bukkit.Location location) {
+        return createAbsolute(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+    }
+    </code>
+
+    public static (PacketPlayOutPositionHandle) PacketPlayOutPosition createAbsolute(double x, double y, double z, float yaw, float pitch) {
+        java.util.Set flags = com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutPositionHandle$EnumPlayerTeleportFlagsHandle.allAbsolute();
+#if version >= 1.17
+        return new PacketPlayOutPosition(x, y, z, yaw, pitch, flags, 0, false);
+#elseif version >= 1.9
+        return new PacketPlayOutPosition(x, y, z, yaw, pitch, flags, 0);
+#else
+        return new PacketPlayOutPosition(x, y, z, yaw, pitch, flags);
+#endif
+    }
+
+    class PacketPlayOutPosition.EnumPlayerTeleportFlags {
+        enum (EnumPlayerTeleportFlagsHandle) PacketPlayOutPosition.EnumPlayerTeleportFlags X;
+        enum (EnumPlayerTeleportFlagsHandle) PacketPlayOutPosition.EnumPlayerTeleportFlags Y;
+        enum (EnumPlayerTeleportFlagsHandle) PacketPlayOutPosition.EnumPlayerTeleportFlags Z;
+        enum (EnumPlayerTeleportFlagsHandle) PacketPlayOutPosition.EnumPlayerTeleportFlags Y_ROT;
+        enum (EnumPlayerTeleportFlagsHandle) PacketPlayOutPosition.EnumPlayerTeleportFlags X_ROT;
+
+        <code>
+        public static Set<?> allAbsolute() {
+            return java.util.EnumSet.noneOf((Class) T.getType());
+        }
+
+        public static Set<?> allRelative() {
+            return java.util.EnumSet.allOf((Class) T.getType());
+        }
+        </code>
+    }
+}
+
+// Available >= MC 1.9
+// Too complicated since 1.17 to use properly, Im disabling it.
+// And we never added the proper api's/wrapper types for the fields anyway.
+/*
+optional class PacketPlayOutBoss extends Packet {
+#if version >= 1.17
+    private UUID entityUUID:id;
+    private (Object) PacketPlayOutBoss.Action action:operation;
+
+    //TODO: Moved to Action class!
+    // ==================
+    private (Object) IChatBaseComponent chat:MOVED;
+    private float progress:MOVED;
+    private (Object) BossBattle.BarColor bossBarColor:MOVED;
+    private (Object) BossBattle.BarStyle bossBarStyle:MOVED;
+    private boolean unknown1:MOVED;
+    private boolean unknown2:MOVED;
+    private boolean unknown3:MOVED;
+    // ==================
+    
+#else
+    private UUID entityUUID:a;
+    private (Object) PacketPlayOutBoss.Action action:b;
+    private (Object) IChatBaseComponent chat:c;
+    private float progress:d;
+    private (Object) BossBattle.BarColor bossBarColor:e;
+    private (Object) BossBattle.BarStyle bossBarStyle:f;
+    private boolean unknown1:g;
+    private boolean unknown2:h;
+    private boolean unknown3:i;
+#endif
+}
+*/
+
+class PacketPlayOutAttachEntity extends Packet {
+#if version >= 1.17
+    private optional int leashId:###;
+    private int passengerId:sourceId;
+    private int vehicleId:destId;
+#elseif version >= 1.9
+    private optional int leashId:###;
+    private int passengerId:a;
+    private int vehicleId:b;
+#else
+    private optional int leashId:a;
+    private int passengerId:b;
+    private int vehicleId:c;
+#endif
+
+#if version >= 1.9
+    public boolean isLeash() {
+        return true;
+    }
+
+    public void setIsLeash(boolean isLeash) {
+    }
+
+    public static (PacketPlayOutAttachEntityHandle) PacketPlayOutAttachEntity createNewMount((org.bukkit.entity.Entity) Entity passengerEntity, (org.bukkit.entity.Entity) Entity vehicleEntity) {
+        throw new UnsupportedOperationException("Not supported >= MC 1.9, use Mount packet instead");
+    }
+
+    public static (PacketPlayOutAttachEntityHandle) PacketPlayOutAttachEntity createNewLeash((org.bukkit.entity.Entity) Entity leashedEntity, (org.bukkit.entity.Entity) Entity holderEntity) {
+        return new PacketPlayOutAttachEntity(leashedEntity, holderEntity);
+    }
+#else
+    #require net.minecraft.network.protocol.game.PacketPlayOutAttachEntity private int leashId:a;
+    public boolean isLeash() {
+        int leashId = instance#leashId;
+        return leashId == 1;
+    }
+
+    public void setIsLeash(boolean isLeash) {
+        int id = isLeash ? 1 : 0;
+        instance#leashId = id;
+    }
+
+    public static (PacketPlayOutAttachEntityHandle) PacketPlayOutAttachEntity createNewMount((org.bukkit.entity.Entity) Entity passengerEntity, (org.bukkit.entity.Entity) Entity vehicleEntity) {
+        return new PacketPlayOutAttachEntity(0, passengerEntity, vehicleEntity);
+    }
+
+    public static (PacketPlayOutAttachEntityHandle) PacketPlayOutAttachEntity createNewLeash((org.bukkit.entity.Entity) Entity leashedEntity, (org.bukkit.entity.Entity) Entity holderEntity) {
+        return new PacketPlayOutAttachEntity(1, leashedEntity, holderEntity);
+    }
+#endif
+
+    <code>
+    public static PacketPlayOutAttachEntityHandle createNewLeash(int leashedEntityId, int holderEntityId) {
+        PacketPlayOutAttachEntityHandle packet = T.newHandleNull();
+        packet.setVehicleId(holderEntityId);
+        packet.setPassengerId(leashedEntityId);
+        packet.setIsLeash(true);
+        return packet;
+    }
+
+    public static PacketPlayOutAttachEntityHandle createNewMount(int passengerEntityId, int vehicleEntityId) {
+        if (!T.leashId.isAvailable()) {
+            throw new UnsupportedOperationException("Not supported >= MC 1.9, use Mount packet instead");
+        }
+        PacketPlayOutAttachEntityHandle packet = T.newHandleNull();
+        packet.setVehicleId(vehicleEntityId);
+        packet.setPassengerId(passengerEntityId);
+        packet.setIsLeash(false);
+        return packet;
+    }
+    </code>
+}
+
+class PacketPlayOutEntityEquipment extends Packet {
+#if version >= 1.17
+    private int entityId:entity;
+#else
+    private int entityId:a;
+#endif
+
+#if version >= 1.16
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment private final java.util.List<com.mojang.datafixers.util.Pair<net.minecraft.world.entity.EnumItemSlot, net.minecraft.world.item.ItemStack>> slots;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment private final java.util.List<com.mojang.datafixers.util.Pair<net.minecraft.world.entity.EnumItemSlot, net.minecraft.world.item.ItemStack>> slots:b;
+  #endif
+
+    // Multiple slots are possible
+    public int getSlotCount() {
+        java.util.List slots = instance#slots;
+        return slots.size();
+    }
+
+    public static (PacketPlayOutEntityEquipmentHandle) PacketPlayOutEntityEquipment createNew(int entityId, (org.bukkit.inventory.EquipmentSlot) EnumItemSlot slot, (org.bukkit.inventory.ItemStack) ItemStack itemStack) {
+        java.util.List slots = com.google.common.collect.Lists.newArrayList();
+        slots.add(com.mojang.datafixers.util.Pair.of(slot, itemStack));
+        return new PacketPlayOutEntityEquipment(entityId, slots);
+    }
+
+    public (org.bukkit.inventory.EquipmentSlot) EnumItemSlot getEquipmentSlot(int index) {
+        java.util.List slots = instance#slots;
+        com.mojang.datafixers.util.Pair entry = (com.mojang.datafixers.util.Pair) slots.get(index);
+        return (EnumItemSlot) entry.getFirst();
+    }
+
+    public void setEquipmentSlot(int index, (org.bukkit.inventory.EquipmentSlot) EnumItemSlot slot) {
+        java.util.List slots = instance#slots;
+        com.mojang.datafixers.util.Pair entry = (com.mojang.datafixers.util.Pair) slots.get(index);
+        slots.set(index, com.mojang.datafixers.util.Pair.of(slot, entry.getSecond()));
+    }
+
+    public (org.bukkit.inventory.ItemStack) ItemStack getItemStack(int index) {
+        java.util.List slots = instance#slots;
+        com.mojang.datafixers.util.Pair entry = (com.mojang.datafixers.util.Pair) slots.get(index);
+        return (ItemStack) entry.getSecond();
+    }
+
+    public void setItemStack(int index, (org.bukkit.inventory.ItemStack) ItemStack itemStack) {
+        java.util.List slots = instance#slots;
+        com.mojang.datafixers.util.Pair entry = (com.mojang.datafixers.util.Pair) slots.get(index);
+        slots.set(index, com.mojang.datafixers.util.Pair.of(entry.getFirst(), itemStack));
+    }
+#else
+    // Only one slot is possible
+    public int getSlotCount() {
+        return 1;
+    }
+
+  #if version >= 1.9
+    public static (PacketPlayOutEntityEquipmentHandle) PacketPlayOutEntityEquipment createNew(int entityId, (org.bukkit.inventory.EquipmentSlot) EnumItemSlot slot, (org.bukkit.inventory.ItemStack) ItemStack itemStack) {
+        return new PacketPlayOutEntityEquipment(entityId, slot, itemStack);
+    }
+  #else
+    public static (PacketPlayOutEntityEquipmentHandle) PacketPlayOutEntityEquipment createNew(int entityId, (org.bukkit.inventory.EquipmentSlot) int slot, (org.bukkit.inventory.ItemStack) ItemStack itemStack) {
+        return new PacketPlayOutEntityEquipment(entityId, slot, itemStack);
+    }
+  #endif
+
+  #if version >= 1.9
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment private net.minecraft.world.entity.EnumItemSlot slot:b;
+    public (org.bukkit.inventory.EquipmentSlot) EnumItemSlot getEquipmentSlot(int index) {
+        if (index != 0) { throw new IndexOutOfBoundsException("Index out of range: " + index); }
+        return instance#slot;
+    }
+    public void setEquipmentSlot(int index, (org.bukkit.inventory.EquipmentSlot) EnumItemSlot slot) {
+        if (index != 0) { throw new IndexOutOfBoundsException("Index out of range: " + index); }
+        instance#slot = slot;
+    }
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment private (org.bukkit.inventory.EquipmentSlot) int slot:b;
+    public (org.bukkit.inventory.EquipmentSlot) int getEquipmentSlot(int index) {
+        if (index != 0) { throw new IndexOutOfBoundsException("Index out of range: " + index); }
+        return instance#slot;
+    }
+    public void setEquipmentSlot(int index, (org.bukkit.inventory.EquipmentSlot) int slot) {
+        if (index != 0) { throw new IndexOutOfBoundsException("Index out of range: " + index); }
+        instance#slot = slot;
+    }
+  #endif
+
+    #require net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment private net.minecraft.world.item.ItemStack itemStack:c;
+    public (org.bukkit.inventory.ItemStack) ItemStack getItemStack(int index) {
+        if (index != 0) { throw new IndexOutOfBoundsException("Index out of range: " + index); }
+        return instance#itemStack;
+    }
+    public void setItemStack(int slot, (org.bukkit.inventory.ItemStack) ItemStack itemStack) {
+        if (index != 0) { throw new IndexOutOfBoundsException("Index out of range: " + index); }
+        instance#itemStack = itemStack;
+    }
+#endif
+}
+
+// Only available >= MC 1.9
+optional class PacketPlayOutMount extends Packet {
+#if version >= 1.17
+    private int entityId:vehicle;
+    private int[] mountedEntityIds:passengers;
+#else
+    private int entityId:a;
+    private int[] mountedEntityIds:b;
+#endif
+
+    public static (PacketPlayOutMountHandle) PacketPlayOutMount createNew() {
+#if version >= 1.17
+        return new PacketPlayOutMount(com.bergerkiller.bukkit.common.internal.logic.NullPacketDataSerializer.INSTANCE);
+#else
+        return new PacketPlayOutMount();
+#endif
+    }
+
+    <code>
+    public void addMountedEntityId(int entityId) {
+        int[] oldIds = this.getMountedEntityIds();
+        if (oldIds == null || oldIds.length == 0) {
+            this.setMountedEntityIds(new int[] {entityId});
+        } else {
+            int[] newIds = new int[oldIds.length + 1];
+            for (int i = 0; i < oldIds.length; i++) {
+                newIds[i] = oldIds[i];
+            }
+            newIds[newIds.length - 1] = entityId;
+            this.setMountedEntityIds(newIds);
+        }
+    }
+
+    public static PacketPlayOutMountHandle createNew(int entityId, int[] mountedEntityIds) {
+        PacketPlayOutMountHandle handle = createNew();
+        handle.setEntityId(entityId);
+        handle.setMountedEntityIds(mountedEntityIds);
+        return handle;
+    }
+    </code>
+}
+
+// Gone since 1.17, not worth keeping.
+/*
+class PacketPlayOutCombatEvent extends Packet {
+    public (Object) PacketPlayOutCombatEvent.EnumCombatEventType eventType:a;
+    public int entityId1:b;
+    public int entityId2:c;
+    public int tickDuration:d;
+#if version >= 1.9
+    public (ChatText) IChatBaseComponent message:e;
+#else
+    public (ChatText) String message:e;
+#endif
+}
+*/
+
+// Only >= MC 1.9
+optional class PacketPlayOutSetCooldown extends Packet {
+#if version >= 1.17
+    private (org.bukkit.Material) Item material:item;
+    private int cooldown:duration;
+#else
+    private (org.bukkit.Material) Item material:a;
+    private int cooldown:b;
+#endif
+}
+
+class PacketPlayInSettings extends Packet {
+#if version >= 1.17
+    public String locale:language;
+#elseif version >= 1.16
+    public String locale;
+#else
+    private String locale:a;
+#endif
+
+#if version >= 1.17
+    public int view:viewDistance;
+#elseif fieldexists net.minecraft.network.protocol.game.PacketPlayInSettings public int viewDistance
+    public int view:viewDistance;
+#else
+    private int view:b;
+#endif
+
+#if version >= 1.17
+    private (Object) EnumChatVisibility chatVisibility;
+    private boolean enableColors:chatColors;
+    private int modelPartFlags:modelCustomisation;
+    private optional (HumanHand) net.minecraft.world.entity.EnumMainHand mainHand;
+#else
+    private (Object) EnumChatVisibility chatVisibility:c;
+    private boolean enableColors:d;
+    private int modelPartFlags:e;
+    private optional (HumanHand) net.minecraft.world.entity.EnumMainHand mainHand:f;
+#endif
+
+    //TODO: textFilteringEnabled
+
+    <code>
+    public HumanHand getMainHand() {
+        if (T.mainHand.isAvailable()) {
+            return T.mainHand.get(getRaw());
+        } else {
+            return HumanHand.RIGHT;
+        }
+    }
+
+    public void setMainHand(HumanHand mainHand) {
+        if (T.mainHand.isAvailable()) {
+            T.mainHand.set(getRaw(), mainHand);
+        }
+    }
+    </code>
+}
+
+// Changed completely on MC 1.13
+// class PacketPlayInTabComplete extends Packet {
+//     private String text:a;
+// #if version >= 1.9
+//     private optional boolean assumeCommand:b;
+//     private (IntVector3) BlockPosition position:c;
+// #else
+//     private optional boolean assumeCommand:###;
+//     private (IntVector3) BlockPosition position:b;
+// #endif
+// }
+
+class PacketPlayInResourcePackStatus extends Packet {
+    private optional String message:a;
+
+#if version >= 1.17
+    public (Object) PacketPlayInResourcePackStatus.EnumResourcePackStatus status:action;
+#elseif version >= 1.9
+    public (Object) PacketPlayInResourcePackStatus.EnumResourcePackStatus status;
+#else
+    public (Object) PacketPlayInResourcePackStatus.EnumResourcePackStatus status:b;
+#endif
+}
+
+class PacketPlayInSetCreativeSlot extends Packet {
+#if version >= 1.17
+    private int slot:slotNum;
+    private (org.bukkit.inventory.ItemStack) ItemStack item:itemStack;
+#else
+    private int slot;
+    private (org.bukkit.inventory.ItemStack) ItemStack item:b;
+#endif
+}
+
+class PacketPlayOutEntityMetadata extends Packet {
+#if version >= 1.17
+    private int entityId:id;
+#else
+    private int entityId:a;
+#endif
+
+#if version >= 1.17
+    private (List<com.bergerkiller.bukkit.common.wrappers.DataWatcher.Item<Object>>) List<DataWatcher.Item<?>> metadataItems:packedItems;
+#elseif version >= 1.9
+    private (List<com.bergerkiller.bukkit.common.wrappers.DataWatcher.Item<Object>>) List<DataWatcher.Item<?>> metadataItems:b;
+#else
+    private (List<com.bergerkiller.bukkit.common.wrappers.DataWatcher.Item<Object>>) List<DataWatcher.WatchableObject> metadataItems:b;
+#endif
+
+    public (PacketPlayOutEntityMetadataHandle) PacketPlayOutEntityMetadata(int entityId, (com.bergerkiller.bukkit.common.wrappers.DataWatcher) DataWatcher datawatcher, boolean includeUnchangedData);
+
+    <code>
+    @Override
+    public com.bergerkiller.bukkit.common.protocol.PacketType getPacketType() {
+        return com.bergerkiller.bukkit.common.protocol.PacketType.OUT_ENTITY_METADATA;
+    }
+    </code>
+}
+
+class PacketPlayOutUpdateAttributes extends Packet {
+    private int entityId:a;
+
+    public static (PacketPlayOutUpdateAttributesHandle) PacketPlayOutUpdateAttributes createNew(int entityId, (java.util.Collection<AttributeModifiableHandle>) java.util.Collection<AttributeModifiable> attributes) {
+        return new PacketPlayOutUpdateAttributes(entityId, attributes);
+    }
+
+    public static (PacketPlayOutUpdateAttributesHandle) PacketPlayOutUpdateAttributes createZeroMaxHealth(int entityId) {
+#if version >= 1.16
+        // Internal code uses a Consumer for callbacks, so no need to create a proxy for that
+        java.util.function.Consumer callback = com.bergerkiller.bukkit.common.utils.LogicUtil.noopConsumer();
+        AttributeModifiable attribute = new AttributeModifiable(net.minecraft.world.entity.ai.attributes.GenericAttributes.MAX_HEALTH, callback);
+#else
+        // Internal code calls a callback on this instance, so we need a dummy one to catch that
+        AttributeMapBase attributeMapBase = (AttributeMapBase) com.bergerkiller.bukkit.common.internal.proxy.DummyAttributeMapBase.INSTANCE;
+
+        // Create a modifiable attribute for MAX_HEALTH, and set the value to 0
+  #if version >= 1.14
+        AttributeModifiable attribute = new AttributeModifiable(attributeMapBase, GenericAttributes.MAX_HEALTH);
+  #else
+        AttributeModifiable attribute = new AttributeModifiable(attributeMapBase, GenericAttributes.maxHealth);
+  #endif
+#endif
+
+#if version >= 1.18
+        attribute.setBaseValue(0.0);
+#else
+        attribute.setValue(0.0);
+#endif
+
+        // Create packet sending just this one attribute
+        java.util.Collection attributes = java.util.Collections.singleton(attribute);
+        return new PacketPlayOutUpdateAttributes(entityId, attributes);
+    }
+}
+
+class PacketPlayInUpdateSign extends Packet {
+#if version >= 1.17
+    private (IntVector3) BlockPosition position:pos;
+#else
+    private (IntVector3) BlockPosition position:a;
+#endif
+
+#if version >= 1.17
+    private (ChatText[]) String[] lines;
+#elseif version >= 1.9
+    private (ChatText[]) String[] lines:b;
+#else
+    private (ChatText[]) IChatBaseComponent[] lines:b;
+#endif
+}
+
+class PacketPlayInWindowClick extends Packet {
+#if version >= 1.17
+    private int windowId:containerId;
+    private int slot:slotNum;
+    private int button:buttonNum;
+    private (org.bukkit.inventory.ItemStack) ItemStack item:carriedItem;
+#else
+    private int windowId:a;
+    private int slot;
+    private int button;
+    private unknown short action:d; //TODO: Do something with this?
+    private (org.bukkit.inventory.ItemStack) ItemStack item;
+#endif
+
+#if version >= 1.17
+    private (com.bergerkiller.bukkit.common.wrappers.InventoryClickType) net.minecraft.world.inventory.InventoryClickType mode:clickType;
+#elseif version >= 1.9
+    private (com.bergerkiller.bukkit.common.wrappers.InventoryClickType) net.minecraft.world.inventory.InventoryClickType mode:shift;
+#else
+    private (com.bergerkiller.bukkit.common.wrappers.InventoryClickType) int mode:shift;
+#endif
+}
+
+// Since MC 1.9
+optional class PacketPlayInTeleportAccept extends Packet {
+#if version >= 1.17
+    private int teleportId:id;
+#else
+    private int teleportId:a;
+#endif
+}
+
+// Only <= MC 1.8.8
+optional class PacketPlayOutUpdateSign extends Packet {
+    private (org.bukkit.World) World world:a;
+    private (IntVector3) BlockPosition position:b;
+    private (ChatText[]) IChatBaseComponent[] lines:c;
+}
+
+class PacketPlayOutWorldParticles extends Packet {
+    // TODO: Create a common interface for particle + data
+    // Since 1.13 there is a ParticleParam with many different types
+    // Best option would be coming up with a proxy similar to this for <= 1.12.2
+#if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private double pos_x:x;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private double pos_y:y;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private double pos_z:z;
+    private float randomX:xDist;
+    private float randomY:yDist;
+    private float randomZ:zDist;
+    private float speed:maxSpeed;
+    private int count;
+    private boolean longDistance:overrideLimiter;
+    private unknown net.minecraft.core.particles.ParticleParam particle;
+#elseif version >= 1.15
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private double pos_x:a;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private double pos_y:b;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private double pos_z:c;
+    private float randomX:d;
+    private float randomY:e;
+    private float randomZ:f;
+    private float speed:g;
+    private int count:h;
+    private boolean longDistance:i;
+    private unknown ParticleParam j;
+#elseif version >= 1.13
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private float pos_x:a;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private float pos_y:b;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private float pos_z:c;
+    private float randomX:d;
+    private float randomY:e;
+    private float randomZ:f;
+    private float speed:g;
+    private int count:h;
+    private boolean longDistance:i;
+    private unknown ParticleParam j;
+#else
+    private unknown EnumParticle a;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private float pos_x:b;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private float pos_y:c;
+    #require net.minecraft.network.protocol.game.PacketPlayOutWorldParticles private float pos_z:d;
+    private float randomX:e;
+    private float randomY:f;
+    private float randomZ:g;
+    private float speed:h;
+    private int count:i;
+    private boolean longDistance:j;
+    private unknown int[] k;
+#endif
+
+    public double getX() {
+        return (double) instance#pos_x;
+    }
+
+    public double getY() {
+        return (double) instance#pos_y;
+    }
+
+    public double getZ() {
+        return (double) instance#pos_z;
+    }
+
+#if version >= 1.15
+    public void setX(double x) {
+        instance#pos_x = x;
+    }
+
+    public void setY(double y) {
+        instance#pos_y = y;
+    }
+
+    public void setZ(double z) {
+        instance#pos_z = z;
+    }
+#else
+    public void setX(double x) {
+        instance#pos_x = (float)x;
+    }
+
+    public void setY(double y) {
+        instance#pos_y = (float)y;
+    }
+
+    public void setZ(double z) {
+        instance#pos_z = (float)z;
+    }
+#endif
+}
+
+class PacketPlayOutKickDisconnect extends Packet {
+#if version >= 1.17
+  private (ChatText) IChatBaseComponent reason;
+#else
+  private (ChatText) IChatBaseComponent reason:a;
+#endif
+}
+
+class PacketPlayOutBlockChange extends Packet {
+#if version >= 1.17
+    private final (IntVector3) BlockPosition position:pos;
+    public final (com.bergerkiller.bukkit.common.wrappers.BlockData) IBlockData blockData:blockState;
+#else
+    private (IntVector3) BlockPosition position:a;
+    public (com.bergerkiller.bukkit.common.wrappers.BlockData) IBlockData blockData:block;
+#endif
+}
+
+class PacketPlayOutBlockBreakAnimation extends Packet {
+#if version >= 1.17
+    private final int id;
+    private final (IntVector3) BlockPosition position:pos;
+    private final int progress;
+#else
+    private int id:a;
+    private (IntVector3) BlockPosition position:b;
+    private int progress:c;
+#endif
+}
+
+class PacketPlayOutBlockAction extends Packet {
+#if version >= 1.17
+    private final (IntVector3) BlockPosition position:pos;
+    private final int b0;
+    private final int b1;
+    private final (org.bukkit.Material) net.minecraft.world.level.block.Block block;
+#else
+    private (IntVector3) BlockPosition position:a;
+    private int b0:b;
+    private int b1:c;
+    private (org.bukkit.Material) net.minecraft.world.level.block.Block block:d;
+#endif
+}
+
+class PacketPlayOutCamera extends Packet {
+#if version >= 1.17
+    private final int entityId:cameraId;
+#else
+    public int entityId:a;
+#endif
+}
+
+class PacketPlayInHeldItemSlot extends Packet {
+#if version >= 1.17
+    private final int itemInHandIndex:slot;
+#else
+    private int itemInHandIndex;
+#endif
+}
+
+class PacketPlayInChat extends Packet {
+#if version >= 1.17
+    private final String message;
+#else
+    private String message:a;
+#endif
+}
+
+class PacketPlayOutTileEntityData extends Packet {
+#if version >= 1.18
+    private final (IntVector3) BlockPosition position:pos;
+    private final (BlockStateType) TileEntityTypes<?> type;
+    private final (CommonTagCompound) NBTTagCompound data:tag;
+#elseif version >= 1.17
+    private final (IntVector3) BlockPosition position:pos;
+    private final (BlockStateType) int type;
+    private final (CommonTagCompound) NBTTagCompound data:tag;
+#else
+    private (IntVector3) BlockPosition position:a;
+    private (BlockStateType) int type:b;
+    private (CommonTagCompound) NBTTagCompound data:c;
+#endif
+
+#if version >= 1.18
+    private (PacketPlayOutTileEntityDataHandle) PacketPlayOutTileEntityData((IntVector3) BlockPosition blockPosition, (BlockStateType) TileEntityTypes<?> type, (CommonTagCompound) NBTTagCompound data);
+#else
+    public (PacketPlayOutTileEntityDataHandle) PacketPlayOutTileEntityData((IntVector3) BlockPosition blockPosition, (BlockStateType) int type, (CommonTagCompound) NBTTagCompound data);
+#endif
+}
+
+class PacketPlayOutOpenSignEditor extends Packet {
+#if version >= 1.17
+    private final (IntVector3) BlockPosition signPosition:pos;
+#else
+    private (IntVector3) BlockPosition signPosition:a;
+#endif
+}
+
+class PacketPlayOutExplosion extends Packet {
+#if version >= 1.17
+    private final double x;
+    private final double y;
+    private final double z;
+    private final float power;
+    private final (List<IntVector3>) List<BlockPosition> blocks:toBlow;
+    private final float knockbackX;
+    private final float knockbackY;
+    private final float knockbackZ;
+#else
+    private double x:a;
+    private double y:b;
+    private double z:c;
+    private float power:d;
+    private (List<IntVector3>) List<BlockPosition> blocks:e;
+    private float knockbackX:f;
+    private float knockbackY:g;
+    private float knockbackZ:h;
+#endif
+
+    public (PacketPlayOutExplosionHandle) PacketPlayOutExplosion(double x, double y, double z, float power, (List<IntVector3>) List<BlockPosition> blocks, (org.bukkit.util.Vector) Vec3D knockback);
+}
+
+class PacketPlayOutEntityEffect extends Packet {
+    <code>
+    public static final int FLAG_AMBIENT = 1;
+    public static final int FLAG_VISIBLE = 2;
+    public static final int FLAG_SHOW_ICON = 4;
+    </code>
+
+#if version >= 1.17
+    private final int entityId;
+    private final byte effectId;
+    private final byte effectAmplifier;
+    private final int effectDurationTicks;
+    private final byte flags;
+#else
+    private int entityId:a;
+    private byte effectId:b;
+    private byte effectAmplifier:c;
+    private int effectDurationTicks:d;
+    private byte flags:e;
+#endif
+
+    public (PacketPlayOutEntityEffectHandle) PacketPlayOutEntityEffect(int entityId, (org.bukkit.potion.PotionEffect) MobEffect mobeffect);
+}
+
+class PacketPlayOutAbilities extends Packet {
+#if version >= 1.17
+    private final boolean invulnerable;
+    private final boolean isFlying;
+    private final boolean canFly;
+    private final boolean instabuild;
+    private final float flyingSpeed;
+    private final float walkingSpeed;
+#else
+    private boolean invulnerable:a;
+    private boolean isFlying:b;
+    private boolean canFly:c;
+    private boolean instabuild:d;
+    private float flyingSpeed:e;
+    private float walkingSpeed:f;
+#endif
+
+    public (PacketPlayOutAbilitiesHandle) PacketPlayOutAbilities((com.bergerkiller.bukkit.common.wrappers.PlayerAbilities) net.minecraft.world.entity.player.PlayerAbilities abilities);
+}
+
+class PacketPlayOutWorldEvent extends Packet {
+#if version >= 1.17
+    private final int effectId:type;
+    private final (IntVector3) BlockPosition position:pos;
+    private final int data;
+    private final boolean globalEvent;
+#else
+    private int effectId:a;
+    private (IntVector3) BlockPosition position:b;
+    private int data:c;
+    private boolean globalEvent:d;
+#endif
+}
+
+class PacketPlayOutResourcePackSend extends Packet {
+#if version >= 1.17
+    private final String url;
+    private final String hash;
+#else
+    private String url:a;
+    private String hash:b;
+#endif
+
+#if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutResourcePackSend private final boolean required;
+    #require net.minecraft.network.protocol.game.PacketPlayOutResourcePackSend private final IChatBaseComponent prompt;
+
+    public void setRequired(boolean required) {
+        instance#required = required;
+    }
+
+    public boolean isRequired() {
+        return instance#required;
+    }
+
+    public void setPrompt((ChatText) IChatBaseComponent prompt) {
+        instance#prompt = prompt;
+    }
+
+    public (ChatText) IChatBaseComponent getPrompt() {
+        return instance#prompt;
+    }
+#else
+    public void setRequired(boolean required) {
+    }
+
+    public boolean isRequired() {
+        return false;
+    }
+
+    public void setPrompt((ChatText) IChatBaseComponent prompt) {
+    }
+
+    public (ChatText) IChatBaseComponent getPrompt() {
+        return null;
+    }
+#endif
+}
+
+class PacketPlayOutSpawnPosition extends Packet {
+#if version >= 1.17
+    public final (IntVector3) BlockPosition position:pos;
+#else
+    public (IntVector3) BlockPosition position;
+#endif
+
+#if version >= 1.16.2
+  #if version >= 1.17
+    #require net.minecraft.network.protocol.game.PacketPlayOutSpawnPosition private final float angle;
+  #else
+    #require net.minecraft.network.protocol.game.PacketPlayOutSpawnPosition private float angle:b;
+  #endif
+
+    public void setAngle(float angle) {
+        instance#angle = angle;
+    }
+
+    public float getAngle() {
+        return instance#angle;
+    }
+#else
+    public void setAngle(float angle) {
+    }
+
+    public float getAngle() {
+        return 0.0f;
+    }
+#endif
+}
+
+class PacketPlayInEntityAction extends Packet {
+#if version >= 1.17
+    private final int playerId:id;
+    private final (Object) PacketPlayInEntityAction.EnumPlayerAction action;
+    private final int data;
+#else
+    private int playerId:a;
+    private (Object) PacketPlayInEntityAction.EnumPlayerAction action:animation;
+    private int data:c;
+#endif
+}
+
+class PacketPlayInCloseWindow extends Packet {
+#if version >= 1.17
+    private final int windowId:containerId;
+#else
+    private int windowId:id;
+#endif
+}
+
+class PacketPlayInEnchantItem extends Packet {
+#if version >= 1.17
+    private final int windowId:containerId;
+    private final int buttonId;
+#else
+    private int windowId:a;
+    private int buttonId:b;
+#endif
+}
+
+class PacketPlayInSpectate extends Packet {
+#if version >= 1.17
+    private final UUID uuid;
+#else
+    private UUID uuid:a;
+#endif
+
+    public (PacketPlayInSpectateHandle) PacketPlayInSpectate(UUID uuid);
+}

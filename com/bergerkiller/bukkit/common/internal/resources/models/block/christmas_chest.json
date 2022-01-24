@@ -1,0 +1,6 @@
+{
+    "parent": "block/chest_single_base",
+    "textures": {
+        "chest": "entity/chest/christmas"
+    }
+}

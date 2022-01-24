@@ -1,0 +1,216 @@
+package net.minecraft.world.item.crafting;
+
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+
+import com.bergerkiller.bukkit.common.inventory.CraftInputSlot;
+
+import com.bergerkiller.generated.net.minecraft.world.item.crafting.CraftingManagerHandle;
+import com.bergerkiller.generated.net.minecraft.world.item.crafting.RecipesFurnaceHandle;
+import com.bergerkiller.generated.net.minecraft.world.item.crafting.IRecipeHandle;
+import com.bergerkiller.generated.net.minecraft.world.item.crafting.FurnaceRecipeHandle;
+import com.bergerkiller.generated.net.minecraft.world.item.ItemStackHandle;
+
+#if version >= 1.12
+
+class IRecipe {
+#if version >= 1.15
+    public (org.bukkit.inventory.ItemStack) ItemStack getOutput() {
+        if (instance instanceof RecipeFireworks) {
+            // Special case (see getIngredients code)
+            net.minecraft.world.item.ItemStack itemstack = new ItemStack(net.minecraft.world.item.Items.FIREWORK_ROCKET, 3);
+  #if version >= 1.18
+            net.minecraft.nbt.NBTTagCompound nbttagcompound = itemstack.getOrCreateTagElement("Fireworks");
+            nbttagcompound.putByte("Flight", (byte) 3);
+  #else
+            net.minecraft.nbt.NBTTagCompound nbttagcompound = itemstack.a("Fireworks");
+            nbttagcompound.setByte("Flight", (byte) 3);
+  #endif
+            return itemstack;
+        } else {
+  #if version >= 1.18
+            return instance.getResultItem();
+  #else
+            return instance.getResult();
+  #endif
+        }
+    }
+#elseif version >= 1.14
+    public abstract (org.bukkit.inventory.ItemStack) ItemStack getOutput:c();
+#elseif version >= 1.13
+    public abstract (org.bukkit.inventory.ItemStack) ItemStack getOutput:d();
+#else
+    public abstract (org.bukkit.inventory.ItemStack) ItemStack getOutput:b();
+#endif
+
+    public abstract (List<CraftInputSlot>) NonNullList<RecipeItemStack> getIngredients() {
+        if (instance instanceof ShapedRecipes) {
+            ShapedRecipes s = (ShapedRecipes) instance;
+#select version >=
+#case 1.18:     return s.getIngredients();
+#case 1.14:     return s.a();
+#case 1.13:     return s.e();
+#case 1.12.1:   return s.d();
+#case else:     #require net.minecraft.world.item.crafting.ShapedRecipes private final NonNullList<RecipeItemStack> items;
+                return instance#items;
+#endselect
+        } else if (instance instanceof ShapelessRecipes) {
+            ShapelessRecipes s = (ShapelessRecipes) instance;
+#select version >=
+#case 1.18:     return s.getIngredients();
+#case 1.14:     return s.a();
+#case 1.13:     return s.e();
+#case 1.12.1:   return s.d();
+#case else:     #require net.minecraft.world.item.crafting.ShapelessRecipes private final NonNullList<RecipeItemStack> ingredients;
+                return instance#ingredients;
+#endselect
+
+#if version >= 1.15
+        } else if (instance instanceof RecipeFireworks) {
+            // Fireworks are a 'complex' recipe with many possible options
+            // To sort of work properly rather than not at all, default to
+            // crafting a flight 3 firework:
+            // Shapeless(1 paper + 3 gunpowder) -> Flight 3 firework
+            Object[] ingredients = new Object[4];
+  #if version >= 1.18
+            ingredients[0] = RecipeItemStack.of(new net.minecraft.world.item.Item[] { net.minecraft.world.item.Items.PAPER });
+            ingredients[1] = RecipeItemStack.of(new net.minecraft.world.item.Item[] { net.minecraft.world.item.Items.GUNPOWDER });
+            ingredients[2] = ingredients[1];
+            ingredients[3] = ingredients[1];
+            return NonNullList.of((Object) RecipeItemStack.EMPTY, ingredients);
+  #else
+            ingredients[0] = RecipeItemStack.a(new net.minecraft.world.item.Item[] { net.minecraft.world.item.Items.PAPER });
+            ingredients[1] = RecipeItemStack.a(new net.minecraft.world.item.Item[] { net.minecraft.world.item.Items.GUNPOWDER });
+            ingredients[2] = ingredients[1];
+            ingredients[3] = ingredients[1];
+    #if version >= 1.17
+            return NonNullList.a((Object) RecipeItemStack.EMPTY, ingredients);
+    #else
+            return NonNullList.a((Object) RecipeItemStack.a, ingredients);
+    #endif
+  #endif
+#endif
+        } else {
+            return null;
+        }
+    }
+}
+
+#else
+
+interface IRecipe {
+    public abstract (org.bukkit.inventory.ItemStack) ItemStack getOutput:b();
+    public abstract (List<CraftInputSlot>) List<ItemStack> getIngredients();
+}
+
+#endif
+
+// >= MC 1.12
+optional class RecipeItemStack {
+#if version >= 1.17
+    #require net.minecraft.world.item.crafting.RecipeItemStack public ItemStack[] choicesRecipeItemStack:itemStacks;
+#elseif version >= 1.12
+    #require net.minecraft.world.item.crafting.RecipeItemStack public final ItemStack[] choicesRecipeItemStack:choices;
+#endif
+
+    public (List<org.bukkit.inventory.ItemStack>) ItemStack[] getChoices() {
+#if version >= 1.18
+        instance.dissolve();
+#elseif version >= 1.13
+        instance.buildChoices();
+#endif
+        return instance#choicesRecipeItemStack;
+    }
+
+    public void setChoices((List<org.bukkit.inventory.ItemStack>) ItemStack[] choices) {
+        instance#choicesRecipeItemStack = choices;
+    }
+
+    <code>
+    public static Object createRawRecipeItemStack(List<org.bukkit.inventory.ItemStack> choices) {
+        Object raw = T.newInstanceNull();
+        T.setChoices.invoke(raw, choices);
+        return raw;
+    }
+    </code>
+}
+
+// <= MC 1.12.2
+optional class RecipesFurnace {
+    public (Map<org.bukkit.inventory.ItemStack, org.bukkit.inventory.ItemStack>) Map<ItemStack, ItemStack> recipes;
+
+    public static (RecipesFurnaceHandle) RecipesFurnace getInstance();
+
+    public (ItemStackHandle) ItemStack getResult((ItemStackHandle) ItemStack itemstack);
+
+}
+
+// >= MC 1.13
+optional class FurnaceRecipe extends IRecipe {
+    public (CraftInputSlot) RecipeItemStack getIngredient() {
+#if version >= 1.14
+        #require net.minecraft.world.item.crafting.RecipeCooking protected final RecipeItemStack ingredient;
+#elseif version >= 1.13
+        #require net.minecraft.world.item.crafting.FurnaceRecipe private final RecipeItemStack ingredient;
+#endif
+        return instance#ingredient;
+    }
+
+    public static (Iterable<FurnaceRecipeHandle>) Iterable<FurnaceRecipe> getRecipes() {
+#if version >= 1.18
+        java.util.Iterator allRecipes = MinecraftServer.getServer().getRecipeManager().getRecipes().iterator();
+#else
+        java.util.Iterator allRecipes = MinecraftServer.getServer().getCraftingManager().b().iterator();
+#endif
+        java.util.List filteredResult = new java.util.ArrayList();
+        while (allRecipes.hasNext()) {
+            Object recipe = allRecipes.next();
+            if (recipe instanceof FurnaceRecipe) {
+                filteredResult.add(recipe);
+            }
+        }
+        return filteredResult;
+    }
+}
+
+class CraftingManager {
+    public static (Iterable<IRecipeHandle>) Iterable<IRecipe> getRecipes() {
+#if version >= 1.13
+  #if version >= 1.18
+        java.util.Iterator allRecipes = MinecraftServer.getServer().getRecipeManager().getRecipes().iterator();
+  #else
+        java.util.Iterator allRecipes = MinecraftServer.getServer().getCraftingManager().b().iterator();
+  #endif
+        java.util.List filteredResult = new java.util.ArrayList();
+        while (allRecipes.hasNext()) {
+            Object recipe = allRecipes.next();
+            if (recipe instanceof FurnaceRecipe) {
+                continue;
+            }
+
+            // Since Minecraft 1.17 the fireworks recipe exists twice
+            // One is shapeless, the other is complex
+            // Correct for this and only keep the complex one!
+  #if version >= 1.18
+            if (!(recipe instanceof RecipeFireworks) && ((IRecipe) recipe).getResultItem().getItem() == Items.FIREWORK_ROCKET) {
+                continue;
+            }
+  #elseif version >= 1.17
+            if (!(recipe instanceof RecipeFireworks) && ((IRecipe) recipe).getResult().getItem() == Items.FIREWORK_ROCKET) {
+                continue;
+            }
+  #endif
+
+            filteredResult.add(recipe);
+        }
+        return filteredResult;
+#elseif version >= 1.12
+        return CraftingManager.recipes;
+#else
+        return CraftingManager.getInstance().recipes;
+#endif
+    }
+}

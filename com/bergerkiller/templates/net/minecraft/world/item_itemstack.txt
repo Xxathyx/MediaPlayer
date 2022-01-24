@@ -1,0 +1,252 @@
+package net.minecraft.world.item;
+
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.IMaterial;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTNumber;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagLong;
+
+import com.bergerkiller.bukkit.common.nbt.CommonTagCompound;
+import com.bergerkiller.generated.net.minecraft.world.item.crafting.RecipesFurnaceHandle;
+import com.bergerkiller.generated.net.minecraft.world.item.ItemStackHandle;
+import com.bergerkiller.generated.net.minecraft.world.level.block.state.IBlockDataHandle;
+import com.bergerkiller.bukkit.common.wrappers.ChatText;
+
+class ItemStack {
+    #bootstrap com.bergerkiller.bukkit.common.internal.CommonBootstrap.initServer();
+
+#if version >= 1.16
+    public optional static final (ItemStackHandle) ItemStack OPT_EMPTY_ITEM:b;
+#elseif version >= 1.11
+    public optional static final (ItemStackHandle) ItemStack OPT_EMPTY_ITEM:a;
+#else
+    public optional static final (ItemStackHandle) ItemStack OPT_EMPTY_ITEM:###;
+#endif
+
+    private int amountField:count;
+    private (com.bergerkiller.bukkit.common.nbt.CommonTagCompound) NBTTagCompound tagField:tag;
+
+    <code>
+    public static final ItemStackHandle EMPTY_ITEM;
+    static {
+        // On 1.11.2, an empty item constant is used. <= 1.9, null is used.
+        if (T.OPT_EMPTY_ITEM.isAvailable()) {
+            EMPTY_ITEM = T.OPT_EMPTY_ITEM.get();
+        } else {
+            EMPTY_ITEM = T.createHandle(null, true);
+        }
+    }
+    </code>
+
+    // available since MC 1.11
+    public optional boolean isEmpty();
+
+    public (Object) Item getItem();
+    public (org.bukkit.Material) Item getTypeField:getItem();
+
+    // Create an ItemStack with the given material type, and initial amount 1
+    public static (ItemStackHandle) ItemStack newInstance(org.bukkit.Material type) {
+        Item item = org.bukkit.craftbukkit.util.CraftMagicNumbers.getItem(type);
+        if (item == null) {
+            // This shouldn't be needed, but just in case, do a by-block lookup if not found
+            Block block = org.bukkit.craftbukkit.util.CraftMagicNumbers.getBlock(type);
+            if (block == null) {
+                throw new IllegalArgumentException("Invalid item material type: " + type.name());
+            }
+#if forge
+            return new ItemStack(block, 1);
+#elseif version >= 1.13
+            return new ItemStack(block, 1);
+#elseif version >= 1.11.2
+            return new ItemStack(Item.getItemOf(block), 1, 0, false);
+#else
+            return new ItemStack(block, 1, 0);
+#endif
+        } else {
+#if version >= 1.13
+            return new ItemStack((IMaterial) item, 1);
+#else
+            return new ItemStack(item, 1);
+#endif
+        }
+    }
+
+    public static (ItemStackHandle) ItemStack fromBlockData((IBlockDataHandle) IBlockData data, int amount) {
+#if version >= 1.13
+        return new ItemStack(data.getBlock(), amount);
+#else
+        Block block = data.getBlock();
+        return new ItemStack(block, amount, data.getBlock().getDropData(data));
+#endif
+    }
+
+
+#if version >= 1.18
+    public (ChatText) IChatBaseComponent getName:getHoverName();
+    public (void) ItemStack setName:setHoverName((ChatText) IChatBaseComponent name);
+#elseif version >= 1.13
+    public (ChatText) IChatBaseComponent getName();
+    public (void) ItemStack setName:a((ChatText) IChatBaseComponent name);
+#else
+    public (ChatText) String getName();
+
+    #if version >= 1.11
+        public (void) ItemStack setName:g((ChatText) String name);
+    #else
+        public (void) ItemStack setName:c((ChatText) String name);
+    #endif
+#endif
+
+#if version >= 1.18
+    public int getDurability:getDamageValue();
+#elseif version >= 1.13
+    public int getDurability:getDamage();
+#else
+    public int getDurability:getData();
+#endif
+
+    public void setDurability(int durability) {
+#if version >= 1.13
+        // Only set when durability > 0 or a tag exists
+        // This prevents creating a NBT tag for storing durability 0
+        if (durability > 0 || instance.getTag() != null) {
+  #if version >= 1.18
+            instance.setDamageValue(durability);
+  #else
+            instance.setDamage(durability);
+  #endif
+        }
+#else
+        #require net.minecraft.world.item.ItemStack private int durabilityField:damage;
+        instance#durabilityField = durability;
+#endif
+    }
+
+#if version >= 1.18
+    public int getRepairCost:getBaseRepairCost();
+    public boolean hasName:hasCustomHoverName();
+    public (ItemStackHandle) ItemStack cloneItemStack:copy();
+#else
+    public int getRepairCost();
+    public boolean hasName();
+    public (ItemStackHandle) ItemStack cloneItemStack();
+#endif
+
+    public void setRepairCost(int cost);
+
+    public boolean hasTag();
+
+    public (CommonTagCompound) NBTTagCompound getTag();
+
+    public (CommonTagCompound) NBTTagCompound saveToNBT:save((CommonTagCompound) NBTTagCompound compound);
+
+#if version >= 1.18
+    public (ItemStackHandle) ItemStack cloneAndSubtract:split(int n);
+#elseif version >= 1.8.8
+    public (ItemStackHandle) ItemStack cloneAndSubtract(int n);
+#else
+    public (ItemStackHandle) ItemStack cloneAndSubtract:a(int n);
+#endif
+
+    public org.bukkit.inventory.ItemStack toBukkit() {
+        return org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(instance);
+    }
+
+    public int getMapId() {
+#if version >= 1.13
+        NBTTagCompound metadata = instance.getTag();
+        if (metadata == null) {
+            return -1;
+        }
+        NBTBase mapId = metadata.get("map");
+        if (!(mapId instanceof NBTNumber)) {
+            return -1;
+        }
+  #if version >= 1.18
+        return ((NBTNumber) mapId).getAsInt();
+  #elseif version >= 1.13.2
+        return ((NBTNumber) mapId).asInt();
+  #else
+        return ((NBTNumber) mapId).e();
+  #endif
+#else
+        return instance.getData();
+#endif
+    }
+
+    public void setMapId(int mapId) {
+#if version >= 1.18
+        instance.getOrCreateTag().putInt("map", mapId);
+#elseif version >= 1.13
+        instance.getOrCreateTag().setInt("map", mapId);
+#else
+        instance.setData(mapId);
+#endif
+    }
+
+    public java.util.UUID getMapDisplayUUID() {
+        if (instance.getItem() != Items.FILLED_MAP) {
+            return null;
+        }
+        NBTTagCompound metadata = instance.getTag();
+        long fallbackMapId;
+        if (metadata == null) {
+#if version >= 1.13
+            return null;
+#else
+            fallbackMapId = (long) instance.getData();
+#endif
+        } else {
+            NBTBase mapDisplayUUIDMost = metadata.get("mapDisplayUUIDMost");
+            if (mapDisplayUUIDMost instanceof NBTTagLong) {
+                NBTBase mapDisplayUUIDLeast = metadata.get("mapDisplayUUIDLeast");
+                if (mapDisplayUUIDLeast instanceof NBTTagLong) {
+                    long mostBits, leastBits;
+#if version >= 1.18
+                    mostBits = ((NBTTagLong) mapDisplayUUIDMost).getAsLong();
+                    leastBits = ((NBTTagLong) mapDisplayUUIDLeast).getAsLong();
+#elseif version >= 1.13.2
+                    mostBits = ((NBTTagLong) mapDisplayUUIDMost).asLong();
+                    leastBits = ((NBTTagLong) mapDisplayUUIDLeast).asLong();
+#elseif version >= 1.10.2
+                    mostBits = ((NBTTagLong) mapDisplayUUIDMost).d();
+                    leastBits = ((NBTTagLong) mapDisplayUUIDLeast).d();
+#else
+                    mostBits = ((NBTTagLong) mapDisplayUUIDMost).c();
+                    leastBits = ((NBTTagLong) mapDisplayUUIDLeast).c();
+#endif
+                    return new java.util.UUID(mostBits, leastBits);
+                }
+            }
+#if version >= 1.13
+            NBTBase mapId = metadata.get("map");
+            if (!(mapId instanceof NBTNumber)) {
+                return null;
+            }
+  #if version >= 1.18
+            fallbackMapId = ((NBTNumber) mapId).getAsLong();
+  #elseif version >= 1.13.2
+            fallbackMapId = ((NBTNumber) mapId).asLong();
+  #else
+            fallbackMapId = ((NBTNumber) mapId).d();
+  #endif
+#else
+            fallbackMapId = (long) instance.getData();
+#endif
+        }
+        return new java.util.UUID(0L, fallbackMapId);
+    }
+
+    <code>
+    public static ItemStackHandle fromBukkit(org.bukkit.inventory.ItemStack itemStack) {
+        if (itemStack == null) {
+            return null;
+        } else {
+            return createHandle(com.bergerkiller.bukkit.common.conversion.type.HandleConversion.toItemStackHandle(itemStack));
+        }
+    }
+    </code>
+}

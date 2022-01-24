@@ -1,0 +1,100 @@
+package net.minecraft.world.inventory;
+
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.IInventory;
+import net.minecraft.world.item.ItemStack;
+
+import com.bergerkiller.generated.net.minecraft.world.inventory.SlotHandle;
+import com.bergerkiller.generated.net.minecraft.world.inventory.ContainerHandle;
+import com.bergerkiller.generated.net.minecraft.world.inventory.ContainerAnvilHandle;
+
+import com.bergerkiller.bukkit.common.nbt.CommonTagList;
+
+class InventoryEnderChest extends IInventory {
+#if version >= 1.18
+    public void loadFromNBT:fromTag((CommonTagList) NBTTagList nbttaglist)
+#else
+    public void loadFromNBT:a((CommonTagList) NBTTagList nbttaglist)
+#endif
+
+#if version >= 1.18
+    public (CommonTagList) NBTTagList saveToNBT:createTag()
+#elseif version >= 1.16
+    public (CommonTagList) NBTTagList saveToNBT:g()
+#elseif version >= 1.14
+    public (CommonTagList) NBTTagList saveToNBT:f()
+#elseif version >= 1.11
+    public (CommonTagList) NBTTagList saveToNBT:i()
+#else
+    public (CommonTagList) NBTTagList saveToNBT:h()
+#endif
+}
+
+class InventoryMerchant extends IInventory {
+    private final (Object) net.minecraft.world.item.trading.IMerchant merchant;
+}
+
+class Container {
+#if version >= 1.17
+    public (List<org.bukkit.inventory.ItemStack>) NonNullList<ItemStack> oldItems:lastSlots;
+#elseif version >= 1.12.2
+    public (List<org.bukkit.inventory.ItemStack>) NonNullList<ItemStack> oldItems:items;
+#elseif version >= 1.11
+    public (List<org.bukkit.inventory.ItemStack>) NonNullList<ItemStack> oldItems:b;
+#else
+    public (List<org.bukkit.inventory.ItemStack>) List<ItemStack> oldItems:b;
+#endif
+
+#if version >= 1.17
+    public (List<SlotHandle>) NonNullList<Slot> slots;
+#elseif version >= 1.12.2
+    public (List<SlotHandle>) List<Slot> slots:slots;
+#else
+    public (List<SlotHandle>) List<Slot> slots:c;
+#endif
+
+#if version >= 1.17
+    public int windowId:containerId;
+#else
+    public int windowId;
+#endif
+
+    public abstract org.bukkit.inventory.InventoryView getBukkitView();
+
+    public static ContainerHandle fromBukkit(org.bukkit.inventory.InventoryView bukkitView) {
+        if (bukkitView instanceof org.bukkit.craftbukkit.inventory.CraftInventoryView) {
+            net.minecraft.world.inventory.Container handle;
+            handle = ((org.bukkit.craftbukkit.inventory.CraftInventoryView) bukkitView).getHandle();
+            return com.bergerkiller.generated.net.minecraft.world.inventory.ContainerHandle.createHandle(handle);
+        } else {
+            return null;
+        }
+    }
+}
+
+class ContainerAnvil extends Container {
+#if version >= 1.17
+    public String renameText:itemName;
+#elseif version >= 1.12
+    public String renameText;
+#elseif version >= 1.11
+    public String renameText:l;
+#else
+    private String renameText:l;
+#endif
+
+    public static ContainerAnvilHandle fromBukkit(org.bukkit.inventory.InventoryView bukkitView) {
+        if (bukkitView instanceof org.bukkit.craftbukkit.inventory.CraftInventoryView) {
+            net.minecraft.world.inventory.Container handle;
+            handle = ((org.bukkit.craftbukkit.inventory.CraftInventoryView) bukkitView).getHandle();
+            return com.bergerkiller.generated.net.minecraft.world.inventory.ContainerAnvilHandle.createHandle(handle);
+        } else {
+            return null;
+        }
+    }
+}
+
+class Slot {
+    public (org.bukkit.inventory.ItemStack) ItemStack getItem();
+}

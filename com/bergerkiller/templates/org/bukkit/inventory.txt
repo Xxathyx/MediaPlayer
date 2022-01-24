@@ -1,0 +1,42 @@
+package org.bukkit.inventory;
+
+import com.bergerkiller.generated.org.bukkit.inventory.MainHandHandle;
+
+class Inventory {
+
+    // These functions were introduced since 1.10.2
+    public optional org.bukkit.Location getLocation();
+    public optional org.bukkit.inventory.ItemStack[] getStorageContents();
+    public optional void setStorageContents(org.bukkit.inventory.ItemStack[] items);
+
+    // These functions disappeared in MC 1.14
+    public optional String getName();
+    public optional String getTitle();
+
+    // Paperspigot only, it seems
+    public transient optional java.util.HashMap<Integer, org.bukkit.inventory.ItemStack> removeItemAnySlot(org.bukkit.inventory.ItemStack[] items);
+}
+
+optional class MainHand {
+    enum (MainHandHandle) MainHand LEFT;
+    enum (MainHandHandle) MainHand RIGHT;
+}
+
+class PlayerInventory extends Inventory {
+    public optional abstract void setItemInMainHand(ItemStack item);
+    public optional abstract void setItemInOffHand(ItemStack item)
+
+    // Deprecated <= 1.8.8
+    public optional abstract ItemStack getItemInHand()
+    public optional abstract void setItemInHand(ItemStack stack)
+
+#if version >= 1.9
+    public ItemStack getItemInMainHand();
+    public ItemStack getItemInOffHand();
+#else
+    public ItemStack getItemInMainHand:getItemInHand();
+    public ItemStack getItemInOffHand() {
+        return null;
+    }
+#endif
+}

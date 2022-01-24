@@ -84,6 +84,8 @@ import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 
 public class Main extends JavaPlugin {
 	
+	private final ArrayList<Integer> tasks = new ArrayList<>();
+	
 	private final ArrayList<Video> registeredVideos = new ArrayList<>();
 	private final ArrayList<Screen> registeredScreens = new ArrayList<>();
 	
@@ -257,6 +259,16 @@ public class Main extends JavaPlugin {
 	
 	public boolean isOld() {
 		return old;
+	}
+	
+    /**
+     * Gets the plugin running tasks, identified by their ids.
+     *
+     * @return Plugin running tasks ids.
+     */
+	
+	public ArrayList<Integer> getTasks() {
+		return tasks;
 	}
 	
     /**

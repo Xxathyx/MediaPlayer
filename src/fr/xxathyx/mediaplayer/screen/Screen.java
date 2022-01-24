@@ -21,7 +21,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
-import org.bukkit.map.MapPalette;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
@@ -33,7 +32,7 @@ import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
 
 public class Screen {
-	
+
 	private final Main plugin = Main.getPlugin(Main.class);
 	
 	private final Configuration configuration = new Configuration();
@@ -49,7 +48,7 @@ public class Screen {
 	private boolean running = false;
 	private boolean linked = true;
 	
-	public int[] task = {Bukkit.getScheduler().getPendingTasks().size()+1};
+	public int[] task = {Bukkit.getScheduler().getPendingTasks().size()};
 		
 	private final int[] ids;
 	
@@ -85,7 +84,9 @@ public class Screen {
 	}
 	
 	public void display() {
-				
+		
+		plugin.getTasks().add(task[0]);
+		
 		if(!frames.isEmpty()) {
 			for(int i = 0; i < frames.size(); i++) {
 				frames.get(i).setItem(itemStacks.getMap(ids[i]));
@@ -138,7 +139,6 @@ public class Screen {
 								Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
 								
 								Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-									@SuppressWarnings("deprecation")
 									@Override
 									public void run() {
 										
@@ -152,7 +152,7 @@ public class Screen {
 							    	    		
 							    	    		for(int j = 0; j < ids.length; j++) {
 							    	    			
-													buffer = MapPalette.imageToBytes(imageRenderer.getBufferedImages()[j]);
+													buffer = com.bergerkiller.bukkit.common.map.MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]);
 													
 													for(Entity entity : entities) {
 														if(entity.getType() == EntityType.PLAYER) {

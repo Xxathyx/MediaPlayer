@@ -741,8 +741,9 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 					}
 					
 					if(arg3[0].equalsIgnoreCase("cancel-tasks") | arg3[0].equalsIgnoreCase("ct")) {
-						Bukkit.getScheduler().cancelTasks(plugin);
-						sender.sendMessage(configuration.videos_canceled_tasks(String.valueOf(Bukkit.getScheduler().getActiveWorkers().size())));
+						for(int id : plugin.getTasks()) { Bukkit.getScheduler().cancelTask(id); }
+						sender.sendMessage(configuration.videos_canceled_tasks(String.valueOf(plugin.getTasks().size())));
+						plugin.getTasks().clear();
 						return true;
 					}
 				}

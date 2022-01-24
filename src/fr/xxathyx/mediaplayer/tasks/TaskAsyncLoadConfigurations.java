@@ -47,6 +47,8 @@ public class TaskAsyncLoadConfigurations extends BukkitRunnable {
 	@Override
 	public void run() {
 		
+		plugin.getTasks().add(getTaskId());
+		
 		File[] files = configuration.getVideosFolder().listFiles();
 		
 		plugin.getRegisteredVideos().clear();
@@ -67,19 +69,6 @@ public class TaskAsyncLoadConfigurations extends BukkitRunnable {
 					}
 					
 					Video video = new Video(videoConfiguration);
-					
-					if(video.getFormat().equals("m3u8")) {
-						
-						File[] decodedFrames = video.getFramesFolder().listFiles();
-						
-						for(int i = 0; i < decodedFrames.length; i++) {
-							
-					        File oldfile = decodedFrames[i];
-					        File newfile = new File(video.getFramesFolder(), i + ".jpg");
-
-					        oldfile.renameTo(newfile);
-						}
-					}
 					
 					if(video.isLoaded()) {
 						
