@@ -2,8 +2,6 @@ package fr.xxathyx.mediaplayer.configuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -32,9 +30,7 @@ public class Configuration {
 	private final Main plugin = Main.getPlugin(Main.class);
 	
 	private final File configurationFile = new File(plugin.getDataFolder() + "/configuration/", "configuration.yml");
-	
-	private final File librariesFolder = new File(plugin.getDataFolder() + "/libraries/");
-	
+		
 	private final File videosFolder = new File(plugin.getDataFolder() + "/videos/");
 	private final File mapsFolder = new File(plugin.getDataFolder() + "/images/maps/");
 	
@@ -58,12 +54,14 @@ public class Configuration {
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
+			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
 		    Host host = new Host(Bukkit.getServer().getIp());
 		    if(host.getOfficials().contains(host.getCountryCode())) fileconfiguration.set("plugin.langage", host.getCountryCode());
 			
 			fileconfiguration.set("plugin.ping-sound", true);
+			fileconfiguration.set("plugin.delete-frames-on-loaded", false);
 			fileconfiguration.set("plugin.delete-video-on-loaded", false);
 			
 			fileconfiguration.set("plugin.screen-block", "BARRIER");
@@ -202,32 +200,6 @@ public class Configuration {
 				fileconfiguration.save(configurationFile);
 			}catch (IOException e) {
 				e.printStackTrace();
-			}
-		}
-		
-		File ffmpeg = new File(librariesFolder, "ffmpeg.exe");
-		File ffprobe = new File(librariesFolder, "ffprobe.exe");
-		
-		if(!librariesFolder.exists() | !ffmpeg.exists()) {
-			
-			librariesFolder.mkdir();
-						
-			if(!ffmpeg.exists()) {
-			     InputStream inputStream = Main.class.getResourceAsStream("libraries/ffmpeg.exe");
-			     try {
-					Files.copy(inputStream, ffmpeg.getAbsoluteFile().toPath());
-				}catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			if(!ffprobe.exists()) {
-			     InputStream inputStream = Main.class.getResourceAsStream("libraries/ffprobe.exe");
-			     try {
-					Files.copy(inputStream, ffprobe.getAbsoluteFile().toPath());
-				}catch (IOException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 		
@@ -390,6 +362,10 @@ public class Configuration {
 	
 	public boolean plugin_ping_sound() {
 		return getConfigFile().getBoolean("plugin.ping-sound");
+	}
+	
+	public boolean frames_delete_on_loaded() {
+		return getConfigFile().getBoolean("plugin.delete-frames-on-loaded");
 	}
 	
 	public boolean video_delete_on_loaded() {

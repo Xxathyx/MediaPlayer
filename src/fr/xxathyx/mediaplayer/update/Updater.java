@@ -109,7 +109,7 @@ public class Updater {
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 			File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
 			
-	    	URL onlineJar = new URL("https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1");
+	    	URL onlineJar = new URL("https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1");
 	    	
 	    	FileUtils.copyURLToFile(onlineJar, newJar);
 		}catch (URISyntaxException | IOException e) {

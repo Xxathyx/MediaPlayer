@@ -2,6 +2,7 @@ package fr.xxathyx.mediaplayer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
+import fr.xxathyx.mediaplayer.ffmpeg.Ffprobe;
 import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.commands.ImageCommands;
 import fr.xxathyx.mediaplayer.image.listeners.PlayerInteractImage;
@@ -89,6 +92,8 @@ public class Main extends JavaPlugin {
 	private final ArrayList<Video> registeredVideos = new ArrayList<>();
 	private final ArrayList<Screen> registeredScreens = new ArrayList<>();
 	
+	private final Map<UUID, URL> streamsURL = new HashMap<>();
+	
 	private final ArrayList<Block> screensBlocks = new ArrayList<>();
 	private final ArrayList<ItemFrame> screensFrames = new ArrayList<>();
 	
@@ -105,6 +110,10 @@ public class Main extends JavaPlugin {
 	private final ArrayList<String> playingVideos = new ArrayList<>();
 	
 	private Configuration configuration;
+	
+	private Ffmpeg ffmpeg;
+	private Ffprobe ffprobe;
+	
 	private Translater translater;
 	
 	private Updater updater;
@@ -125,8 +134,18 @@ public class Main extends JavaPlugin {
 	public void onEnable() {
 		
 		configuration = new Configuration();
-		
 		configuration.setup();
+		
+		ffmpeg = new Ffmpeg();
+		ffprobe = new Ffprobe();
+		
+		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+			@Override
+			public void run() {
+				if(!ffmpeg.isInstalled()) ffmpeg.download();
+				if(!ffprobe.isInstalled()) ffprobe.download();
+			}
+		});
 		
         translater = new Translater();
 
@@ -212,6 +231,27 @@ public class Main extends JavaPlugin {
 	}
 	
     /**
+     * Gets access to the ffmpeg library.
+     *
+     * @return Ffmpeg library.
+     */
+	
+	public Ffmpeg getFfmpeg() {
+		return ffmpeg;
+	}
+	
+    /**
+     * Gets access to the ffprobe library.
+     *
+     * @return Ffprobe library.
+     */
+	
+	public Ffprobe getFfprobe() {
+		return ffprobe;
+	}
+	
+	
+    /**
      * Gets the version that the server is running on.
      *
      * @return The version that the server is using.
@@ -283,6 +323,16 @@ public class Main extends JavaPlugin {
 	
 	public ArrayList<Screen> getRegisteredScreens() {
 		return registeredScreens;
+	}
+	
+    /**
+     * Gets lives links of registered streamed video after being generated.
+     *
+     * @return Streamed videos originals links.
+     */
+	
+	public Map<UUID, URL> getStreamsURL() {
+		return streamsURL;
 	}
 	
 	public ArrayList<Block> getScreensBlocks() {

@@ -27,6 +27,7 @@ import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
+import fr.xxathyx.mediaplayer.stream.Stream;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
@@ -42,6 +43,7 @@ public class Screen {
 	private int id;
 	
 	private Video video;
+	private Stream stream;
 	private VideoData videoData;
 	private VideoInstance videoInstance;
 	
@@ -83,6 +85,7 @@ public class Screen {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void display() {
 		
 		plugin.getTasks().add(task[0]);
@@ -93,11 +96,29 @@ public class Screen {
 			}
 		}
 				
+		if(video.isStreamed()) {
+			
+			stream = new Stream(video);
+			
+			try {
+				stream.update();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {  
+				@Override
+				public void run() {
+					settings.total = settings.total + video.getTotalFrames();
+				}
+			}, (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20), (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20));
+		}
+		
 		task[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 		    
 			@Override
 			public void run() {
-				
+								
 				if(running) {					
 					if(settings.count <= settings.total) {
 						if(settings.missed == settings.differencial) {
@@ -133,16 +154,17 @@ public class Screen {
 						
 		                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed);
 		                
+						Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
+		                
 						for(int i = 0; i < settings.max; i++) {
 							if(settings.count < settings.total && settings.fps < settings.framerate) {
-								
-								Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
-								
+																
 								Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 									@Override
 									public void run() {
 										
 										if(settings.realtimeRendering) {
+											
 											try {
 												ImageRenderer imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), settings.count + settings.framesExtension)));
 							    	    		imageRenderer.calculateDimensions();
@@ -193,8 +215,6 @@ public class Screen {
 					}else {
 						if(video.isLoopping()) {
 							settings.count = 0;
-						}else {
-							end();
 						}
 					}
 				}
@@ -288,7 +308,7 @@ public class Screen {
 	}
 	
 	public String getTimeLeft(int frame) {
-		
+		/*
 		int leftFrames = video.getTotalFrames()-frame;
 		int seconds = (int) Math.round((double) leftFrames/video.getFrameRate());
 		
@@ -314,8 +334,8 @@ public class Screen {
 				return String.valueOf(hours) + " heure";
 			}
 			return String.valueOf(hours) + " heures";
-		}
-		return settings.count + "/" + video.getTotalFrames();
+		}*/
+		return settings.count + "/" + settings.total;
 	}
 	public String getStatus() {
 		if(isRunning()) return ChatColor.GREEN + "RUNNING: " + ChatColor.DARK_GREEN + settings.name;

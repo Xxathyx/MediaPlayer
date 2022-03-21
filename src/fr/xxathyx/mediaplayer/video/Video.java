@@ -5,11 +5,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -27,6 +29,7 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.stream.m3u8.Reader;
+import fr.xxathyx.mediaplayer.system.SystemType;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 import fr.xxathyx.mediaplayer.util.Format;
@@ -36,6 +39,7 @@ import fr.xxathyx.mediaplayer.video.data.cache.Cache;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.probe.FFmpegStream;
+import net.bramp.ffmpeg.probe.FFmpegStream.CodecType;
 
 /** 
 * The Video class is essential in the good functioning of things, its used
@@ -130,10 +134,12 @@ public class Video {
 	public void createConfiguration(File videoFile) throws FileNotFoundException, IOException, InvalidConfigurationException {
 		
 		String format = FilenameUtils.getExtension(videoFile.getName());
-						
+			
 		if(Format.getCompatibleFormats().contains(format)) {
 			
 			fileconfiguration = new YamlConfiguration();
+			
+			String url = "none";
 			
 			LocalDateTime date = LocalDateTime.now();
 			
@@ -149,9 +155,18 @@ public class Video {
 	        FFmpegProbeResult probeResult;        
 	        FFmpegStream stream;
 			
+        	if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX) || fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.OTHER)) {
+            	try {
+    				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
+    				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath())).waitFor();
+    			}catch (InterruptedException | IOException e) {
+    				e.printStackTrace();
+    			}
+        	}
+	        
 			if(!format.equalsIgnoreCase("m3u8")) {
 				
-		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe").getAbsolutePath()));
+		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath()));
 		        probeResult = ffprobe.probe(videoFile.getAbsolutePath());        
 		        stream = probeResult.getStreams().get(0);
 		        
@@ -168,6 +183,8 @@ public class Video {
 				frames = (int) stream.nb_frames;
 			}else {
 				
+				url = plugin.getStreamsURL().get(UUID.fromString(FilenameUtils.removeExtension(file.getName()))).toString();
+				
 				Reader reader = new Reader(videoFile);
 				reader.read();
 				
@@ -176,13 +193,13 @@ public class Video {
 				sequencesFolder.mkdirs();
 				getFramesFolder().mkdir();
 				
-				for(URL url : reader.getSequences()) {
-					FileUtils.copyURLToFile(url, new File(sequencesFolder, sequencesFolder.listFiles().length + ".ts"));
+				for(URL tsURL : reader.getSequences()) {
+					FileUtils.copyURLToFile(tsURL, new File(sequencesFolder, sequencesFolder.listFiles().length + ".ts"));
 				}
 				
 				File[] sequences = sequencesFolder.listFiles();
 				
-		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe").getAbsolutePath()));
+		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath()));
 		        probeResult = ffprobe.probe(sequences[0].getAbsolutePath());    
 		        stream = probeResult.getStreams().get(1);
 		        
@@ -193,8 +210,13 @@ public class Video {
 		        
 				for(int i = 0; i < sequences.length; i++) {
 					
-		    		String[] videoCommand = {FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getAbsolutePath()), "-hide_banner", "-loglevel",
-		    				"error", "-i", FilenameUtils.separatorsToUnix(sequences[i].getAbsolutePath()), "-q:v", "0", "-start_number", "0", FilenameUtils.separatorsToUnix(new File(getFramesFolder().getPath(), i + "-%d.jpg").getAbsolutePath())};
+		    		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath()),
+		    				"-hide_banner",
+		    				"-loglevel", "error",
+		    				"-i", FilenameUtils.separatorsToUnix(sequences[i].getAbsolutePath()),
+		    				"-q:v", "0",
+		    				"-start_number", "0",
+		    				FilenameUtils.separatorsToUnix(new File(getFramesFolder().getPath(), i + "-%d.jpg").getAbsolutePath())};
 		            
 		            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
 		                     
@@ -239,6 +261,8 @@ public class Video {
 			fileconfiguration.set("video.name", FilenameUtils.removeExtension(file.getName()));
 			fileconfiguration.set("video.description", "&a/video " + FilenameUtils.removeExtension(file.getName()) + " set description <message>");
 			fileconfiguration.set("video.file-video-path", videoFile.getPath());
+			fileconfiguration.set("video.stream", Format.getCompatibleStreamsFormats().contains(format));
+			fileconfiguration.set("video.stream-url", url);
 			fileconfiguration.set("video.enable-audio", true);
 			fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 			fileconfiguration.set("video.audio-volume", 1.0);
@@ -274,6 +298,8 @@ public class Video {
 			new File(file.getParent() + "/data/maps/").mkdir();
 			new File(file.getParent() + "/data/cache/").mkdir();
 			new File(file.getParent() + "/data/resourcepacks/").mkdir();
+			
+			if(format.equalsIgnoreCase("m3u8")) load();
 		}
 	}
 	
@@ -338,6 +364,28 @@ public class Video {
 		
 		fileconfiguration.load(file);
 		fileconfiguration.set("video.description", description);
+		fileconfiguration.save(file);
+	}
+	
+	/**
+	* Sets how many frames would be displayed within a second.
+	* 
+	* <p>It is not recommended to change this parameter from the
+	* original video frame-rate, it could lead to freezing while the video being displayed.
+	* 
+	* @param framerate The video frame-rate.
+	* 
+	* @throws FileNotFoundException When the configuration {@link File#exists()} return false.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void setFrameRate(double framerate) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("video.frame-rate", framerate);
 		fileconfiguration.save(file);
 	}
 	
@@ -645,11 +693,21 @@ public class Video {
 	/**
 	* Gets whether the video format is compatible.
 	* 
-	* @return Whether the video format is compatible
+	* @return Whether the video format is compatible.
 	*/
 	
 	public boolean isCompatible() {
 		return Format.getCompatibleFormats().contains(getFormat());
+	}
+	
+	/**
+	* Gets whether the video is streamed.
+	* 
+	* @return Whether the video is streamed.
+	*/
+	
+	public boolean isStreamed() {
+		return Format.getCompatibleStreamsFormats().contains(getFormat());
 	}
 	
 	/**
@@ -664,7 +722,7 @@ public class Video {
 	public boolean isLoaded() {
 		
 		if(getFramesFolder().listFiles().length >= getTotalFrames()) {
-			if(getFormat().equalsIgnoreCase("gif")) {
+			if(getFormat().equalsIgnoreCase("gif") || getFormat().equalsIgnoreCase("m3u8")) {				
 				if(!getVideoData().getRealTimeRendering()) {
 					if(getVideoData().getCacheFolder().listFiles().length >= getTotalFrames()) {
 						return true;
@@ -684,6 +742,30 @@ public class Video {
 	}
 	
 	/**
+	* Gets whether the video has an audio track.
+	*  
+	* 
+	* @return Whether the video has audio.
+	*/
+	
+	public boolean hasAudio() {
+		
+		try {
+			FFprobe ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath()));
+			FFmpegProbeResult probeResult = ffprobe.probe(getVideoFile().getAbsolutePath());
+			
+			for(FFmpegStream ffmpegStream : probeResult.getStreams()) {
+				if(ffmpegStream.codec_type.equals(CodecType.AUDIO)) {
+					return true;
+				}
+			}
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/**
 	* Gets whether two videos are equals.
 	*  
 	* <p> <strong>Note: </strong> This method checks if two videos are equals
@@ -697,6 +779,17 @@ public class Video {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	* Gets the streamed video original link.
+	* 
+	* @return The streamed video original link.
+	* @throws MalformedURLException 
+	*/
+	
+	public URL getStreamURL() throws MalformedURLException {
+		return new URL(getConfigFile().getString("video.stream-url"));
 	}
 	
 	/**
@@ -870,7 +963,7 @@ public class Video {
 	*/
 	
 	public String getFormat() {
-		return getConfigFile().getString("video.format");
+		return FilenameUtils.getExtension(getVideoFile().getName());
 	}
 	
 	/**

@@ -3,32 +3,32 @@ name: MediaPlayer
 version: 1.0.0
 author: Xxathyx
 description: Allows you to play and use various medias on Minecraft.
-website: https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1
+website: https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1
 api-version: 1.13
 
 commands:
   video:
-    description: "Permet d'intéragir avec les videos disponnibles."
+    description: "Allows you to interact with the available videos."
     aliases: [vid]
     permission: mediaplayer.command.video
   videos:
-    description: "Permet d'intéragir avec les videos disponnibles depuis une interface graphique."
+    description: "Allows you to interact with the videos available from a graphical interface."
     aliases: [vids]
     permission: mediaplayer.command.videos
   screen:
-    description: "Permet d'intéragir avec les écrans des vidéos."
+    description: "Allows you to interact with the screens of the videos."
     permission: mediaplayer.command.screen
   screens:
-    description: "Permet d'afficher la liste des écrans enregistrés."
+    description: "Displays the list of saved screens."
     permission: mediaplayer.command.screens
   image:
-    description: "Permet la gestion et le rendu d'images."
+    description: "Allows management and rendering of images."
     aliases: [img]
     permission: mediaplayer.command.image
   images:
-    description: "Permet d'afficher la liste des images enregistrés."
+    description: "Displays the list of saved images."
     aliases: [imgs]
     permission: mediaplayer.command.images
 permissions:
   mediaplayer.permission.admin:
-    description: Donne accès aux divers outils d'administration en jeu.
+    description: Provides access to various in-game admin tools.

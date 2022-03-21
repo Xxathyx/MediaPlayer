@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,6 +20,7 @@ import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.notification.Notification;
 import fr.xxathyx.mediaplayer.notification.NotificationType;
+import fr.xxathyx.mediaplayer.system.SystemType;
 import fr.xxathyx.mediaplayer.util.GIFUtil;
 import fr.xxathyx.mediaplayer.util.ImageUtil;
 import fr.xxathyx.mediaplayer.video.Video;
@@ -62,7 +64,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	*/
     
 	public void run() {
-    	
+		
 		plugin.getTasks().add(getTaskId());
 		
         long time = System.currentTimeMillis();
@@ -72,20 +74,26 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
         
         String framesExtension = video.getFramesExtension();
         int framesCount = video.getFramesFolder().listFiles().length;
-        
+                
         VideoData videoData = new VideoData(video); 
         
         if(framesCount < video.getTotalFrames()) {
         	
-        	/*
-        	try {
-				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffmpeg").getAbsolutePath())).waitFor();
-			}catch (InterruptedException | IOException e) {
-				e.printStackTrace();
-			}*/
+        	if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX) || fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.OTHER)) {
+            	try {
+    				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
+    			}catch (InterruptedException | IOException e) {
+    				e.printStackTrace();
+    			}
+        	}
         	
-    		String[] videoCommand = {FilenameUtils.separatorsToUnix(new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getAbsolutePath()), "-hide_banner", "-loglevel", "error", "-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()), "-q:v", "0",
-    				"-start_number", String.valueOf(framesCount), FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
+    		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())
+    				, "-hide_banner",
+    				"-loglevel", "error",
+    				"-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()),
+    				"-start_number", String.valueOf(framesCount),
+    				"-q:v", "0",
+    				FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
             
             ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
                      
@@ -96,30 +104,39 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     			e.printStackTrace();
     		}
         }
-		
+        
         new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);        
         new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
         
-        if(!video.getFormat().equalsIgnoreCase("gif")) {
-        	        	
-    		String[] audioCommand = {new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe").getPath(), "-hide_banner", "-loglevel", "error", "-i", video.getVideoFile().getAbsolutePath(),
-    				"-f", "ogg", "-ab", "192000", "-vn", new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath()};
-        	
-            ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
-            try {
-    			Process process = audioProcessBuilder.inheritIO().start();
-    			process.waitFor();
-    		}catch (IOException | InterruptedException e) {
-    			e.printStackTrace();
-    		}
-        }else {
-        	try {
-				GIFUtil.split(video.getVideoFile(), video.getFramesFolder());
-			}catch (IOException e) {
-				e.printStackTrace();
-			}
+		
+        if(!video.getFormat().equalsIgnoreCase("m3u8")) {
+            if(!video.getFormat().equalsIgnoreCase("gif")) {
+            	if(video.hasAudio()) {
+            		String[] audioCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath()),
+            				"-hide_banner",
+            				"-loglevel", "error",
+            				"-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()),
+            				"-f", "ogg",
+            				"-ab", "192000",
+            				"-vn", FilenameUtils.separatorsToUnix(new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath())};
+                	
+                    ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
+                    try {
+            			Process process = audioProcessBuilder.inheritIO().start();
+            			process.waitFor();
+            		}catch (IOException | InterruptedException e) {
+            			e.printStackTrace();
+            		}
+            	}
+            }else {
+            	try {
+    				GIFUtil.split(video.getVideoFile(), video.getFramesFolder());
+    			}catch (IOException e) {
+    				e.printStackTrace();
+    			}
+            }
         }
-        		
+        
         new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
         new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
 		                
@@ -201,6 +218,17 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 			}catch (IOException | InvalidConfigurationException e) {
 				e.printStackTrace();
 			}
+        	
+        	if(!videoData.getRealTimeRendering()) {
+                if(configuration.frames_delete_on_loaded()) {
+            		try {
+    					FileUtils.deleteDirectory(video.getFramesFolder());
+    					video.getFramesFolder().mkdir();
+    				}catch (IOException e) {
+    					e.printStackTrace();
+    				}
+                }
+        	}
         	
             if(configuration.video_delete_on_loaded()) {
             	video.getVideoFile().delete();

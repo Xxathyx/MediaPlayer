@@ -103,13 +103,14 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 
 									try {
 										URL url = new URL(arg3[1]);
+										UUID uuid = UUID.randomUUID();
 										
 										InputStream inputStream = null;
 										OutputStream outputStream = null;
 										
 										inputStream = url.openStream();
 										
-									    File file = new File(configuration.getVideosFolder(), UUID.randomUUID().toString() + ".m3u8");
+									    File file = new File(configuration.getVideosFolder(), uuid.toString() + ".m3u8");
 									    
 									    outputStream = FileUtils.openOutputStream(file);
 									    
@@ -117,6 +118,8 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 									    
 									    IOUtils.closeQuietly(inputStream);
 									    IOUtils.closeQuietly(outputStream);
+									    
+									    plugin.getStreamsURL().put(uuid, url);
 									    
 										new TaskAsyncLoadConfigurations().runTaskLaterAsynchronously(plugin, 20L);
 										sender.sendMessage("c'est dans la boite hbibi");
@@ -393,6 +396,8 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							sender.sendMessage(ChatColor.DARK_PURPLE + "name: " + ChatColor.LIGHT_PURPLE + video.getName());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "description: " + ChatColor.WHITE + video.getDescription());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "file-video-path: " + ChatColor.LIGHT_PURPLE + video.getVideoFile().getPath());
+							sender.sendMessage(ChatColor.DARK_PURPLE + "stream: " + ChatColor.LIGHT_PURPLE + video.getVideoFile().getPath());
+							sender.sendMessage(ChatColor.DARK_PURPLE + "stream-url: " + ChatColor.LIGHT_PURPLE + video.getVideoFile().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "enable-audio: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isAudioEnabled()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-folder-path: " + ChatColor.LIGHT_PURPLE + video.getAudioFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-volume: " + ChatColor.LIGHT_PURPLE + video.getVolume());
@@ -489,6 +494,30 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 					    		try {
 									video.setDescription(description);
 									sender.sendMessage(configuration.video_description_updated(video.getName(), description));
+									return true;
+								}catch (IOException | InvalidConfigurationException e) {
+									e.printStackTrace();
+								}
+							}
+							
+							if(arg3[2].equalsIgnoreCase("frame-rate")) {
+						        try { 
+						            Double.parseDouble(arg3[3]); 
+						        }catch (NumberFormatException e) { 
+						        	sender.sendMessage(configuration.not_number());
+						            return false;
+						        }
+						        
+						        if(Double.parseDouble(arg3[3]) < 0) {
+						        	sender.sendMessage(configuration.negative_number());
+						        	return false;
+						        }
+						        
+						        double framerate = Double.parseDouble(arg3[3]);
+						        
+						        try {
+									video.setFrameRate(framerate);
+									sender.sendMessage(configuration.video_framerate_updated(video.getName(), String.valueOf(framerate)));
 									return true;
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
@@ -613,7 +642,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								if(arg3[3].equalsIgnoreCase("true")) {
 									try {
 										video.setRealTimeRendering(true);
-										sender.sendMessage(configuration.video_skip_frames_enabled(video.getName()));
+										sender.sendMessage(configuration.video_real_time_rendering_enabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();
@@ -623,7 +652,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								if(arg3[3].equalsIgnoreCase("false")) {
 									try {
 										video.setRealTimeRendering(false);
-										sender.sendMessage(configuration.video_skip_frames_disabled(video.getName()));
+										sender.sendMessage(configuration.video_real_time_rendering_disabled(video.getName()));
 										return true;
 									}catch (IOException | InvalidConfigurationException e) {
 										e.printStackTrace();

@@ -10,8 +10,6 @@ import org.apache.commons.io.FileUtils;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 
-import org.bukkit.map.MapPalette;
-
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 
 /** 
@@ -56,9 +54,8 @@ public class Cache {
     * @throws InvalidConfigurationException When non-respect of YAML syntax.
     */
 	
-	@SuppressWarnings("deprecation")
 	public void createCache(BufferedImage bufferedImage) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		writeBytesToFile(file.getPath(), MapPalette.imageToBytes(bufferedImage));
+		writeBytesToFile(file.getPath(), com.bergerkiller.bukkit.common.map.MapColorPalette.convertImage(bufferedImage));
 	}
 	
 	/**
