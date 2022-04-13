@@ -20,6 +20,7 @@ import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.notification.Notification;
 import fr.xxathyx.mediaplayer.notification.NotificationType;
+import fr.xxathyx.mediaplayer.resourcepack.ResourcePack;
 import fr.xxathyx.mediaplayer.system.SystemType;
 import fr.xxathyx.mediaplayer.util.GIFUtil;
 import fr.xxathyx.mediaplayer.util.ImageUtil;
@@ -127,6 +128,8 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
             		}catch (IOException | InterruptedException e) {
             			e.printStackTrace();
             		}
+                    
+                    new ResourcePack().create(video);
             	}
             }else {
             	try {

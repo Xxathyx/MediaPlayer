@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
@@ -28,6 +29,7 @@ import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
 import fr.xxathyx.mediaplayer.stream.Stream;
+import fr.xxathyx.mediaplayer.util.AudioUtil;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
@@ -62,7 +64,9 @@ public class Screen {
 	
 	private ArrayList<ItemFrame> frames = new ArrayList<>();
 	private ArrayList<Block> blocks = new ArrayList<>();
-		
+	
+	private ArrayList<UUID> listeners = new ArrayList<>();
+	
 	public Screen(VideoInstance videoInstance, ArrayList<ItemFrame> frames) {
 		
 		Video video = videoInstance.getVideo();
@@ -113,13 +117,31 @@ public class Screen {
 				}
 			}, (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20), (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20));
 		}
-		
+				
 		task[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 		    
 			@Override
 			public void run() {
 								
-				if(running) {					
+				if(running) {
+					
+					Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
+					
+					for(Entity entity : entities) {
+						if(entity.getType() == EntityType.PLAYER) {
+							
+							Player player = ((Player)entity);
+							
+							if(!listeners.contains(player.getUniqueId())) {
+								
+								player.setResourcePack("ur1");
+								
+								for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(entity.getLocation(), "mediaplayer." + i, 10, 1);
+								listeners.add(player.getUniqueId());
+							}
+						}
+					}
+					
 					if(settings.count <= settings.total) {
 						if(settings.missed == settings.differencial) {
 							settings.missed = 0;
@@ -153,9 +175,7 @@ public class Screen {
 		                }
 						
 		                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed);
-		                
-						Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
-		                
+		                		                
 						for(int i = 0; i < settings.max; i++) {
 							if(settings.count < settings.total && settings.fps < settings.framerate) {
 																
@@ -216,6 +236,10 @@ public class Screen {
 						if(video.isLoopping()) {
 							settings.count = 0;
 						}
+						
+						if(!video.isStreamed()) {
+							end();
+						}
 					}
 				}
 			}
@@ -270,6 +294,10 @@ public class Screen {
 		
 		for(int i = 0; i < frames.size(); i++) {
 			frames.get(i).setItem(itemStacks.getMap(ids[i]));
+		}
+		
+		for(UUID uuid : listeners) {
+			for(int i = 0; i < video.getAudioChannels(); i++) AudioUtil.stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i);
 		}
 		
 		plugin.getPlayingVideos().remove(video.getName());

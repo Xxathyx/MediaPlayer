@@ -78,7 +78,7 @@ public class SoundPlayer {
 	* @param player The player hearing a sound.
 	*/
 	
-	public static void stopSound(Player player) {
-		AudioUtil.stopAudio(player);
+	public static void stopSound(Player player, String sound) {
+		AudioUtil.stopAudio(player, sound);
 	}
 }

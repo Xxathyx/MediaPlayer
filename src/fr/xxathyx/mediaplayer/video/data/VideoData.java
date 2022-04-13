@@ -95,11 +95,11 @@ public class VideoData {
 		
 		BufferedImage frame = ImageIO.read(file);
 		
-		Image background = ImageIO.read(Main.class.getResource("ressources/background.png"));	
-		Image play = ImageIO.read(Main.class.getResource("ressources/play.png"));
+		Image background = ImageIO.read(Main.class.getResource("resources/background.png"));	
+		Image play = ImageIO.read(Main.class.getResource("resources/play.png"));
 				
 		if(video.isRestricted()) {
-			play = ImageIO.read(Main.class.getResource("ressources/restricted.png"));
+			play = ImageIO.read(Main.class.getResource("resources/restricted.png"));
 			ImageUtil.blur(frame);
 		}
 		

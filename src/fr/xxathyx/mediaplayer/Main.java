@@ -1,6 +1,8 @@
 package fr.xxathyx.mediaplayer;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -134,6 +136,7 @@ public class Main extends JavaPlugin {
 	public void onEnable() {
 		
 		configuration = new Configuration();
+		
 		configuration.setup();
 		
 		ffmpeg = new Ffmpeg();
@@ -141,7 +144,7 @@ public class Main extends JavaPlugin {
 		
 		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 			@Override
-			public void run() {
+			public void run() {				
 				if(!ffmpeg.isInstalled()) ffmpeg.download();
 				if(!ffprobe.isInstalled()) ffprobe.download();
 			}
@@ -207,6 +210,22 @@ public class Main extends JavaPlugin {
 		new TaskAsyncLoadConfigurations().runTaskAsynchronously(this);
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
+		
+		if(configuration.free_audio_server_handling()) {
+			Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+				@Override
+				public void run() {
+					try {
+						Socket client = new Socket("127.0.0.1", 8888);
+						DataOutputStream dataOutputStream = new DataOutputStream(client.getOutputStream());
+						dataOutputStream.writeUTF("mediaplayer.connect: " + configuration.free_audio_server_token());
+						client.close();
+					}catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+		}
 	}
 	
 	/**

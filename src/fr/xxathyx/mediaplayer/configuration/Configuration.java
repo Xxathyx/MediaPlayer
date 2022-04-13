@@ -1,7 +1,10 @@
 package fr.xxathyx.mediaplayer.configuration;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.util.Host;
+import fr.xxathyx.mediaplayer.util.RandomToken;
 
 /** 
 * The Configuration class allow a direct bridge between plugin configuration and
@@ -51,9 +55,34 @@ public class Configuration {
 		
 		if(!configurationFile.exists()) {
 			
+			String token = new RandomToken().random(10);
+			
+			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+				@Override
+				public void run() {
+					try {
+						
+						Socket socket = new Socket("127.0.0.1", 8888);
+						DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+						
+						dataOutputStream.writeUTF("mediaplayer.register: " + token);
+						
+						DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + dataInputStream.readUTF());
+						socket.close();
+					}catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
+			fileconfiguration.set("plugin.free-audio-server-handling", true);
+			fileconfiguration.set("plugin.free-audio-server-token", token);
+			fileconfiguration.set("plugin.own-audio-server-handling-ip", "localhost");
+			fileconfiguration.set("plugin.own-audio-server-handling-port", "21");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -354,6 +383,22 @@ public class Configuration {
 	
 	public boolean plugin_auto_update() {
 		return getConfigFile().getBoolean("plugin.auto-update");
+	}
+	
+	public boolean free_audio_server_handling() {
+		return getConfigFile().getBoolean("plugin.free-audio-server-handling");
+	}
+	
+	public String free_audio_server_token() {
+		return getConfigFile().getString("plugin.free-audio-server-token");
+	}
+	
+	public String own_audio_server_handling_ip() {
+		return getConfigFile().getString("plugin.own-audio-server-handling-ip");
+	}
+	
+	public int own_audio_server_handling_port() {
+		return getConfigFile().getInt("plugin.own-audio-server-handling-port");
 	}
 	
 	public String plugin_langage() {

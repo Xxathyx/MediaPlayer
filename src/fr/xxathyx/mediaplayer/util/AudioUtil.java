@@ -28,11 +28,14 @@ public class AudioUtil {
 	* @param player The player hearing a sound.
 	*/
 	
-    public static void stopAudio(Player player) {
+    public static void stopAudio(Player player, String sound) {
     	
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
         if(serverVersion.equals("v1_9_R2")) {
+        	
+        	Bukkit.broadcastMessage("it equals");
+        	
         	net.minecraft.server.v1_9_R2.EntityPlayer entityPlayer = ((org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer)player).getHandle();
         	net.minecraft.server.v1_9_R2.PacketDataSerializer packet = new net.minecraft.server.v1_9_R2.PacketDataSerializer(Unpooled.buffer()).a("");
         	net.minecraft.server.v1_9_R2.PacketPlayOutCustomPayload packetPlayOutCustomPayload = new net.minecraft.server.v1_9_R2.PacketPlayOutCustomPayload("MC|StopSound", packet);
@@ -66,24 +69,27 @@ public class AudioUtil {
         	entityPlayer.playerConnection.sendPacket(packetPlayOutCustomPayload);
         	return;
         }
-        if (serverVersion.equals("v1_7_R3")) {
+        if(serverVersion.equals("v1_7_R3")) {
         	net.minecraft.server.v1_7_R3.EntityPlayer entityPlayer = ((org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer)player).getHandle();
         	net.minecraft.server.v1_7_R3.PacketPlayOutCustomPayload packetPlayOutCustomPayload = new net.minecraft.server.v1_7_R3.PacketPlayOutCustomPayload("MC|StopSound", Unpooled.buffer(0).array());
         	entityPlayer.playerConnection.sendPacket(packetPlayOutCustomPayload);
         	return;
         }
-        if (serverVersion.equals("v1_7_R2")) {
+        if(serverVersion.equals("v1_7_R2")) {
         	net.minecraft.server.v1_7_R2.EntityPlayer entityPlayer = ((org.bukkit.craftbukkit.v1_7_R2.entity.CraftPlayer)player).getHandle();
         	net.minecraft.server.v1_7_R2.PacketPlayOutCustomPayload packetPlayOutCustomPayload = new net.minecraft.server.v1_7_R2.PacketPlayOutCustomPayload("MC|StopSound", Unpooled.buffer(0).array());
         	entityPlayer.playerConnection.sendPacket(packetPlayOutCustomPayload);
         	return;
         }
-        if (serverVersion.equals("v1_7_R1")) {
+        if(serverVersion.equals("v1_7_R1")) {
         	net.minecraft.server.v1_7_R1.EntityPlayer entityPlayer = ((org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer)player).getHandle();
         	net.minecraft.server.v1_7_R1.PacketPlayOutCustomPayload packetPlayOutCustomPayload = new net.minecraft.server.v1_7_R1.PacketPlayOutCustomPayload("MC|StopSound", Unpooled.buffer(0).array());
         	entityPlayer.playerConnection.sendPacket(packetPlayOutCustomPayload);
         	return;
         }
+        
+        player.stopSound("");
+        
     	Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "stopsound " + player.getName());
     }
 }

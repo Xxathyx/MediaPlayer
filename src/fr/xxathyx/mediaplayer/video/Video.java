@@ -141,6 +141,8 @@ public class Video {
 			
 			String url = "none";
 			
+			int audioChannels = 0;
+			
 			LocalDateTime date = LocalDateTime.now();
 			
 			int originalWidth = 0;
@@ -169,6 +171,13 @@ public class Video {
 		        ffprobe = new FFprobe(FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath()));
 		        probeResult = ffprobe.probe(videoFile.getAbsolutePath());        
 		        stream = probeResult.getStreams().get(0);
+		        
+				for(FFmpegStream ffmpegStream : probeResult.getStreams()) {
+					if(!ffmpegStream.codec_type.equals(CodecType.VIDEO) && ffmpegStream.codec_type.equals(CodecType.AUDIO)) {
+						audioChannels++;
+					}
+				}
+				
 		        
 				originalWidth = stream.width;
 				originalHeight = stream.height;
@@ -266,6 +275,7 @@ public class Video {
 			fileconfiguration.set("video.enable-audio", true);
 			fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 			fileconfiguration.set("video.audio-volume", 1.0);
+			fileconfiguration.set("video.audio-channels", audioChannels);
 			fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 			fileconfiguration.set("video.frame-rate", framerate);
 			fileconfiguration.set("video.frames", frames);
@@ -891,6 +901,16 @@ public class Video {
 	
 	public double getVolume() {
 		return getConfigFile().getDouble("video.audio-volume");
+	}
+	
+	/**
+	* Gets amount of audio channel of the video. 
+	*  
+	* @return The number of audio channels
+	*/
+	
+	public double getAudioChannels() {
+		return getConfigFile().getDouble("video.audio-channels");
 	}
 	
 	/**

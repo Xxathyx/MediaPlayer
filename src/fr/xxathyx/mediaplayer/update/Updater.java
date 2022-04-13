@@ -50,7 +50,7 @@ public class Updater {
 				if(isOutdated()) {
 					Updater.createFolders();
 					if(configuration.plugin_auto_update()) {
-						download();
+						if(!download()) return;
 						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "The new plugin version has been downloaded,"
 								+ " and will be applied on the next server restart.");
 						return;
@@ -103,7 +103,7 @@ public class Updater {
 	* @throws URISyntaxException When the oldest jar locating is failed.
 	*/
 	
-	public void download() {
+	public boolean download() {
 						
 		try {
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -115,7 +115,9 @@ public class Updater {
 		}catch (URISyntaxException | IOException e) {
 	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin.");
 			e.printStackTrace();
+	        return false;
 		}
+		return true;
 	}
 	
 	/** 
