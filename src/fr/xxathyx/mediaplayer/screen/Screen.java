@@ -1,5 +1,6 @@
 package fr.xxathyx.mediaplayer.screen;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
@@ -52,7 +54,7 @@ public class Screen {
 	private boolean running = false;
 	private boolean linked = true;
 	
-	public int[] task = {Bukkit.getScheduler().getPendingTasks().size()};
+	public int[] tasks = {Bukkit.getScheduler().getPendingTasks().size(), Bukkit.getScheduler().getPendingTasks().size()+1};
 		
 	private final int[] ids;
 	
@@ -92,7 +94,8 @@ public class Screen {
 	@SuppressWarnings("deprecation")
 	public void display() {
 		
-		plugin.getTasks().add(task[0]);
+		plugin.getTasks().add(tasks[0]);
+		plugin.getTasks().add(tasks[1]);
 		
 		if(!frames.isEmpty()) {
 			for(int i = 0; i < frames.size(); i++) {
@@ -110,7 +113,7 @@ public class Screen {
 				e.printStackTrace();
 			}
 			
-			Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {  
+			tasks[0] = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {  
 				@Override
 				public void run() {
 					settings.total = settings.total + video.getTotalFrames();
@@ -118,7 +121,7 @@ public class Screen {
 			}, (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20), (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20));
 		}
 				
-		task[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+		tasks[1] = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 		    
 			@Override
 			public void run() {
@@ -127,17 +130,29 @@ public class Screen {
 					
 					Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
 					
-					for(Entity entity : entities) {
-						if(entity.getType() == EntityType.PLAYER) {
-							
-							Player player = ((Player)entity);
-							
-							if(!listeners.contains(player.getUniqueId())) {
+					if(video.isAudioEnabled()) {
+						for(Entity entity : entities) {
+							if(entity.getType() == EntityType.PLAYER) {
 								
-								player.setResourcePack("ur1");
+								Player player = ((Player)entity);
 								
-								for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(entity.getLocation(), "mediaplayer." + i, 10, 1);
-								listeners.add(player.getUniqueId());
+								if(!listeners.contains(player.getUniqueId())) {
+								    //player.setResourcePack("free hosting url");
+									listeners.add(player.getUniqueId());
+								}
+							}
+						}
+						
+						for(UUID uuid : listeners) {
+							
+							if(plugin.getPlayersScreens().containsKey(uuid)) {
+								if(plugin.getPlayersScreens().get(uuid) == null) {
+									
+									plugin.getPlayersScreens().replace(uuid, getScreen());
+									Player player = Bukkit.getPlayer(uuid);
+									
+									for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(player.getLocation(), "mediaplayer." + i, 10, 1);
+								}
 							}
 						}
 					}
@@ -156,7 +171,7 @@ public class Screen {
                 						settings.count++;
                 					}
                 				}else {
-                					System.out.print(settings.framerate-settings.fps + " frames added");
+                					System.out.println(settings.framerate-settings.fps + " frames added");
 		                			settings.count = settings.count + (settings.framerate-settings.fps);
                 				}
 	                		}
@@ -178,15 +193,22 @@ public class Screen {
 		                		                
 						for(int i = 0; i < settings.max; i++) {
 							if(settings.count < settings.total && settings.fps < settings.framerate) {
-																
-								Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+								
+								BukkitTask[] bukkitTask = {null};
+								bukkitTask[0] = Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+																		
 									@Override
 									public void run() {
+														
+										plugin.getTasks().add(bukkitTask[0].getTaskId());
 										
 										if(settings.realtimeRendering) {
 											
 											try {
-												ImageRenderer imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), settings.count + settings.framesExtension)));
+												
+												BufferedImage frame = ImageIO.read(new File(video.getFramesFolder(), settings.count + settings.framesExtension));
+												
+												ImageRenderer imageRenderer = new ImageRenderer(frame);
 							    	    		imageRenderer.calculateDimensions();
 							    	    		imageRenderer.splitImages();
 							    	    									    	    		
@@ -287,7 +309,7 @@ public class Screen {
 	
 	public void end() {
 		
-		Bukkit.getScheduler().cancelTask(task[0]);
+		Bukkit.getScheduler().cancelTask(tasks[0]);
 		running = false;
 				
 		video.getVideoData().loadThumbnail();
@@ -408,5 +430,9 @@ public class Screen {
 	
 	public ArrayList<Block> getBlocks() {
 		return blocks;
+	}
+	
+	public Screen getScreen() {
+		return this;
 	}
 }

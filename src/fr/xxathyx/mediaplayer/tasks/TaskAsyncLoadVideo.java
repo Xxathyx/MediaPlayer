@@ -62,6 +62,8 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	/**
 	* Runs a task that will load the {@link Video} passed earlier in the constructor. Loading
 	* a video can take time according to the video lenght and their options, see {@link Video#getSize()}.
+	* 
+	* The estimated time shown is a magnified average, it shouldn't be trusted anymore.
 	*/
     
 	public void run() {
@@ -81,11 +83,13 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
         if(framesCount < video.getTotalFrames()) {
         	
         	if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX) || fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.OTHER)) {
-            	try {
-    				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
-    			}catch (InterruptedException | IOException e) {
-    				e.printStackTrace();
-    			}
+        		if(configuration.plugin_force_permissions()) {
+                	try {
+        				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
+        			}catch (InterruptedException | IOException e) {
+        				e.printStackTrace();
+        			}
+        		}
         	}
         	
     		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())
@@ -100,6 +104,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
                      
             try {
     			Process process = videoProcessBuilder.inheritIO().start();
+    			plugin.getProcess().add(process);
     			process.waitFor();
     		}catch (IOException | InterruptedException e) {
     			e.printStackTrace();
@@ -124,6 +129,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
                     ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
                     try {
             			Process process = audioProcessBuilder.inheritIO().start();
+		    			plugin.getProcess().add(process);
             			process.waitFor();
             		}catch (IOException | InterruptedException e) {
             			e.printStackTrace();

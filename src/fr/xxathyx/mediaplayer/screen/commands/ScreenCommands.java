@@ -182,7 +182,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 						player.sendMessage(ChatColor.DARK_PURPLE + "index: " + ChatColor.LIGHT_PURPLE + arg3[1]);
 						player.sendMessage(ChatColor.DARK_PURPLE + "video: " + ChatColor.WHITE + screen.getVideoInstance().getVideo().getName());
 						player.sendMessage(ChatColor.DARK_PURPLE + "running: " + ChatColor.WHITE + screen.isRunning());
-						player.sendMessage(ChatColor.DARK_PURPLE + "task-id: " + ChatColor.LIGHT_PURPLE + screen.task[0]);
+						player.sendMessage(ChatColor.DARK_PURPLE + "task-id: " + ChatColor.LIGHT_PURPLE + screen.tasks[0]);
 						player.sendMessage(ChatColor.DARK_PURPLE + "width: " + ChatColor.LIGHT_PURPLE + screen.getWidth());
 						player.sendMessage(ChatColor.DARK_PURPLE + "height: " + ChatColor.LIGHT_PURPLE + screen.getHeight());
 						player.sendMessage(ChatColor.DARK_PURPLE + "lowest-frame: " + ChatColor.DARK_PURPLE + "x: " + ChatColor.LIGHT_PURPLE +

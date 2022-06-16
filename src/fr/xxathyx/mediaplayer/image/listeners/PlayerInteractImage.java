@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -135,13 +137,15 @@ public class PlayerInteractImage implements Listener {
 							
 					        boolean visible = true;
 					        
-					        if(plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_17_R1") ||
-					        		plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") || plugin.getServerVersion().equals("v1_16_R1")) {
-					        	visible = false;
+					        if(plugin.getServerVersion().equals("v1_19_R1") || plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") ||
+					        		plugin.getServerVersion().equals("v1_17_R1") || plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") ||
+					        		plugin.getServerVersion().equals("v1_16_R1")) {
+					        	visible = configuration.visible_screen_frames_support();
 					        }
 					        
 							for(int i = 0; i < frames.size(); i++) {
 								
+								if(plugin.getServerVersion().equals("v1_19_R1")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								if(plugin.getServerVersion().equals("v1_18_R2")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_18_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								if(plugin.getServerVersion().equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
@@ -151,6 +155,33 @@ public class PlayerInteractImage implements Listener {
 								
 								frames.get(i).setItem(itemStacks.getMap(image.getIds().get(i)));
 							}
+							
+							boolean[] visibles = {visible};
+							
+							Collection<Entity> entities = getNearbyEntities(frames.get(image.getIds().size()/2).getLocation(), 32);
+							
+							Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {	 	        	
+								for(Entity entity : entities) {
+									if(entity.getType() == EntityType.PLAYER) {
+										if(entity.getUniqueId() != player.getUniqueId()) {
+											
+											Location first = frames.get(0).getLocation();
+											frames.get(0).remove();
+											
+											ItemFrame itemFrame = (ItemFrame) player.getWorld().spawnEntity(first, EntityType.ITEM_FRAME);
+											itemFrame.setItem(new ItemStacks().getMap(image.getIds().get(0)));
+											
+											if(plugin.getServerVersion().equals("v1_19_R1")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+											if(plugin.getServerVersion().equals("v1_18_R2")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+											if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_18_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+											if(plugin.getServerVersion().equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+											if(plugin.getServerVersion().equals("v1_16_R3")) ((org.bukkit.craftbukkit.v1_16_R3.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+											if(plugin.getServerVersion().equals("v1_16_R2")) ((org.bukkit.craftbukkit.v1_16_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+											if(plugin.getServerVersion().equals("v1_16_R1")) ((org.bukkit.craftbukkit.v1_16_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+										}
+									}
+								}
+				 	        }, 0L);
 							
 							player.sendMessage(configuration.image_placed(image.getName()));
 							SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);

@@ -2,14 +2,13 @@ package fr.xxathyx.mediaplayer.resourcepack;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +22,12 @@ import com.google.gson.Gson;
 import dev.jeka.core.api.file.JkPathTree;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.video.Video;
 
 public class ResourcePack {
+	
+	private final Main plugin = Main.getPlugin(Main.class);
 	
 	private final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 	
@@ -91,31 +93,44 @@ public class ResourcePack {
 		
 		JkPathTree.of(resourcePackFolder.toPath()).zipTo(zipFile.toPath());
 		
+		Client client = plugin.getClient();
+		
+		client.write("mediaplayer.upload: ", video.getName());
+		client.refresh();
+		
 		try {
-	        BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(zipFile));
+			DataInputStream dataInputStream = new DataInputStream(plugin.getClient().getSocket().getInputStream());
+			DataOutputStream dataOutputStream = new DataOutputStream(plugin.getClient().getSocket().getOutputStream());
 
-	        Socket client = new Socket("127.0.0.1", 8888);
-	        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(client.getOutputStream());
+	        sendFile(dataOutputStream, zipFile);
 	        
-	        byte[] array = new byte[1024 * 8];
-	        int lenght;
-	        
-	        while((lenght = bufferedInputStream.read(array)) != -1) {
-	        	bufferedOutputStream.write(array, 0, lenght);
-	        	bufferedOutputStream.flush();
-	        }
-	        
-	        System.out.println("File uploaded");
-	        
-	        bufferedOutputStream.close();
-	        client.close();
-	        bufferedInputStream.close();
-	        
-	        System.out.println("File upload completed");
-		}catch (IOException e) {
+	        dataInputStream.close();
+	        dataInputStream.close();
+		}catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		
+		
 	}
+	
+    private void sendFile(DataOutputStream dataOutputStream, File file) throws Exception {
+    	
+        int bytes = 0;
+        
+        FileInputStream fileInputStream = new FileInputStream(file);
+        
+        dataOutputStream.writeLong(file.length());  
+        
+        byte[] buffer = new byte[4*1024];
+        
+        while((bytes=fileInputStream.read(buffer))!=-1) {
+        	plugin.getClient().refresh();
+            dataOutputStream.write(buffer,0,bytes);
+            dataOutputStream.flush();
+        }
+        fileInputStream.close();
+    }
 	
 	/**
 	* Gets the resource pack-format according to the server running
@@ -137,6 +152,7 @@ public class ResourcePack {
 	*/
 	
 	public int getResourcePackFormat() {
+        if(serverVersion.equals("v1_19_R1")) return 9;
         if(serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_18_R2")) return 8;
         if(serverVersion.equals("v1_17_R1")) return 7;
         if(serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R3")) return 6;

@@ -34,7 +34,7 @@ public class Stream {
         ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
                  
         try {
-			videoProcessBuilder.inheritIO().start();
+			plugin.getProcess().add(videoProcessBuilder.inheritIO().start());
 		}catch (IOException e) {
 			e.printStackTrace();
 		}

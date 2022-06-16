@@ -1,8 +1,6 @@
 package fr.xxathyx.mediaplayer;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -28,11 +27,13 @@ import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickPanel;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickVideos;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClosePanel;
 import fr.xxathyx.mediaplayer.map.util.MapUtilVersion;
+import fr.xxathyx.mediaplayer.resourcepack.listeners.ResourcePackStatus;
 import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.screen.commands.ScreenCommands;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerBreakScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerDamageScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerInteractScreen;
+import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadImages;
 import fr.xxathyx.mediaplayer.translation.Translater;
@@ -90,16 +91,19 @@ import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 public class Main extends JavaPlugin {
 	
 	private final ArrayList<Integer> tasks = new ArrayList<>();
+	private final ArrayList<Process> process = new ArrayList<>();
 	
 	private final ArrayList<Video> registeredVideos = new ArrayList<>();
 	private final ArrayList<Screen> registeredScreens = new ArrayList<>();
 	
 	private final Map<UUID, URL> streamsURL = new HashMap<>();
+	private final ArrayList<Video> playedStreams = new ArrayList<>();
 	
 	private final ArrayList<Block> screensBlocks = new ArrayList<>();
 	private final ArrayList<ItemFrame> screensFrames = new ArrayList<>();
 	
 	private final Map<UUID, VideoPlayer> videoPlayers = new HashMap<>();
+	private final Map<UUID, Screen> playersScreens = new HashMap<>();
 	
 	private final ArrayList<Group> groups = new ArrayList<>();
 	
@@ -112,6 +116,7 @@ public class Main extends JavaPlugin {
 	private final ArrayList<String> playingVideos = new ArrayList<>();
 	
 	private Configuration configuration;
+	private Client client;
 	
 	private Ffmpeg ffmpeg;
 	private Ffprobe ffprobe;
@@ -135,10 +140,11 @@ public class Main extends JavaPlugin {
 	
 	public void onEnable() {
 		
+		client = new Client();
+		
 		configuration = new Configuration();
-		
 		configuration.setup();
-		
+				
 		ffmpeg = new Ffmpeg();
 		ffprobe = new Ffprobe();
 		
@@ -173,8 +179,8 @@ public class Main extends JavaPlugin {
 		
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
-        if(serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") || serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1")
-        		|| serverVersion.equals("v1_14_R1") || serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2")) {
+        if(serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
+        		serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1") || serverVersion.equals("v1_14_R1") || serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
         
@@ -206,23 +212,23 @@ public class Main extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerBreakScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDamageScreen(), this);
+		
+		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
 		new TaskAsyncLoadConfigurations().runTaskAsynchronously(this);
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
-		if(configuration.free_audio_server_handling()) {
+		if(configuration.plugin_free_audio_server_handling()) {
+			
 			Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 				@Override
 				public void run() {
-					try {
-						Socket client = new Socket("127.0.0.1", 8888);
-						DataOutputStream dataOutputStream = new DataOutputStream(client.getOutputStream());
-						dataOutputStream.writeUTF("mediaplayer.connect: " + configuration.free_audio_server_token());
-						client.close();
-					}catch (IOException e) {
-						e.printStackTrace();
-					}
+					
+					if(client.getSocket() == null) client.connect();
+					
+					client.write("mediaplayer.connect: ", configuration.free_audio_server_token());
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
 				}
 			});
 		}
@@ -233,6 +239,9 @@ public class Main extends JavaPlugin {
 	* 
 	* <p>Turn off all registered screens, and remove them if
 	* {@link Configuration#remove_screen_on_end()} is true.
+	* 
+	* <p>Delete all temporary streamed videos, if
+	* {@link Configuration#save_streams()} is true.
 	*/
 	
 	public void onDisable() {
@@ -247,6 +256,39 @@ public class Main extends JavaPlugin {
 				screen.remove();
 			}
 		}
+		
+		for(Process process : process) {
+			process.destroy();
+		}
+		
+		for(Video video : playedStreams) {
+			
+			try {
+				if(!configuration.save_streams() && video.isStreamed()) video.delete();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+    /**
+     * Sets client if it can't be set, its only used on first time creation.
+     *
+     * @param client Client instance.
+     */
+	
+	public void setClient(Client client) {
+		this.client = client;
+	}
+	
+    /**
+     * Gets server-client that should be connected to the free audio server.
+     *
+     * @return the client instance.
+     */
+	
+	public Client getClient() {
+		return client;
 	}
 	
     /**
@@ -330,6 +372,10 @@ public class Main extends JavaPlugin {
 		return tasks;
 	}
 	
+	public ArrayList<Process> getProcess() {
+		return process;
+	}
+	
     /**
      * Gets all detected and registered videos after running an {@link TaskAsyncLoadConfigurations}.
      *
@@ -354,6 +400,10 @@ public class Main extends JavaPlugin {
 		return streamsURL;
 	}
 	
+	public ArrayList<Video> getPlayedStreams() {
+		return playedStreams;
+	}
+	
 	public ArrayList<Block> getScreensBlocks() {
 		return screensBlocks;
 	}
@@ -370,6 +420,10 @@ public class Main extends JavaPlugin {
 	
 	public Map<UUID, VideoPlayer> getVideoPlayers() {
 		return videoPlayers;
+	}
+	
+	public Map<UUID, Screen> getPlayersScreens() {
+		return playersScreens;
 	}
 	
     /**

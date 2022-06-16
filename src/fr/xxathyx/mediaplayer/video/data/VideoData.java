@@ -90,9 +90,11 @@ public class VideoData {
 	*/
 	
 	public void createThumbnail() throws IOException {
-				
-		File file = new File(video.getFramesFolder(), (int) Math.floor(Math.random()*((video.getTotalFrames()-1)-1+1)+1) + video.getFramesExtension());
+			
+		int random = (int) Math.floor(Math.random()*((video.getTotalFrames()-1)-1+1)+1);
 		
+		File file = new File(video.getFramesFolder(), random + video.getFramesExtension());
+				
 		BufferedImage frame = ImageIO.read(file);
 		
 		Image background = ImageIO.read(Main.class.getResource("resources/background.png"));	

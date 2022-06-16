@@ -122,7 +122,6 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 									    plugin.getStreamsURL().put(uuid, url);
 									    
 										new TaskAsyncLoadConfigurations().runTaskLaterAsynchronously(plugin, 20L);
-										sender.sendMessage("c'est dans la boite hbibi");
 										return;
 									}catch (IOException e) {
 										e.printStackTrace();
@@ -287,16 +286,13 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 						        	
 						        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
 						        		
-						        		if(plugin.getSelectedVideos().containsKey(players[0].getUniqueId())) {
-						        			players[0].sendMessage(configuration.video_already_selected(videoTask[0].getName()));
-											SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_DOWN);
-						        			return;
-						        		}
-						        		
-						        		plugin.getPlayingVideos().add(videoTask[0].getName());
-										
 						        		VideoInstance videoInstance = new VideoInstance(videoTask[0]);
 						        		
+						        		if(plugin.getSelectedVideos().containsKey(players[0].getUniqueId())) {
+						        			plugin.getSelectedVideos().replace(players[0].getUniqueId(), videoInstance);
+						        		}
+						        		
+						        		plugin.getPlayingVideos().add(videoTask[0].getName());																        		
 						        		plugin.getSelectedVideos().put(players[0].getUniqueId(), videoInstance);
 						        		
 						        		players[0].sendMessage(configuration.video_selected(videoTask[0].getName()));
@@ -335,7 +331,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 										if(plugin.getLoadingVideos().size() <= configuration.maximum_loading_videos()) {
 											if(!plugin.getLoadingVideos().contains(videoTask[0].getName())) {
 												
-									        	if(!videoTask[0].hasEnoughtSpace()) {
+									        	if(!videoTask[0].hasEnoughtSpace() && videoTask[0].getVideoData().getRealTimeRendering()) {
 									        		sender.sendMessage(configuration.video_not_enought_space(videoTask[0].getName()));
 													if(sender instanceof Player) SoundPlayer.playSound(players[0], SoundType.NOTIFICATION_DOWN);
 									        		return;
@@ -770,9 +766,10 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 					}
 					
 					if(arg3[0].equalsIgnoreCase("cancel-tasks") | arg3[0].equalsIgnoreCase("ct")) {
-						for(int id : plugin.getTasks()) { Bukkit.getScheduler().cancelTask(id); }
+						for(int id : plugin.getTasks()) Bukkit.getScheduler().cancelTask(id);
 						sender.sendMessage(configuration.videos_canceled_tasks(String.valueOf(plugin.getTasks().size())));
 						plugin.getTasks().clear();
+						for(Process process : plugin.getProcess()) process.destroy();
 						return true;
 					}
 				}

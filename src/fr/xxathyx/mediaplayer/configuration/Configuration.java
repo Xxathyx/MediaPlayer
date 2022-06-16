@@ -1,10 +1,7 @@
 package fr.xxathyx.mediaplayer.configuration;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,6 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.util.Host;
 import fr.xxathyx.mediaplayer.util.RandomToken;
 
@@ -60,29 +58,26 @@ public class Configuration {
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 				@Override
 				public void run() {
-					try {
-						
-						Socket socket = new Socket("127.0.0.1", 8888);
-						DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-						
-						dataOutputStream.writeUTF("mediaplayer.register: " + token);
-						
-						DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + dataInputStream.readUTF());
-						socket.close();
-					}catch (IOException e) {
-						e.printStackTrace();
-					}
+					
+					Client client = new Client();
+					client.connect();
+					
+					plugin.setClient(client);
+					
+					client.write("mediaplayer.register: ", token);
+					
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
 				}
 			});
 			
 			fileconfiguration = new YamlConfiguration();
 			
-			fileconfiguration.set("plugin.auto-update", true);
+			fileconfiguration.set("plugin.auto-update", false);
+			fileconfiguration.set("plugin.force-permissions", false);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
 			fileconfiguration.set("plugin.free-audio-server-token", token);
 			fileconfiguration.set("plugin.own-audio-server-handling-ip", "localhost");
-			fileconfiguration.set("plugin.own-audio-server-handling-port", "21");
+			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -92,8 +87,10 @@ public class Configuration {
 			fileconfiguration.set("plugin.ping-sound", true);
 			fileconfiguration.set("plugin.delete-frames-on-loaded", false);
 			fileconfiguration.set("plugin.delete-video-on-loaded", false);
+			fileconfiguration.set("plugin.save-streams", false);
 			
 			fileconfiguration.set("plugin.screen-block", "BARRIER");
+			fileconfiguration.set("plugin.visible-screen-frames-support", false);
 			
 			fileconfiguration.set("plugin.maximum-distance-to-receive", 10);
 			
@@ -120,7 +117,6 @@ public class Configuration {
 			fileconfiguration.set("messages.video-invalid", "&cLa vidéo &l%video% &cest introuvable.");
 			fileconfiguration.set("messages.video-invalid-index", "&cLa vidéo d'index &l%index% &cest introuvable.");
 			fileconfiguration.set("messages.video-selected", "&aVous venez de sélectionner la video &l%video%&a, affectez la en cliquant sur le coin supérieur gauche d'un écran.");
-			fileconfiguration.set("messages.video-already-selected", "&cVeuillez affecter d'abord &l%video% &cavant d'en choisir une nouvelle.");
 			fileconfiguration.set("messages.video-assigned", "&aVous venez d'assigner la video &l%video% &aà cet écran, &l/video start &apour la jouer.");
 			fileconfiguration.set("messages.video-not-enought-space", "&cVous n'avez pas assez d'espace pour charger &l%video%&c.");
 			
@@ -385,7 +381,11 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.auto-update");
 	}
 	
-	public boolean free_audio_server_handling() {
+	public boolean plugin_force_permissions() {
+		return getConfigFile().getBoolean("plugin.force-permissions");
+	}
+	
+	public boolean plugin_free_audio_server_handling() {
 		return getConfigFile().getBoolean("plugin.free-audio-server-handling");
 	}
 	
@@ -417,10 +417,18 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.delete-video-on-loaded");
 	}
 	
+	public boolean save_streams() {
+		return getConfigFile().getBoolean("plugin.save-streams");
+	}
+	
 	public String screen_block() {
 		String material = getConfigFile().getString("plugin.screen-block");
 		if(material.equalsIgnoreCase("BARRIER") && plugin.isOld()) material = "GLASS"; 
 		return material;
+	}
+	
+	public boolean visible_screen_frames_support() {
+		return getConfigFile().getBoolean("plugin.visible-screen-frames-support");
 	}
 	
 	public int maximum_distance_to_receive() {
@@ -489,10 +497,6 @@ public class Configuration {
 	
 	public String video_selected(String video) {
 		return getMessage(getConfigFile().getString("messages.video-selected"), video);
-	}
-	
-	public String video_already_selected(String video) {
-		return getMessage(getConfigFile().getString("messages.video-already-selected"), video);
 	}
 	
 	public String video_assigned(String video) {

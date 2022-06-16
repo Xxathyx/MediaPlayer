@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Rotation;
 import org.bukkit.entity.Entity;
@@ -18,6 +19,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.image.listeners.PlayerInteractImage;
+import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
@@ -67,8 +69,9 @@ public class PlayerInteractVideo implements Listener {
 				boolean up = false;
 				boolean down = false;
 				
-				if(plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_17_R1") ||
-						plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") || plugin.getServerVersion().equals("v1_16_R1")) {
+				if(plugin.getServerVersion().equals("v1_19_R1") || plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") ||
+						plugin.getServerVersion().equals("v1_17_R1") || plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") ||
+						plugin.getServerVersion().equals("v1_16_R1")) {
 					if(Math.abs(player.getLocation().getPitch()) >= 60) {
 						
 						c = -1;
@@ -86,8 +89,9 @@ public class PlayerInteractVideo implements Listener {
 						double k = j;
 						double y = -i;
 												
-						if(plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_17_R1") ||
-								plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") || plugin.getServerVersion().equals("v1_16_R1")) {
+						if(plugin.getServerVersion().equals("v1_19_R1") || plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") ||
+								plugin.getServerVersion().equals("v1_17_R1") || plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") ||
+								plugin.getServerVersion().equals("v1_16_R1")) {
 							if(Math.abs(player.getLocation().getPitch()) >= 60) {
 								y = 0;
 								if(k % videoInstance.getVideo().getVideoData().getMinecraftWidth() == 0) c++;
@@ -172,12 +176,14 @@ public class PlayerInteractVideo implements Listener {
 				
 		        boolean visible = false;
 		        
-		        if(plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_17_R1") ||
-		        		plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") || plugin.getServerVersion().equals("v1_16_R1")) {
-		        	visible = false;
+		        if(plugin.getServerVersion().equals("v1_19_R1") || plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") ||
+		        		plugin.getServerVersion().equals("v1_17_R1") || plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") ||
+		        		plugin.getServerVersion().equals("v1_16_R1")) {
+		        	visible = configuration.visible_screen_frames_support();
 		        }
 		        
 				for(int i = 0; i < frames.size(); i++) {
+					if(plugin.getServerVersion().equals("v1_19_R1")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 					if(plugin.getServerVersion().equals("v1_18_R2")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 					if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_18_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 					if(plugin.getServerVersion().equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
@@ -193,8 +199,35 @@ public class PlayerInteractVideo implements Listener {
 				plugin.getRegisteredScreens().add(screen);
 				
 				plugin.getSelectedVideos().remove(player.getUniqueId());
-				player.sendMessage(configuration.video_assigned(videoInstance.getVideo().getName()));
+				
+				Collection<Entity> entities = getNearbyEntities(frames.get(videoInstance.getVideo().getVideoData().getMaps().getIds().size()/2).getLocation(), 32);
+	 	        
+				boolean[] visibles = {visible};
+				
+				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {	 	        	
+					for(Entity entity : entities) {
+						if(entity.getType() == EntityType.PLAYER) {
+							if(entity.getUniqueId() != player.getUniqueId()) {
+								
+								Location first = frames.get(0).getLocation();
+								frames.get(0).remove();
+								
+								ItemFrame itemFrame = (ItemFrame) player.getWorld().spawnEntity(first, EntityType.ITEM_FRAME);
+								itemFrame.setItem(new ItemStacks().getMap(videoInstance.getVideo().getVideoData().getMaps().getIds().get(0)));
+								
+								if(plugin.getServerVersion().equals("v1_19_R1")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+								if(plugin.getServerVersion().equals("v1_18_R2")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+								if(plugin.getServerVersion().equals("v1_18_R1")) ((org.bukkit.craftbukkit.v1_18_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+								if(plugin.getServerVersion().equals("v1_17_R1")) ((org.bukkit.craftbukkit.v1_17_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+								if(plugin.getServerVersion().equals("v1_16_R3")) ((org.bukkit.craftbukkit.v1_16_R3.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+								if(plugin.getServerVersion().equals("v1_16_R2")) ((org.bukkit.craftbukkit.v1_16_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+								if(plugin.getServerVersion().equals("v1_16_R1")) ((org.bukkit.craftbukkit.v1_16_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
+							}
+						}
+					}
+	 	        }, 0L);
 				SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+				player.sendMessage(configuration.video_assigned(videoInstance.getVideo().getName()));
 			}
 		}
 	}

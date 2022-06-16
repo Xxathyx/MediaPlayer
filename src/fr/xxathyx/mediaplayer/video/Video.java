@@ -28,6 +28,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
+import fr.xxathyx.mediaplayer.source.Source;
 import fr.xxathyx.mediaplayer.stream.m3u8.Reader;
 import fr.xxathyx.mediaplayer.system.SystemType;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
@@ -67,6 +68,8 @@ public class Video {
 	private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 	
 	private File file;
+	private Source source;
+	
 	private FileConfiguration fileconfiguration;
 	
 	/**
@@ -123,6 +126,20 @@ public class Video {
 	}
 	
 	/**
+	* Constructor for Video class, creates an Video variable according
+	* to an external source.
+	* 
+	<p>Passed {@link Source} can't be non-existent, needs to be created manually.
+	* 
+	* @param source The external source.
+	*/
+	
+	public Video(Source source) {
+		this.file = new File(plugin.getDataFolder(), "/videos/" + source.getName() + "/" + source.getName() + ".yml");
+		this.source = source;
+	}
+	
+	/**
 	* Creates a video configuration-file accoding to a original video file.
 	* 
 	* @param file The original video file.
@@ -158,12 +175,14 @@ public class Video {
 	        FFmpegStream stream;
 			
         	if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX) || fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.OTHER)) {
-            	try {
-    				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
-    				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath())).waitFor();
-    			}catch (InterruptedException | IOException e) {
-    				e.printStackTrace();
-    			}
+        		if(configuration.plugin_force_permissions()) {
+                	try {
+        				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
+        				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfprobe().getLibraryFile().getAbsolutePath())).waitFor();
+        			}catch (InterruptedException | IOException e) {
+        				e.printStackTrace();
+        			}
+        		}
         	}
 	        
 			if(!format.equalsIgnoreCase("m3u8")) {
@@ -231,6 +250,7 @@ public class Video {
 		                     
 		            try {
 		    			Process process = videoProcessBuilder.inheritIO().start();
+		    			plugin.getProcess().add(process);
 		    			process.waitFor();
 		    		}catch (IOException | InterruptedException e) {
 		    			e.printStackTrace();
@@ -289,7 +309,7 @@ public class Video {
 			fileconfiguration.set("video.looping", false);
 			fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
 			fileconfiguration.set("video.data-folder", getDataFolder().getPath());
-			fileconfiguration.set("video.real-time-rendering", format.equalsIgnoreCase("m3u8"));
+			fileconfiguration.set("video.real-time-rendering", Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.skip-duplicated-frames", false);
 			fileconfiguration.set("video.show-informations", true);
 			fileconfiguration.set("video.show-fps", true);
@@ -309,8 +329,64 @@ public class Video {
 			new File(file.getParent() + "/data/cache/").mkdir();
 			new File(file.getParent() + "/data/resourcepacks/").mkdir();
 			
-			if(format.equalsIgnoreCase("m3u8")) load();
+			if(Format.getCompatibleStreamsFormats().contains(format)) load(); plugin.getPlayedStreams().add(this);
 		}
+	}
+	
+	/**
+	* Creates a video configuration-file only accoding to a external source passed earlier in the constructor.
+	* 
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void createConfiguration() throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		LocalDateTime date = LocalDateTime.now();
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.set("video.name", source.getName());
+		fileconfiguration.set("video.description", "&a/video " + source.getName() + " set description <message>");
+		fileconfiguration.set("video.file-video-path", "");
+		fileconfiguration.set("video.stream", false);
+		fileconfiguration.set("video.stream-url", "");
+		fileconfiguration.set("video.enable-audio", source.hasAudio());
+		fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
+		fileconfiguration.set("video.audio-volume", 1.0);
+		fileconfiguration.set("video.audio-channels", 0);
+		fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
+		fileconfiguration.set("video.frame-rate", source.getFramerate());
+		fileconfiguration.set("video.frames", source.getTotalFrames());
+		fileconfiguration.set("video.format", "none");
+		fileconfiguration.set("video.width", source.getWidth());
+		fileconfiguration.set("video.height", source.getHeight());
+		fileconfiguration.set("video.duration", decimalFormat.format((source.getTotalFrames()/source.getFramerate())/3600) + "h");
+		fileconfiguration.set("video.speed", 1.0);
+		fileconfiguration.set("video.size", 0 + " Mo");
+		fileconfiguration.set("video.age-limit", false);
+		fileconfiguration.set("video.looping", source.isLooping());
+		fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
+		fileconfiguration.set("video.data-folder", getDataFolder().getPath());
+		fileconfiguration.set("video.real-time-rendering", true);
+		fileconfiguration.set("video.skip-duplicated-frames", false);
+		fileconfiguration.set("video.show-informations", source.showInformations());
+		fileconfiguration.set("video.show-fps", source.showFPS());
+		fileconfiguration.set("video.run-on-startup", false);
+		fileconfiguration.set("video.minecraft-width", 0);
+		fileconfiguration.set("video.minecraft-height", 0);
+		fileconfiguration.set("video.loaded", false);
+		fileconfiguration.set("video.views", 0);
+		
+		fileconfiguration.save(file);
+		
+		getFramesFolder().mkdir();
+		getAudioFolder().mkdir();
+		getDataFolder().mkdir();
+				
+		new File(file.getParent() + "/data/maps/").mkdir();
+		new File(file.getParent() + "/data/cache/").mkdir();
+		new File(file.getParent() + "/data/resourcepacks/").mkdir();
 	}
 	
 	/**
@@ -684,7 +760,7 @@ public class Video {
 	}
 	
 	/**
-	* Deletes a video and her video folder.
+	* Deletes a video and its video folder.
 	*  
 	* <p> <strong>Note: </strong> This method shall be called asynchronously from the main
 	* thread, since its thread-safe and performs a lot of I/O opperations.
@@ -717,7 +793,7 @@ public class Video {
 	*/
 	
 	public boolean isStreamed() {
-		return Format.getCompatibleStreamsFormats().contains(getFormat());
+		return Format.getCompatibleStreamsFormats().contains(getFormat()) || source != null;
 	}
 	
 	/**
@@ -730,6 +806,8 @@ public class Video {
 	*/
 	
 	public boolean isLoaded() {
+		
+		if(source != null) return true;
 		
 		if(getFramesFolder().listFiles().length >= getTotalFrames()) {
 			if(getFormat().equalsIgnoreCase("gif") || getFormat().equalsIgnoreCase("m3u8")) {				
@@ -1141,5 +1219,15 @@ public class Video {
 	
 	public File getFile() {
 		return file;
+	}
+	
+	/**
+	* Gets the video source passed earlier in the constructors.
+	* 
+	* @return The video source.
+	*/
+	
+	public Source getSource() {
+		return source;
 	}
 }

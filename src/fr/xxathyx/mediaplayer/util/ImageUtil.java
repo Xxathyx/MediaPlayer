@@ -2,6 +2,8 @@ package fr.xxathyx.mediaplayer.util;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.List;
 
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
@@ -18,6 +20,8 @@ import fr.xxathyx.mediaplayer.video.data.VideoData;
 
 public class ImageUtil {
 	
+    private static int maxGradient = -1;
+    	
 	/** 
 	* Blurs an given imagen this method is used for restricted content for thumbnail, see
 	* {@link VideoData#createThumbnail()}.
@@ -101,4 +105,138 @@ public class ImageUtil {
 		}
 		return (ressemblance/total)*100;
 	}
+	
+	public static BufferedImage convolution(BufferedImage bufferedImage, double[] convolution) {
+		
+		BufferedImage finalImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+		
+		for(int i = 0; i < bufferedImage.getWidth(); i++) {
+			for(int j = 0; j < bufferedImage.getHeight(); j++) {				
+				if(i < bufferedImage.getWidth()-1 && i > 1 && j < bufferedImage.getHeight()-1 && j > 1) {
+					
+					int redSum = 0;
+					int greenSum = 0;
+					int blueSum = 0;
+										
+					List<Color> pixelColor = Arrays.asList(new Color[] { new Color(bufferedImage.getRGB(i-1, j+1), true), new Color(bufferedImage.getRGB(i, j+1), true),
+							new Color(bufferedImage.getRGB(i+1, j+1), true), new Color(bufferedImage.getRGB(i-1, j), true), new Color(bufferedImage.getRGB(i+1, j), true),
+							new Color(bufferedImage.getRGB(i-1, j-1), true), new Color(bufferedImage.getRGB(i, j-1), true), new Color(bufferedImage.getRGB(i+1, j-1), true)});
+			        
+					for(Color color : pixelColor) {
+						
+						int index = pixelColor.indexOf(color);
+						
+						redSum = redSum + (int) Math.round(color.getRed()*convolution[index]);
+						greenSum = greenSum + (int) Math.round(color.getGreen()*convolution[index]);
+						blueSum = blueSum + (int) Math.round(color.getBlue()*convolution[index]);
+					}					
+
+					if(redSum > 255) redSum = 255; if(greenSum > 255) greenSum = 255; if(blueSum > 255) blueSum = 255;
+					if(redSum  < 0) redSum = 0; if(greenSum < 0) greenSum = 0; if(blueSum < 0) blueSum = 255;
+					
+					finalImage.setRGB(i, j, new Color(redSum, greenSum, blueSum).getRGB());
+				}
+			}
+		}
+		return finalImage;
+	}
+	
+	public static BufferedImage sobel(BufferedImage bufferedImage) {
+				
+		BufferedImage finalImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+	    
+		bufferedImage = toBinary(bufferedImage, 100);
+		
+		int[] gx = new int[] {-1, 0, 1,
+                              -2, 0, 2,
+                              -1, 0, 1};
+		
+		int[] gy = new int[] {-1, -2, -1,
+                               0, 0, 0,
+                               1, 2, 1};
+		
+	    int[][] gradients = new int[bufferedImage.getWidth()][bufferedImage.getHeight()];
+		
+        for(int i = 1; i < bufferedImage.getWidth() - 1; i++) {
+            for(int j = 1; j < bufferedImage.getHeight() - 1; j++) {
+            	
+            	List<Integer> pixelColor = Arrays.asList(new Integer[] { bufferedImage.getRGB(i-1, j+1), bufferedImage.getRGB(i, j+1),
+            			bufferedImage.getRGB(i+1, j+1), bufferedImage.getRGB(i-1, j), bufferedImage.getRGB(i, j),
+            			bufferedImage.getRGB(i+1, j), bufferedImage.getRGB(i-1, j-1), bufferedImage.getRGB(i, j-1),
+            			bufferedImage.getRGB(i+1, j-1)});
+            	
+            	int gradientX = 0;
+            	int gradientY = 0;
+            	
+            	for(int color : pixelColor) {
+            		
+            		int index = pixelColor.indexOf(color);
+            		
+            		gradientX = gradientX + index*gx[index];
+            		gradientY = gradientY + index*gy[index];
+            	}
+            	
+            	int g = (int) Math.round(Math.sqrt((gradientX*gradientX) + (gradientY*gradientY)));
+            	            	
+                if(maxGradient < g) {
+                    maxGradient = g;
+                }
+                gradients[i][j] = g;
+            }
+        }
+        
+        double scale = 255.0 / maxGradient;
+        
+        for(int i = 1; i < bufferedImage.getWidth() - 1; i++) {
+            for(int j = 1; j < bufferedImage.getHeight() - 1; j++) {
+            	
+                int edgeColor = gradients[i][j];
+                
+                edgeColor = (int)(edgeColor * scale);
+                edgeColor = 0xff000000 | (edgeColor << 16) | (edgeColor << 8) | edgeColor;
+
+                finalImage.setRGB(i, j, edgeColor);
+            }
+        }
+        return finalImage;
+	}
+	
+    private static BufferedImage toBinary(BufferedImage bufferedImage, int threshold) {
+        
+        BufferedImage finalImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+
+        int blackRGB = Color.BLACK.getRGB();
+        int whiteRGB = Color.WHITE.getRGB();
+
+        for(int i = 0; i < bufferedImage.getWidth(); i++) {
+            for(int j = 0; j < bufferedImage.getHeight(); j++) {
+
+                int rgb = bufferedImage.getRGB(i, j);
+                
+                int red = (rgb >> 16) & 0xFF;
+                int green = (rgb >> 8) & 0xFF;
+                int blue = (rgb) & 0xFF;
+                
+                int gray = (int) (0.2126 * red + 0.7152 * green + 0.0722 * blue);
+                
+                if(gray >= threshold) {
+                	finalImage.setRGB(i, j, whiteRGB);
+                }else{
+                	finalImage.setRGB(i, j, blackRGB);
+                }
+            }
+        }
+        return finalImage;
+    } 
+	
+    public static int getGrayScale(int rgb) {
+    	
+        int red = (rgb >> 16) & 0xff;
+        int green = (rgb >> 8) & 0xff;
+        int blue = (rgb) & 0xff;
+        
+        int gray = (int) (0.2126 * red + 0.7152 * green + 0.0722 * blue);
+
+        return gray;
+    }
 }

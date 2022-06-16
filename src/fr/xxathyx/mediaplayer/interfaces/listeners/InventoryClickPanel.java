@@ -96,16 +96,13 @@ public class InventoryClickPanel implements Listener {
 	        	
 	        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
 	        		
-	        		if(plugin.getSelectedVideos().containsKey(player.getUniqueId())) {
-	        			player.sendMessage(configuration.video_already_selected(video.getName()));
-						SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
-	        			return;
-	        		}
-	        		
-	        		plugin.getPlayingVideos().add(video.getName());
-					
 	        		VideoInstance videoInstance = new VideoInstance(video);
 	        		
+	        		if(plugin.getSelectedVideos().containsKey(player.getUniqueId())) {
+	        			plugin.getSelectedVideos().replace(player.getUniqueId(), videoInstance);
+	        		}
+	        		
+	        		plugin.getPlayingVideos().add(video.getName());	        		
 	        		plugin.getSelectedVideos().put(player.getUniqueId(), videoInstance);
 	        		
 	        		player.sendMessage(configuration.video_selected(video.getName()));
@@ -133,7 +130,7 @@ public class InventoryClickPanel implements Listener {
 	        		return;
 	        	}
 	        	
-	        	if(!video.hasEnoughtSpace()) {
+	        	if(!video.hasEnoughtSpace() && video.getVideoData().getRealTimeRendering()) {
 	        		player.sendMessage(configuration.video_not_enought_space(video.getName()));
 					SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
 	        		return;

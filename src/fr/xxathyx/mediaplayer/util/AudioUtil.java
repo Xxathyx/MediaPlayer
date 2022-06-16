@@ -33,9 +33,6 @@ public class AudioUtil {
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
         if(serverVersion.equals("v1_9_R2")) {
-        	
-        	Bukkit.broadcastMessage("it equals");
-        	
         	net.minecraft.server.v1_9_R2.EntityPlayer entityPlayer = ((org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer)player).getHandle();
         	net.minecraft.server.v1_9_R2.PacketDataSerializer packet = new net.minecraft.server.v1_9_R2.PacketDataSerializer(Unpooled.buffer()).a("");
         	net.minecraft.server.v1_9_R2.PacketPlayOutCustomPayload packetPlayOutCustomPayload = new net.minecraft.server.v1_9_R2.PacketPlayOutCustomPayload("MC|StopSound", packet);
