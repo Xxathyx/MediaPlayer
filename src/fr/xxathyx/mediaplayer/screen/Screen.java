@@ -130,29 +130,27 @@ public class Screen {
 					
 					Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
 					
-					if(video.isAudioEnabled()) {
-						for(Entity entity : entities) {
-							if(entity.getType() == EntityType.PLAYER) {
-								
-								Player player = ((Player)entity);
-								
-								if(!listeners.contains(player.getUniqueId())) {
-								    //player.setResourcePack("free hosting url");
-									listeners.add(player.getUniqueId());
-								}
+					for(Entity entity : entities) {
+						if(entity.getType() == EntityType.PLAYER) {
+							
+							Player player = ((Player)entity);
+							
+							if(!listeners.contains(player.getUniqueId())) {
+							    player.setResourcePack(new String("http://37.187.196.226/" + configuration.free_audio_server_token() + "/" + video.getName() + ".zip").replace(" ", "%20"));
+								listeners.add(player.getUniqueId());
 							}
 						}
+					}
+					
+					for(UUID uuid : listeners) {
 						
-						for(UUID uuid : listeners) {
-							
-							if(plugin.getPlayersScreens().containsKey(uuid)) {
-								if(plugin.getPlayersScreens().get(uuid) == null) {
-									
-									plugin.getPlayersScreens().replace(uuid, getScreen());
-									Player player = Bukkit.getPlayer(uuid);
-									
-									for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(player.getLocation(), "mediaplayer." + i, 10, 1);
-								}
+						if(plugin.getPlayersScreens().containsKey(uuid)) {
+							if(plugin.getPlayersScreens().get(uuid) == null) {
+								
+								plugin.getPlayersScreens().replace(uuid, getScreen());
+								Player player = Bukkit.getPlayer(uuid);
+								
+								for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(player.getLocation(), "mediaplayer." + i, 10, 1);
 							}
 						}
 					}

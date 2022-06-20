@@ -75,8 +75,9 @@ public class Configuration {
 			fileconfiguration.set("plugin.auto-update", false);
 			fileconfiguration.set("plugin.force-permissions", false);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
+			fileconfiguration.set("plugin.free-audio-server-address", "37.187.196.226");
 			fileconfiguration.set("plugin.free-audio-server-token", token);
-			fileconfiguration.set("plugin.own-audio-server-handling-ip", "localhost");
+			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
 			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
@@ -389,12 +390,16 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.free-audio-server-handling");
 	}
 	
+	public String plugin_free_audio_server_address() {
+		return getConfigFile().getString("plugin.free-audio-server-address");
+	}
+	
 	public String free_audio_server_token() {
 		return getConfigFile().getString("plugin.free-audio-server-token");
 	}
 	
-	public String own_audio_server_handling_ip() {
-		return getConfigFile().getString("plugin.own-audio-server-handling-ip");
+	public String own_audio_server_handling_address() {
+		return getConfigFile().getString("plugin.own-audio-server-handling-address");
 	}
 	
 	public int own_audio_server_handling_port() {

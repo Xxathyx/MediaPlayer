@@ -63,36 +63,6 @@ public class ScreenSettings {
 		fps = 0;
 	}
 	
-	public ScreenSettings(String name, String description, String framesExtension, int total, double framerate, double speed, boolean realtimeRendering,
-			boolean skipDuplicatedFrames, boolean showFPS, boolean showInformations) {
-				
-		name = video.getName();
-		description = video.getDescription();
-		framesExtension = video.getFramesExtension();
-		
-		total = video.getTotalFrames()-1;
-		framerate = video.getFrameRate();
-		
-		differencial = (int) Math.round(((double) 20/framerate)*(framerate-20));
-		
-		speed = video.getSpeed();
-		
-		realtimeRendering = video.getVideoData().getRealTimeRendering();
-		
-		skipDuplicatedFrames = video.getVideoData().getSkipDuplicatedFrames();
-		
-		showInformations = video.getVideoData().getShowInformations();
-		showFPS = video.getVideoData().getShowFPS();
-		
-		count = 0;
-		missed = 0;
-		
-		max = 0;
-		
-		time = System.currentTimeMillis();
-		fps = 0;
-	}
-	
 	public Video getVideo() {
 		return video;
 	}
