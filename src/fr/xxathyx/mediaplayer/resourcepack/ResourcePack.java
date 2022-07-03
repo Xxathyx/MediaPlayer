@@ -2,7 +2,6 @@ package fr.xxathyx.mediaplayer.resourcepack;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,7 +13,6 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.bukkit.Bukkit;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
@@ -24,18 +22,19 @@ import dev.jeka.core.api.file.JkPathTree;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.video.Video;
+import fr.xxathyx.mediaplayer.video.data.VideoData;
 
 public class ResourcePack {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
-	
-	private final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-	
+		
 	@SuppressWarnings("unchecked")
 	public void create(Video video) {
 		
-		File resourcePackFolder = new File(video.getAudioFolder(), video.getName());
-		File zipFile = new File(video.getAudioFolder(), video.getName() + ".zip");
+		VideoData videoData = video.getVideoData();
+		
+		File resourcePackFolder = new File(videoData.getResourcePacksFolder(), video.getName());
+		File zipFile = new File(videoData.getResourcePacksFolder(), video.getName() + ".zip");
 		
 		resourcePackFolder.mkdir();
 		
@@ -99,19 +98,12 @@ public class ResourcePack {
 		client.refresh();
 		
 		try {
-			DataInputStream dataInputStream = new DataInputStream(plugin.getClient().getSocket().getInputStream());
 			DataOutputStream dataOutputStream = new DataOutputStream(plugin.getClient().getSocket().getOutputStream());
 
 	        sendFile(dataOutputStream, zipFile);
-	        
-	        dataInputStream.close();
-	        dataInputStream.close();
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		
 	}
 	
     private void sendFile(DataOutputStream dataOutputStream, File file) throws Exception {
@@ -124,9 +116,9 @@ public class ResourcePack {
         
         byte[] buffer = new byte[4*1024];
         
-        while((bytes=fileInputStream.read(buffer))!=-1) {
+        while((bytes=fileInputStream.read(buffer)) != -1) {
         	plugin.getClient().refresh();
-            dataOutputStream.write(buffer,0,bytes);
+            dataOutputStream.write(buffer, 0, bytes);
             dataOutputStream.flush();
         }
         fileInputStream.close();
@@ -152,15 +144,15 @@ public class ResourcePack {
 	*/
 	
 	public int getResourcePackFormat() {
-        if(serverVersion.equals("v1_19_R1")) return 9;
-        if(serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_18_R2")) return 8;
-        if(serverVersion.equals("v1_17_R1")) return 7;
-        if(serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R3")) return 6;
-        if(serverVersion.equals("v1_15_R1") || serverVersion.equals("v1_16_R1")) return 5;
-        if(serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2") || serverVersion.equals("v1_14_R1")) return 4;
-        if(serverVersion.equals("v1_11_R1") || serverVersion.equals("v1_12_R1")) return 3;
-        if(serverVersion.equals("v1_9_R1") || serverVersion.equals("v1_9_R2") || serverVersion.equals("v1_10_R1")) return 2;
-        if(serverVersion.equals("v1_8_R1") || serverVersion.equals("v1_8_R2") || serverVersion.equals("v1_7_R4") || serverVersion.equals("v1_7_R3") || serverVersion.equals("v1_7_R2") || serverVersion.equals("v1_7_R1")) return 1;
+        if(plugin.getServerVersion().equals("v1_19_R1")) return 9;
+        if(plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_18_R2")) return 8;
+        if(plugin.getServerVersion().equals("v1_17_R1")) return 7;
+        if(plugin.getServerVersion().equals("v1_16_R2") || plugin.getServerVersion().equals("v1_16_R3")) return 6;
+        if(plugin.getServerVersion().equals("v1_15_R1") || plugin.getServerVersion().equals("v1_16_R1")) return 5;
+        if(plugin.getServerVersion().equals("v1_13_R1") || plugin.getServerVersion().equals("v1_13_R2") || plugin.getServerVersion().equals("v1_14_R1")) return 4;
+        if(plugin.getServerVersion().equals("v1_11_R1") || plugin.getServerVersion().equals("v1_12_R1")) return 3;
+        if(plugin.getServerVersion().equals("v1_9_R1") || plugin.getServerVersion().equals("v1_9_R2") || plugin.getServerVersion().equals("v1_10_R1")) return 2;
+        if(plugin.getServerVersion().equals("v1_8_R1") || plugin.getServerVersion().equals("v1_8_R2") || plugin.getServerVersion().equals("v1_7_R4") || plugin.getServerVersion().equals("v1_7_R3") || plugin.getServerVersion().equals("v1_7_R2") || plugin.getServerVersion().equals("v1_7_R1")) return 1;
 		return 8;
 	}
 }

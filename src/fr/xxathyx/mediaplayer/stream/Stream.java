@@ -9,15 +9,37 @@ import org.apache.commons.io.FilenameUtils;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.video.Video;
 
+/** 
+* The Stream class, is used to represent a streamed video,
+* and update it, it only has one constructor and method,
+* see {@link #update()}.
+*
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2022-07-03 
+*/
+
 public class Stream {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	
 	private Video video;
-		
+	
+	/**
+	* Constructor for Stream class, creates an Stream variable according
+	* to a temporary {@link Video} variable.
+	* 
+	* @param video The temporary video variable used for the stream.
+	*/
+	
 	public Stream(Video video) {
 		this.video = video;
 	}
+	
+    /**
+     * Add new frames from the streamed video, this method is called once
+     * and only one time, it launch a ffmpeg process to catch frames.
+     */
 	
 	public void update() throws IOException {
 				

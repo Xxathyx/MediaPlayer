@@ -109,6 +109,27 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     		}catch (IOException | InterruptedException e) {
     			e.printStackTrace();
     		}
+            
+            if(configuration.verify_files_on_load()) {
+            	
+            	int count = 0;
+            	int total = video.getTotalFrames();
+            	
+                while(count < total) {
+                	
+                	File previous = new File(video.getFramesFolder(), String.valueOf(count-1) + "." + video.getFramesExtension());
+                	File next = new File(video.getFramesFolder(), count + "." + video.getFramesExtension());
+                	
+                	if(!next.exists() && previous.exists()) {
+    					try {
+    						ImageIO.write(ImageIO.read(previous), video.getFramesExtension().replace(".", ""), next);
+    					}catch (IOException e) {
+    						e.printStackTrace();
+    					}
+                	}
+                	count++;
+                }
+            }
         }
         
         new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);        
@@ -134,7 +155,6 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
             		}catch (IOException | InterruptedException e) {
             			e.printStackTrace();
             		}
-                    
                     new ResourcePack().create(video);
             	}
             }else {
@@ -220,6 +240,33 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     			}catch (IOException | InvalidConfigurationException e) {
     				e.printStackTrace();
     			}
+        	}
+        	
+        	if(configuration.verify_files_on_load()) {
+        		
+            	count = 0;
+            	
+            	while(count < total) {
+        			try {
+        				
+        				File previous = new File(videoData.getCacheFolder(), String.valueOf(count-1));
+        				File next = new File(videoData.getCacheFolder(), String.valueOf(count));
+        				
+        				if(!next.exists() && previous.exists()) {
+        					
+            				imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), String.valueOf(count-1) + framesExtension)));
+            	    		imageRenderer.calculateDimensions();
+            	    		imageRenderer.splitImages();
+        					
+            				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+            					new Cache(new File(next, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
+            				}        	    		
+        				}
+        				count++;
+        			}catch (IOException | InvalidConfigurationException e) {
+        				e.printStackTrace();
+        			}
+            	}
         	}
     		
         	try {

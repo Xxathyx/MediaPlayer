@@ -9,18 +9,44 @@ import org.apache.commons.io.FileUtils;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.system.SystemType;
 
+/** 
+* The Ffmpeg class, is used in order to use the ffmpeg library
+* while the plugin is running, and this on all operating system,
+* see {@link System} and {@link SystemType}.
+*
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2022-07-03 
+*/
+
 public class Ffmpeg {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	
+    /**
+     * Gets the ffmpeg library file according to used operating system.
+     *
+     * @return The ffmpeg library file.
+     */
 	
 	public File getLibraryFile() {
 		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) return new File(plugin.getDataFolder() + "/libraries/", "ffmpeg.exe");
 		return new File(plugin.getDataFolder() + "/libraries/", "ffmpeg");
 	}
 	
+    /**
+     * Gets whether the ffmpeg library file is installed.
+     *
+     * @return Whether the ffmpeg library file is installed.
+     */
+	
 	public boolean isInstalled() {
 		return getLibraryFile().exists();
 	}
+	
+    /**
+     * Download from dropbox the ffmpeg library according to used operating system.
+     */
 	
 	public void download() {
     	try {

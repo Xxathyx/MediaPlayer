@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
+import fr.xxathyx.mediaplayer.audio.util.AudioUtilVersion;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffprobe;
@@ -39,6 +40,7 @@ import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadImages;
 import fr.xxathyx.mediaplayer.translation.Translater;
 import fr.xxathyx.mediaplayer.update.Updater;
 import fr.xxathyx.mediaplayer.util.ActionBar;
+import fr.xxathyx.mediaplayer.util.AudioUtil;
 import fr.xxathyx.mediaplayer.util.MapUtil;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.commands.VideoCommands;
@@ -47,7 +49,7 @@ import fr.xxathyx.mediaplayer.video.listeners.PlayerInteractVideo;
 import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 
 /*
- * Copyright or © or Copr. xxathyxlive@gmail.com (2021)
+ * Copyright or © or Copr. xxathyxlive@gmail.com (2022)
  *
  * This software is a computer program add the possibility to use various
  * media on minecraft
@@ -127,10 +129,11 @@ public class Main extends JavaPlugin {
 	
 	private MapUtil mapUtil;
 	private ActionBar actionBar;
+	private AudioUtil audioUtil;
 	
 	private boolean legacy = true;
 	private boolean old = false;
-	
+		
 	/**
 	* See Bukkit documentation : {@link JavaPlugin#onEnable()}
 	* 
@@ -160,13 +163,7 @@ public class Main extends JavaPlugin {
 
         try {
             translater.createTranslationFile("GB");
-            //translater.createTranslationFile("AR");
-            translater.createTranslationFile("DE");
-            translater.createTranslationFile("ES");
             translater.createTranslationFile("FR");
-            translater.createTranslationFile("IT");
-            //translater.createTranslationFile("RU");
-            //translater.createTranslationFile("TR");
         }catch (URISyntaxException | IOException e) {
             e.printStackTrace();
         }
@@ -176,6 +173,7 @@ public class Main extends JavaPlugin {
 		
 		mapUtil = new MapUtilVersion().getMapUtil();
 		actionBar = new ActionBarVersion().getActionBar();
+		audioUtil = new AudioUtilVersion().getAudioUtil();
 		
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
@@ -219,13 +217,13 @@ public class Main extends JavaPlugin {
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
-		if(configuration.plugin_free_audio_server_handling()) {
+		if(configuration.plugin_free_audio_server_handling() && client.getSocket() == null) {
 			
 			Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 				@Override
 				public void run() {
 					
-					if(client.getSocket() == null) client.connect();
+					client.connect();
 					
 					client.write("mediaplayer.connect: ", configuration.free_audio_server_token());
 					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
@@ -268,6 +266,13 @@ public class Main extends JavaPlugin {
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		try {
+			client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
+			client.getSocket().close();
+		}catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -343,6 +348,16 @@ public class Main extends JavaPlugin {
 	}
 	
     /**
+     * Gets {@link AudioUtil} variable initialized on load according to the server version.
+     *
+     * @return AudioUtil of this server version.
+     */
+	
+	public AudioUtil getAudioUtil() {
+		return audioUtil;
+	}
+	
+    /**
      * Gets whether this server is running under a legacy version of Minecraft.
      *
      * @return Whether this server is running under a legacy version of Minecraft.
@@ -399,6 +414,12 @@ public class Main extends JavaPlugin {
 	public Map<UUID, URL> getStreamsURL() {
 		return streamsURL;
 	}
+	
+    /**
+     * Gets actually played livestreams videos.
+     *
+     * @return Streamed videos.
+     */
 	
 	public ArrayList<Video> getPlayedStreams() {
 		return playedStreams;

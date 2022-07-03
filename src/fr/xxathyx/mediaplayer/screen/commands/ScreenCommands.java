@@ -255,6 +255,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 	* @return An Arraylist of placed ItemFrames on the screen.
 	*/
 	
+	@SuppressWarnings("deprecation")
 	public static ArrayList<ItemFrame> createScreen(Player player, int width, int height) {
 		
 		ArrayList<ItemFrame> frames = new ArrayList<>();
@@ -267,6 +268,9 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 		
 		final Location location = player.getEyeLocation().add(vector);
 		
+		String entityName = "item_frame";
+		if(configuration.glowing_screen_frames_support()) entityName = "glow_item_frame";
+		
 		try {
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -277,22 +281,22 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 					if(FacingLocation.getCardinalDirection(player).equals("N")) {
 						locBlock.add(i, 0, 0);
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
-						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX(), locBlock.getBlockY(), locBlock.getBlockZ()+1), EntityType.ITEM_FRAME);
+						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX(), locBlock.getBlockY(), locBlock.getBlockZ()+1), EntityType.fromName(entityName));
 					}
 					if(FacingLocation.getCardinalDirection(player).equals("E")) {
 						locBlock.subtract(0, 0, i);
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
-						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()-1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.ITEM_FRAME);
+						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()-1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.fromName(entityName));
 					}
 					if(FacingLocation.getCardinalDirection(player).equals("S")) {
 						locBlock.subtract(i, 0, 0);
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
-						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX(), locBlock.getBlockY(), locBlock.getBlockZ()-1), EntityType.ITEM_FRAME);
+						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX(), locBlock.getBlockY(), locBlock.getBlockZ()-1), EntityType.fromName(entityName));
 					}
 					if(FacingLocation.getCardinalDirection(player).equals("W")) {
 						locBlock.add(0, 0, i);
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
-						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()+1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.ITEM_FRAME);
+						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()+1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.fromName(entityName));
 					}
 					frames.add(itemFrame);
 					

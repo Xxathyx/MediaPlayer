@@ -32,7 +32,7 @@ public class MapUtilVersion {
         final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
         if(serverVersion.equals("v1_18_R2")) {
-        	return new v1_18_R1();
+        	return new v1_18_R2();
         }
         if(serverVersion.equals("v1_18_R1")) {
         	return new v1_18_R1();
@@ -90,6 +90,15 @@ public class MapUtilVersion {
         	return new v1_8_R1();
         }
         if(serverVersion.equals("v1_7_R4")) {
+        	return new v1_7_R4();
+        }
+        if(serverVersion.equals("v1_7_R3")) {
+        	return new v1_7_R4();
+        }
+        if(serverVersion.equals("v1_7_R2")) {
+        	return new v1_7_R4();
+        }
+        if(serverVersion.equals("v1_7_R1")) {
         	return new v1_7_R4();
         }
 	    Bukkit.getLogger().warning("MediaPlayer do not support this server version! You may encounter issues.");

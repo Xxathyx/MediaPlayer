@@ -3,18 +3,24 @@ package fr.xxathyx.mediaplayer.server;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+
+import fr.xxathyx.mediaplayer.configuration.Configuration;
 
 public class Client {
 
+	private final Configuration configuration = new Configuration();
+	
     private Socket socket;
     
     public void connect() {
 		try {
-			Socket socket = new Socket("37.187.196.226", 8888);
+			Socket socket = new Socket(configuration.plugin_free_audio_server_address(), 8888);
 			this.socket = socket;
 		}catch (IOException e) {
 			e.printStackTrace();
+			//Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + configuration.impossible_connection());
 		}
     }
     
@@ -26,7 +32,7 @@ public class Client {
 		}
     }
     
-    public void write(String header, String content) {    	
+    public void write(String header, String content) {
 		try {
 			
 			refresh();
@@ -51,11 +57,12 @@ public class Client {
     }
     
     public void refresh() {
-    	if(!socket.isConnected() || socket.isClosed() || socket.isInputShutdown() || socket.isOutputShutdown())
+    	if(!socket.isConnected() || socket.isClosed())
 			try {
-				socket = new Socket("37.187.196.226", 8888);
+				socket.connect(new InetSocketAddress(configuration.plugin_free_audio_server_address(), 8888));
 			}catch (IOException e) {
 				e.printStackTrace();
+				//Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + configuration.impossible_connection());
 			}
     }
     

@@ -9,18 +9,44 @@ import org.apache.commons.io.FileUtils;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.system.SystemType;
 
+/** 
+* The Ffprobe class, is used in order to use the ffprobe library
+* while the plugin is running, and this on all operating system,
+* see {@link System} and {@link SystemType}.
+*
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2022-07-03 
+*/
+
 public class Ffprobe {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	
+    /**
+     * Gets the ffprobe library file according to used operating system.
+     *
+     * @return The ffprobe library file.
+     */
 	
 	public File getLibraryFile() {
 		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) return new File(plugin.getDataFolder() + "/libraries/", "ffprobe.exe");
 		return new File(plugin.getDataFolder() + "/libraries/", "ffprobe");
 	}
 	
+    /**
+     * Gets whether the ffprobe library file is installed.
+     *
+     * @return Whether the ffprobe library file is installed.
+     */
+	
 	public boolean isInstalled() {
 		return getLibraryFile().exists();
 	}
+	
+    /**
+     * Download from dropbox the ffprobe library according to used operating system.
+     */
 	
 	public void download() {
     	try {

@@ -25,7 +25,10 @@ public enum NotificationType {
 	VIDEO_PROCESSING_MINECRAFT_FINISHED,
 	VIDEO_PROCESSING_FINISHED,
 	
-	VIDEOS_RELOADED;
+	VIDEOS_RELOADED,
+	
+	WAITING_PLAYER,
+	EVERYONE_READY;
 	
 	/** 
 	* Gets the corresponding {@link String} to a given {@link NotificationType},
@@ -84,6 +87,14 @@ public enum NotificationType {
 				
 		if(this == VIDEOS_RELOADED) {
 			return configuration.videos_reloaded();
+		}
+		
+		if(this == WAITING_PLAYER) {
+			return configuration.screen_not_ready(args[0]);
+		}
+		
+		if(this == EVERYONE_READY) {
+			return configuration.screen_everyone_ready();
 		}
 		return "null";
 	}

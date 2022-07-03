@@ -58,7 +58,7 @@ public class Configuration {
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 				@Override
 				public void run() {
-					
+										
 					Client client = new Client();
 					client.connect();
 					
@@ -86,17 +86,19 @@ public class Configuration {
 		    if(host.getOfficials().contains(host.getCountryCode())) fileconfiguration.set("plugin.langage", host.getCountryCode());
 			
 			fileconfiguration.set("plugin.ping-sound", true);
+			fileconfiguration.set("plugin.verify-files-on-load", true);
 			fileconfiguration.set("plugin.delete-frames-on-loaded", false);
 			fileconfiguration.set("plugin.delete-video-on-loaded", false);
 			fileconfiguration.set("plugin.save-streams", false);
 			
 			fileconfiguration.set("plugin.screen-block", "BARRIER");
 			fileconfiguration.set("plugin.visible-screen-frames-support", false);
+			fileconfiguration.set("plugin.glowing-screen-frames-support", false);
 			
 			fileconfiguration.set("plugin.maximum-distance-to-receive", 10);
 			
-			fileconfiguration.set("plugin.maximum-playing-videos", 10);
-			fileconfiguration.set("plugin.maximum-loading-videos", 3);
+			fileconfiguration.set("plugin.maximum-playing-videos", 5);
+			fileconfiguration.set("plugin.maximum-loading-videos", 1);
 			
 			fileconfiguration.set("plugin.remove-screen-structure-on-restart", false);
 			fileconfiguration.set("plugin.remove-screen-structure-on-end", false);
@@ -163,12 +165,15 @@ public class Configuration {
 			fileconfiguration.set("messages.videos-empty-registered", "&cAucune vidéo n'a été détectée et enregistrée.");
 			fileconfiguration.set("messages.videos-canceled-tasks", "&aToutes les tâches en cours d'exécution ont été annulées. &8(%tasks%)");
 			fileconfiguration.set("messages.videos-notice", "&7(Vous pouvez effectuer la même action, simplement à travers une interface graphique : /videos)");
-			
+						
 			fileconfiguration.set("messages.screen-created", "&aVous venez de créer un écran de dimension : &l%dimension%&a.");
 			fileconfiguration.set("messages.screen-removed", "&aVous venez de retirer l'écran d'index: &l%index%&a.");
 			fileconfiguration.set("messages.screen-teleport", "&aVous venez de vous téléporter sur l'écran d'index: &l%index%&a.");
 			fileconfiguration.set("messages.screen-invalid-index", "&cL'écran d'index &l%index% &cest introuvable.");
 			fileconfiguration.set("messages.screen-cannot-create", "&cImpossible de créer un écran à cet emplacement, des blocs gênent sans doute la place.");
+			
+			fileconfiguration.set("messages.screen-not-ready", "&c&l%player% &cn'a pas encore télécharger tous les addons nécessaires.");
+			fileconfiguration.set("messages.screen-everyone-ready", "&aTous les utilisateurs sont prêts, vous pouvez lancer la vidéo : &a&l/video start&a.");
 			
 			fileconfiguration.set("messages.image-rendered", "&aLe rendu de l'image &l%image% &aest terminé.");
 			fileconfiguration.set("messages.image-deleted", "&aVous venez de supprimer l'image &l%image%&a.");
@@ -207,6 +212,7 @@ public class Configuration {
 			fileconfiguration.set("messages.item.poster.lore-4", "&edroit sur le coin supérieur gauche de l'écran.");
 			fileconfiguration.set("messages.age-limit-warning", "&c[!] Contient du contenu explicite.");
 			fileconfiguration.set("messages.incompatible", "&4[!] Cette vidéo n'est pas compatible.");
+			fileconfiguration.set("messages.impossible-connection", "&cImpossible de se connecter au serveur demandé.");
 			fileconfiguration.set("messages.no-page-left", "&cVous ne pouvez pas tourner la page car cette page semble inexistante.");
 			fileconfiguration.set("messages.too-much-loading", "&cChargement impossible, trop de vidéos sont en cours de chargements.");
 			fileconfiguration.set("messages.too-much-playing", "&cLancement impossible, trop de vidéos sont jouées.");
@@ -414,6 +420,10 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.ping-sound");
 	}
 	
+	public boolean verify_files_on_load() {
+		return getConfigFile().getBoolean("plugin.verify-files-on-load");
+	}
+	
 	public boolean frames_delete_on_loaded() {
 		return getConfigFile().getBoolean("plugin.delete-frames-on-loaded");
 	}
@@ -434,6 +444,10 @@ public class Configuration {
 	
 	public boolean visible_screen_frames_support() {
 		return getConfigFile().getBoolean("plugin.visible-screen-frames-support");
+	}
+	
+	public boolean glowing_screen_frames_support() {
+		return getConfigFile().getBoolean("plugin.glowing-screen-frames-support");
 	}
 	
 	public int maximum_distance_to_receive() {
@@ -676,6 +690,14 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.screen-cannot-create"));
 	}
 	
+	public String screen_not_ready(String player) {
+		return getMessage(getConfigFile().getString("messages.screen-not-ready"), player);
+	}
+	
+	public String screen_everyone_ready() {
+		return getMessage(getConfigFile().getString("messages.screen-everyone-ready"));
+	}
+	
 	public String image_rendered(String image) {
 		return getMessage(getConfigFile().getString("messages.image-rendered"), image);
 	}
@@ -794,6 +816,10 @@ public class Configuration {
 	
 	public String incompatible() {
 		return getMessage(getConfigFile().getString("messages.incompatible"));
+	}
+	
+	public String impossible_connection() {
+		return getMessage(getConfigFile().getString("messages.messages.impossible-connection"));
 	}
 	
 	public String no_page_left() {

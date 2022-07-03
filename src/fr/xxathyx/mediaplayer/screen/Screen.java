@@ -27,11 +27,13 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
+import fr.xxathyx.mediaplayer.notification.Notification;
+import fr.xxathyx.mediaplayer.notification.NotificationType;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
 import fr.xxathyx.mediaplayer.stream.Stream;
-import fr.xxathyx.mediaplayer.util.AudioUtil;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
@@ -125,22 +127,41 @@ public class Screen {
 		    
 			@Override
 			public void run() {
-								
-				if(running) {
-					
-					Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
-					
-					for(Entity entity : entities) {
-						if(entity.getType() == EntityType.PLAYER) {
 							
-							Player player = ((Player)entity);
-							
-							if(!listeners.contains(player.getUniqueId())) {
-							    player.setResourcePack(new String("http://37.187.196.226/" + configuration.free_audio_server_token() + "/" + video.getName() + ".zip").replace(" ", "%20"));
-								listeners.add(player.getUniqueId());
-							}
+				Collection<Entity> entities = getNearbyEntities(frames.get(ids.length/2).getLocation(), configuration.maximum_distance_to_receive());
+				
+				for(Entity entity : entities) {
+					if(entity.getType() == EntityType.PLAYER) {
+						
+						Player player = ((Player)entity);
+						
+						if(!listeners.contains(player.getUniqueId())) {
+						    player.setResourcePack(new String("http://" + configuration.plugin_free_audio_server_address() + "/mediaplayer/users/" + configuration.free_audio_server_token() + "/" + video.getName() + ".zip").replace(" ", "%20"));
+							listeners.add(player.getUniqueId());
 						}
 					}
+				}
+				
+				if(!running) {
+					
+					ArrayList<UUID> ready = new ArrayList<>();
+					
+					if(System.currentTimeMillis() - settings.time >= 1000) {
+						
+	                	settings.time = System.currentTimeMillis();
+						
+						for(UUID uuid : listeners) {
+							if(!plugin.getPlayersScreens().containsKey(uuid)) {
+								new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
+							}else if(!ready.contains(uuid)){
+								ready.add(uuid);
+							}
+						}
+						if(ready.size() == listeners.size()) new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
+					}
+				}
+				
+				if(running) {
 					
 					for(UUID uuid : listeners) {
 						
@@ -308,6 +329,7 @@ public class Screen {
 	public void end() {
 		
 		Bukkit.getScheduler().cancelTask(tasks[0]);
+		Bukkit.getScheduler().cancelTask(tasks[1]);
 		running = false;
 				
 		video.getVideoData().loadThumbnail();
@@ -317,7 +339,7 @@ public class Screen {
 		}
 		
 		for(UUID uuid : listeners) {
-			for(int i = 0; i < video.getAudioChannels(); i++) AudioUtil.stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i);
+			for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i);
 		}
 		
 		plugin.getPlayingVideos().remove(video.getName());

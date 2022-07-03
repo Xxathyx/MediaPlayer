@@ -79,6 +79,6 @@ public class SoundPlayer {
 	*/
 	
 	public static void stopSound(Player player, String sound) {
-		AudioUtil.stopAudio(player, sound);
+		Main.getPlugin(Main.class).getAudioUtil().stopAudio(player, sound);
 	}
 }
