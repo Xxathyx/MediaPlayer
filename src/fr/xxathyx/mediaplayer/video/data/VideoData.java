@@ -123,7 +123,7 @@ public class VideoData {
 	* 
 	* <p> <strong>Note: </strong>The thumbnail is re-rendered again according to their
 	* {@link Thumbnail#getFile()}, so if the same named file does change, the changes
-	* will be applied.
+	* will be applied on restart.
 	*/
 	
 	public void loadThumbnail() {

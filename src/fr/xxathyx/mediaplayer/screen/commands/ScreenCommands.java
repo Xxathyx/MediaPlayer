@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -54,6 +56,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 	* <p>Called every time the screen command is sent.
 	*/
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] arg3) {
 		
@@ -259,14 +262,15 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 	public static ArrayList<ItemFrame> createScreen(Player player, int width, int height) {
 		
 		ArrayList<ItemFrame> frames = new ArrayList<>();
+		ArrayList<Block> blocks = new ArrayList<>();
 		
-	    final Main plugin = Main.getPlugin(Main.class);
-		final Configuration configuration = new Configuration();
+	    Main plugin = Main.getPlugin(Main.class);
+		Configuration configuration = new Configuration();
 		
 		Vector vector = player.getEyeLocation().getDirection();
 		vector.multiply(3);
 		
-		final Location location = player.getEyeLocation().add(vector);
+		Location location = player.getEyeLocation().add(vector);
 		
 		String entityName = "item_frame";
 		if(configuration.glowing_screen_frames_support()) entityName = "glow_item_frame";
@@ -298,12 +302,19 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
 						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()+1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.fromName(entityName));
 					}
-					frames.add(itemFrame);
 					
-					plugin.getScreensBlocks().add(locBlock.getBlock());
-					plugin.getScreensFrames().add(itemFrame);
+					frames.add(itemFrame);
+					blocks.add(locBlock.getBlock());
 				}
 			}
+						
+			Screen screen = new Screen(UUID.randomUUID(), width, height, frames, blocks);
+			screen.createConfiguration(FacingLocation.getCardinalDirection(player), frames.get(0).getLocation());
+						
+			for(Block block : blocks) plugin.getScreensBlocks().put(block, screen);
+			for(ItemFrame frame : frames) plugin.getScreensFrames().put(frame, screen);
+			
+			plugin.getRegisteredScreens().add(screen);
 		}catch (IllegalArgumentException | NullPointerException e) {
 			player.sendMessage(configuration.screen_cannot_create());
 		}

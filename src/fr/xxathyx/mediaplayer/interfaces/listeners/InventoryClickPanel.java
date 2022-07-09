@@ -51,6 +51,7 @@ public class InventoryClickPanel implements Listener {
      * @param Event Instance of {@link InventoryClickEvent}.
      */
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onClick(InventoryClickEvent event) {
 		

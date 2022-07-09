@@ -34,6 +34,7 @@ public class Configuration {
 	private final File configurationFile = new File(plugin.getDataFolder() + "/configuration/", "configuration.yml");
 		
 	private final File videosFolder = new File(plugin.getDataFolder() + "/videos/");
+	private final File screensFolder = new File(plugin.getDataFolder() + "/screens/");
 	private final File mapsFolder = new File(plugin.getDataFolder() + "/images/maps/");
 	
 	private FileConfiguration fileconfiguration;
@@ -162,6 +163,7 @@ public class Configuration {
 			
 			fileconfiguration.set("messages.videos-reload-requested", "&aRequête de rechargement des vidéos reçue.");
 			fileconfiguration.set("messages.videos-reloaded", "&aLa liste des vidéos enregistrées vient d'être rafraichie.");
+			fileconfiguration.set("messages.screens-reloaded", "&aLa liste des écrans enregistrées vient d'être rafraichie.");
 			fileconfiguration.set("messages.videos-empty-registered", "&cAucune vidéo n'a été détectée et enregistrée.");
 			fileconfiguration.set("messages.videos-canceled-tasks", "&aToutes les tâches en cours d'exécution ont été annulées. &8(%tasks%)");
 			fileconfiguration.set("messages.videos-notice", "&7(Vous pouvez effectuer la même action, simplement à travers une interface graphique : /videos)");
@@ -238,6 +240,9 @@ public class Configuration {
 		if(!videosFolder.exists()) {
 			videosFolder.mkdir();
 		}
+		if(!screensFolder.exists()) {
+			screensFolder.mkdir();
+		}
 		if(!mapsFolder.exists()) {
 			mapsFolder.mkdirs();
 		}
@@ -273,6 +278,17 @@ public class Configuration {
 	
 	public File getVideosFolder() {
 		return videosFolder;
+	}
+	
+    /**
+     * Gets the screens folder, wich containing all relative informations
+     * and data about all the screens.
+     * 
+     * @return Screens folder containing all screens and their own data.
+     */
+	
+	public File getScreensFolder() {
+		return screensFolder;
 	}
 	
     /**
@@ -844,6 +860,10 @@ public class Configuration {
 	
 	public String videos_reloaded() {
 		return getMessage(getConfigFile().getString("messages.videos-reloaded"));
+	}
+	
+	public String screens_reloaded() {
+		return getMessage(getConfigFile().getString("messages.screens-reloaded"));
 	}
 	
 	public String video_invalid(String video) {

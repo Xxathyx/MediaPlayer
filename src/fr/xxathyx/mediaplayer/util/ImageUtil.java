@@ -1,6 +1,8 @@
 package fr.xxathyx.mediaplayer.util;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
@@ -199,6 +201,17 @@ public class ImageUtil {
             }
         }
         return finalImage;
+	}
+	
+	public static BufferedImage convertToBufferedImage(Image image) {
+		
+	    BufferedImage newImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D graphics = newImage.createGraphics();
+	    
+	    graphics.drawImage(image, 0, 0, null);
+	    graphics.dispose();
+	    
+	    return newImage;
 	}
 	
     private static BufferedImage toBinary(BufferedImage bufferedImage, int threshold) {

@@ -12,7 +12,7 @@ public class PlayerBreakScreen implements Listener {
 	
 	@EventHandler
 	public void onBreak(BlockBreakEvent event) {
-		if(plugin.getScreensBlocks().contains(event.getBlock())) {
+		if(plugin.getScreensBlocks().containsKey(event.getBlock())) {
 			event.setCancelled(true);
 		}
 	}

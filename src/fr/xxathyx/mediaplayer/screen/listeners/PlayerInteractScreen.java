@@ -37,8 +37,13 @@ public class PlayerInteractScreen implements Listener {
         	if(!plugin.isLegacy()) material = Material.FILLED_MAP;
         	        	
 			if(((ItemFrame)event.getRightClicked()).getItem().getType() == material) {
-				for(Screen screen : plugin.getRegisteredScreens()) {
-					if(screen.getFrames().contains((ItemFrame) event.getRightClicked())) {
+				if(plugin.getScreensFrames().containsKey((ItemFrame) event.getRightClicked())) {
+					
+					Screen screen = plugin.getScreensFrames().get((ItemFrame) event.getRightClicked());
+					
+					event.setCancelled(true);
+					
+					if(screen.getVideoInstance() != null) {
 						
 						VideoData videoData = screen.getVideoInstance().getVideo().getVideoData();
 												
@@ -49,7 +54,6 @@ public class PlayerInteractScreen implements Listener {
 								SoundPlayer.playSound(event.getPlayer(), SoundType.NOTIFICATION_UP);
 							}
 						}
-						event.setCancelled(true);
 					}
 				}
 			}
@@ -58,71 +62,78 @@ public class PlayerInteractScreen implements Listener {
     
     @EventHandler
     public void onInteractAtScreen(PlayerInteractAtEntityEvent event) {
+    	
         if(event.getRightClicked() instanceof ItemFrame) {
         	
         	Material material = Material.MAP;
         	if(!plugin.isLegacy()) material = Material.FILLED_MAP;
         	        	
 			if(((ItemFrame)event.getRightClicked()).getItem().getType() == material) {
-				for(Screen screen : plugin.getRegisteredScreens()) {
-					if(screen.getFrames().contains((ItemFrame) event.getRightClicked())) {
-						
-						Player player = event.getPlayer();
-						
-						double width = screen.getWidth();
-						double height = screen.getHeight();
-						
-						ItemFrame origin = screen.getFrames().get(screen.getWidth()*(screen.getHeight()-1));
-						
-						ItemFrame itemFrame = null;
-						ArrayList<ItemFrame> frames = new ArrayList<>();	
-												
-						for(int j = 0; j < height; j++) {
-							for(int i = 0; i < width; i++) {
-								
-								if(FacingLocation.getCardinalDirection(player).equals("N")) {									
-									if(getNearbyEntities(origin.getLocation().add(i, j, 0), 0).toArray().length <= 0) return;
-									itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(i, j, 0), 0).toArray()[0];
-								}
-								if(FacingLocation.getCardinalDirection(player).equals("E")) {
-									if(getNearbyEntities(origin.getLocation().add(0, j, i), 0).toArray().length <= 0) return;
-									itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(0, j, i), 0).toArray()[0];
-								}
-								if(FacingLocation.getCardinalDirection(player).equals("S")) {
-									if(getNearbyEntities(origin.getLocation().add(-i, j, 0), 0).toArray().length <= 0) return;
-									itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(-i, j, 0), 0).toArray()[0];
-								}
-								if(FacingLocation.getCardinalDirection(player).equals("W")) {
-									if(getNearbyEntities(origin.getLocation().add(0, j, -i), 0).toArray().length <= 0) return;
-									itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(0, j, -i), 0).toArray()[0];
-								}									
-								if(itemFrame != null) {
-									frames.add(itemFrame);
-								}
+				if(plugin.getScreensFrames().containsKey((ItemFrame) event.getRightClicked())) {
+					
+					event.setCancelled(true);
+					
+					Screen screen = plugin.getScreensFrames().get((ItemFrame) event.getRightClicked());
+					
+					Player player = event.getPlayer();
+					
+					double width = screen.getWidth();
+					double height = screen.getHeight();
+					
+					ItemFrame origin = screen.getFrames().get(screen.getWidth()*(screen.getHeight()-1));
+					ItemFrame itemFrame = null;
+					
+					ArrayList<ItemFrame> frames = new ArrayList<>();	
+											
+					for(int j = 0; j < height; j++) {
+						for(int i = 0; i < width; i++) {
+							
+							if(FacingLocation.getCardinalDirection(player).equals("N")) {									
+								if(getNearbyEntities(origin.getLocation().add(i, j, 0), 0).toArray().length <= 0) return;
+								itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(i, j, 0), 0).toArray()[0];
+							}
+							if(FacingLocation.getCardinalDirection(player).equals("E")) {
+								if(getNearbyEntities(origin.getLocation().add(0, j, i), 0).toArray().length <= 0) return;
+								itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(0, j, i), 0).toArray()[0];
+							}
+							if(FacingLocation.getCardinalDirection(player).equals("S")) {
+								if(getNearbyEntities(origin.getLocation().add(-i, j, 0), 0).toArray().length <= 0) return;
+								itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(-i, j, 0), 0).toArray()[0];
+							}
+							if(FacingLocation.getCardinalDirection(player).equals("W")) {
+								if(getNearbyEntities(origin.getLocation().add(0, j, -i), 0).toArray().length <= 0) return;
+								itemFrame = (ItemFrame) getNearbyEntities(origin.getLocation().add(0, j, -i), 0).toArray()[0];
+							}									
+							if(itemFrame != null) {
+								frames.add(itemFrame);
 							}
 						}
-						
-						int index = frames.indexOf((ItemFrame)event.getRightClicked());
-										        
-				        double i = 0, j = event.getClickedPosition().getY();
-				        
-						if(FacingLocation.getCardinalDirection(player).equals("N")) i = event.getClickedPosition().getX();
-						if(FacingLocation.getCardinalDirection(player).equals("E")) i = event.getClickedPosition().getZ();
-						if(FacingLocation.getCardinalDirection(player).equals("S")) i = event.getClickedPosition().getX();
-						if(FacingLocation.getCardinalDirection(player).equals("W")) i = event.getClickedPosition().getZ();
-				        
-				        if(i >= 0) i = i + 0.375; if(j >= 0) j = j + 0.375;
-				        
-				        double cursorX = (index%width + i)*(screen.getVideo().getWidth()/width);
-				        double cursorY = (index/width + j)*(screen.getVideo().getHeight()/height);
+					}
+					
+					int index = frames.indexOf((ItemFrame)event.getRightClicked());
+									        
+			        double i = 0, j = event.getClickedPosition().getY();
+			        
+					if(FacingLocation.getCardinalDirection(player).equals("N")) i = event.getClickedPosition().getX();
+					if(FacingLocation.getCardinalDirection(player).equals("E")) i = event.getClickedPosition().getZ();
+					if(FacingLocation.getCardinalDirection(player).equals("S")) i = event.getClickedPosition().getX();
+					if(FacingLocation.getCardinalDirection(player).equals("W")) i = event.getClickedPosition().getZ();
+			        
+			        if(i >= 0) i = i + 0.375; if(j >= 0) j = j + 0.375;
+			        
+			        double cursorX = screen.getWidth()*128;
+			        double cursorY = screen.getHeight()*128;
+			        				        
+			        if(!screen.getVideoName().equals("none")) {
+			        					        	
+				        cursorX = (index%width + i)*(screen.getVideo().getWidth()/width);
+				        cursorY = (index/width + j)*(screen.getVideo().getHeight()/height);
 				        
 				        if(cursorX > screen.getVideo().getWidth()) cursorX = screen.getVideo().getWidth();
 				        if(cursorY > screen.getVideo().getHeight()) cursorY = screen.getVideo().getHeight();
 				        if(cursorX < 0) cursorX = 0; if(cursorY < 0) cursorY = 0;
-				        
-						Bukkit.getPluginManager().callEvent(new PlayerInteractScreenEvent(event.getPlayer(), screen, (int) cursorX, (int) cursorY));
-						event.setCancelled(true);
-					}
+			        }
+					Bukkit.getPluginManager().callEvent(new PlayerInteractScreenEvent(event.getPlayer(), screen, (int) cursorX, (int) cursorY));
 				}
 			}
         }

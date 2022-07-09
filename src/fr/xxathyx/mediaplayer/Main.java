@@ -37,6 +37,7 @@ import fr.xxathyx.mediaplayer.screen.listeners.PlayerInteractScreen;
 import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadImages;
+import fr.xxathyx.mediaplayer.tasks.TaskSyncLoadScreens;
 import fr.xxathyx.mediaplayer.translation.Translater;
 import fr.xxathyx.mediaplayer.update.Updater;
 import fr.xxathyx.mediaplayer.util.ActionBar;
@@ -101,8 +102,8 @@ public class Main extends JavaPlugin {
 	private final Map<UUID, URL> streamsURL = new HashMap<>();
 	private final ArrayList<Video> playedStreams = new ArrayList<>();
 	
-	private final ArrayList<Block> screensBlocks = new ArrayList<>();
-	private final ArrayList<ItemFrame> screensFrames = new ArrayList<>();
+	private final Map<Block, Screen> screensBlocks = new HashMap<>();
+	private final Map<ItemFrame, Screen> screensFrames = new HashMap<>();
 	
 	private final Map<UUID, VideoPlayer> videoPlayers = new HashMap<>();
 	private final Map<UUID, Screen> playersScreens = new HashMap<>();
@@ -214,6 +215,7 @@ public class Main extends JavaPlugin {
 		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
 		new TaskAsyncLoadConfigurations().runTaskAsynchronously(this);
+		new TaskSyncLoadScreens().runTask(this);
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
@@ -425,11 +427,11 @@ public class Main extends JavaPlugin {
 		return playedStreams;
 	}
 	
-	public ArrayList<Block> getScreensBlocks() {
+	public Map<Block, Screen> getScreensBlocks() {
 		return screensBlocks;
 	}
 	
-	public ArrayList<ItemFrame> getScreensFrames() {
+	public Map<ItemFrame, Screen> getScreensFrames() {
 		return screensFrames;
 	}
 	

@@ -275,6 +275,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							
 							Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 
+								@SuppressWarnings("deprecation")
 								@Override
 								public void run() {
 									

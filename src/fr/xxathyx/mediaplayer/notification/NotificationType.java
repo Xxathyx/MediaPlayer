@@ -26,6 +26,7 @@ public enum NotificationType {
 	VIDEO_PROCESSING_FINISHED,
 	
 	VIDEOS_RELOADED,
+	SCREENS_RELOADED,
 	
 	WAITING_PLAYER,
 	EVERYONE_READY;
@@ -87,6 +88,10 @@ public enum NotificationType {
 				
 		if(this == VIDEOS_RELOADED) {
 			return configuration.videos_reloaded();
+		}
+		
+		if(this == SCREENS_RELOADED) {
+			return configuration.screens_reloaded();
 		}
 		
 		if(this == WAITING_PLAYER) {

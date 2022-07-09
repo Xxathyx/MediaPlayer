@@ -102,7 +102,8 @@ public class Image {
 	public void create(BufferedImage bufferedImage, Player player) {
     	
 		Bukkit.getScheduler().runTask(plugin, new Runnable() {
-
+			
+			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
 		    	
