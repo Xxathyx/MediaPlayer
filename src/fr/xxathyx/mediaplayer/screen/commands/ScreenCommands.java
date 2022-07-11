@@ -23,16 +23,12 @@ import org.bukkit.util.Vector;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
 import fr.xxathyx.mediaplayer.util.FacingLocation;
 import fr.xxathyx.mediaplayer.video.Video;
-
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 
 /** 
 * The ScreenCommands class implements {@link CommandExecutor}, it grants an easy access
@@ -48,6 +44,8 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
+	private final Interfaces interfaces = new Interfaces();
+	
     private final String[] commands = { "create", "info", "teleport", "remove" };
 	
 	/**
@@ -56,7 +54,6 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 	* <p>Called every time the screen command is sent.
 	*/
 	
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] arg3) {
 		
@@ -213,6 +210,13 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 						SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
 						return true;
 					}
+					
+					if(arg3[0].equalsIgnoreCase("delete")) {
+						screen.delete();
+						player.sendMessage(configuration.screen_deleted(arg3[1]));
+						SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+						return true;
+					}
 				}
 			}
 			sender.sendMessage(configuration.insufficient_permissions());
@@ -221,26 +225,21 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 		
 		if(cmd.getName().equalsIgnoreCase("screens")) {
 			if(sender.hasPermission("mediaplayer.command.screens")) {
-				
-				Player player = (Player) sender;
-				
+								
 				if(plugin.getRegisteredScreens().isEmpty()) {
-					player.sendMessage(configuration.no_screen_playing());
-					SoundPlayer.playSound(player, SoundType.NOTIFICATION_DOWN);
+					sender.sendMessage(configuration.no_screen_playing());
+					if(sender instanceof Player) SoundPlayer.playSound((Player)sender, SoundType.NOTIFICATION_DOWN);
 					return false;
 				}
 				
-				for(int i = 0; i < plugin.getRegisteredScreens().size(); i++) {
+				if(sender instanceof Player) {
 					
-					TextComponent screen = new TextComponent(ChatColor.GREEN + "" + ChatColor.BOLD + "SCREEN ID: " + ChatColor.YELLOW + i + ChatColor.GREEN + ChatColor.BOLD + " STATUS: " +
-					plugin.getRegisteredScreens().get(i).getStatus());
-				    screen.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "" + ChatColor.BOLD +
-				    		"Cliquez sur ce message pour vous téléporter à l'écran -> /screen teleport " + i).create()));
-					screen.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/screen teleport " + i));
+					Player player = (Player) sender;
 					
-					player.spigot().sendMessage(screen);
+					player.openInventory(interfaces.getScreens(0));
+					plugin.getScreensPages().put(player.getUniqueId(), 0);
+					return true;
 				}
-				return true;
 			}
 			sender.sendMessage(configuration.insufficient_permissions());
 			return false;

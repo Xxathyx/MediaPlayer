@@ -192,12 +192,18 @@ public class PlayerInteractVideo implements Listener {
 					if(plugin.getServerVersion().equals("v1_16_R1")) ((org.bukkit.craftbukkit.v1_16_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 				}
 				
-				Screen screen = new Screen(videoInstance, frames);
+				Screen screen = plugin.getScreensFrames().get((ItemFrame)event.getRightClicked());
+				
+				try {
+					videoInstance.setScreen(screen);
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				screen.setVideo(videoInstance, frames);
 				screen.display();
 				
-				plugin.getVideoPlayers().put(player.getUniqueId(), new VideoPlayer(screen));								
-				plugin.getRegisteredScreens().add(screen);
-				
+				plugin.getVideoPlayers().put(player.getUniqueId(), new VideoPlayer(screen));				
 				plugin.getSelectedVideos().remove(player.getUniqueId());
 				
 				Collection<Entity> entities = getNearbyEntities(frames.get(videoInstance.getVideo().getVideoData().getMaps().getIds().size()/2).getLocation(), 32);

@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +37,7 @@ import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 import fr.xxathyx.mediaplayer.util.Format;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.data.cache.Cache;
-
+import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.probe.FFmpegStream;
@@ -71,6 +72,8 @@ public class Video {
 	private Source source;
 	
 	private FileConfiguration fileconfiguration;
+	
+	private ArrayList<VideoInstance> videoInstances;
 	
 	/**
 	* Constructor for Video class, creates an Video variable according
@@ -324,6 +327,7 @@ public class Video {
 			getFramesFolder().mkdir();
 			getAudioFolder().mkdir();
 			getDataFolder().mkdir();
+			getInstancesFolder().mkdir();
 					
 			new File(file.getParent() + "/data/maps/").mkdir();
 			new File(file.getParent() + "/data/cache/").mkdir();
@@ -368,6 +372,7 @@ public class Video {
 		fileconfiguration.set("video.looping", source.isLooping());
 		fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
 		fileconfiguration.set("video.data-folder", getDataFolder().getPath());
+		fileconfiguration.set("video.instances-folder", getInstancesFolder().getPath());
 		fileconfiguration.set("video.real-time-rendering", true);
 		fileconfiguration.set("video.skip-duplicated-frames", false);
 		fileconfiguration.set("video.show-informations", source.showInformations());
@@ -831,7 +836,6 @@ public class Video {
 	
 	/**
 	* Gets whether the video has an audio track.
-	*  
 	* 
 	* @return Whether the video has audio.
 	*/
@@ -857,14 +861,16 @@ public class Video {
 	* Gets whether two videos are equals.
 	*  
 	* <p> <strong>Note: </strong> This method checks if two videos are equals
-	* using their file lenght, the video names don't matter.
+	* using their file lenght, and the video names.
 	* 
 	* @return Whether two videos are equals.
 	*/
 	
 	public boolean equals(Video video) {
 		if(getVideoFile().length() == video.getVideoFile().length()) {
-			return true;
+			if(getName() == video.getName()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -910,11 +916,40 @@ public class Video {
 	*  
 	* <p>The folder is empty until the video is loaded.
 	* 
-	* @return The folder ccontaining all related Minecraft video data.
+	* @return The folder containing all related Minecraft video data.
 	*/
 	
 	public File getDataFolder() {
 		return new File(file.getParent() + "/data/");
+	}
+	
+	/**
+	* Gets the folder containing all video instances.
+	*  
+	* <p>The folder is empty until a video has been played once time.
+	* 
+	* @return The folder containing video instances.
+	*/
+	
+	public File getInstancesFolder() {
+		return new File(file.getParent() + "/instances/");
+	}
+	
+	public ArrayList<VideoInstance> getInstances() {
+		
+		if(videoInstances != null) return videoInstances;
+		
+		videoInstances = new ArrayList<>();
+		
+		File[] files = getInstancesFolder().listFiles();
+				
+		for(File file : files) {
+			if(!file.isDirectory()) {
+				VideoInstance videoInstance = new VideoInstance(file);
+				videoInstances.add(videoInstance);
+			}
+		}
+		return videoInstances;
 	}
 	
 	/**

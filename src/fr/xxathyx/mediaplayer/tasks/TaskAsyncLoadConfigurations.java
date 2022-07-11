@@ -2,7 +2,6 @@ package fr.xxathyx.mediaplayer.tasks;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -82,12 +81,12 @@ public class TaskAsyncLoadConfigurations extends BukkitRunnable {
 						});
 													
 						if(videoData.getRunOnStartup()) {
-							
-							Screen screen = new Screen(new VideoInstance(video), new ArrayList<>());
-							screen.setRunning(true);
-							screen.display();
-							
-							plugin.getRegisteredScreens().add(screen);
+							for(VideoInstance videoInstance : video.getInstances()) {
+								
+								Screen screen = videoInstance.getScreen();
+								screen.setRunning(true);
+								screen.display();
+							}
 						}
 					}else {
 						try {

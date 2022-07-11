@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
+import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.video.Video;
 
 /** 
@@ -39,6 +40,8 @@ public class Interfaces {
 	/** 
 	* Gets an {@link Inventory} containing all {@link Main#getRegisteredVideos()} on a {@link ItemStack}
 	* aspect.
+	*
+	* @param index Shown page index.
 	*
 	* @throws FileNotFoundException When a video configuration-file ins't found.
 	* @throws IOException When failed or interrupted I/O operations occurs.
@@ -86,7 +89,7 @@ public class Interfaces {
 			lore.add("");
 			lore.add(ChatColor.DARK_AQUA + "frame-rate: " + ChatColor.BOLD + ChatColor.AQUA + video.getFrameRate() + ChatColor.DARK_AQUA + " FPS.");
 			lore.add(ChatColor.DARK_AQUA + "frames: " + ChatColor.BOLD + ChatColor.AQUA + video.getTotalFrames() + ChatColor.DARK_AQUA + ".");
-			lore.add(ChatColor.DARK_AQUA + "format: " + ChatColor.BOLD  + ChatColor.AQUA + video.getFormat() + "" + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "format: " + ChatColor.BOLD  + ChatColor.AQUA + video.getFormat() + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "quality: " + ChatColor.BOLD + ChatColor.AQUA + video.getWidth() + "x" + video.getHeight() + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "duration: " + ChatColor.BOLD + ChatColor.AQUA + video.getDuration() + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "views: " + ChatColor.BOLD + ChatColor.AQUA + video.getViews() + ChatColor.DARK_AQUA + ".");
@@ -126,6 +129,88 @@ public class Interfaces {
 	}
 	
 	/** 
+	* Gets an {@link Inventory} containing all {@link Main#getRegisteredScreens()} on a {@link ItemStack}
+	* aspect.
+	*
+	* @param index Shown page index.
+	*
+	* @throws FileNotFoundException When a video configuration-file ins't found.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+	* @return An inventory containing registered videos.
+	*/
+	
+	public Inventory getScreens(int index) {
+		
+		Inventory screens = Bukkit.createInventory(null, 54, ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Screens (" + plugin.getRegisteredScreens().size() + ")");
+		
+		ArrayList<ArrayList<Screen>> packets = new ArrayList<>();
+		ArrayList<Screen> packet = new ArrayList<>();
+		
+		int first = 45;
+		if(plugin.getRegisteredScreens().size() < 45) first = plugin.getRegisteredScreens().size();
+		
+		packet.addAll(plugin.getRegisteredScreens().subList(0, first));
+		packets.add(packet);
+				
+		if(plugin.getRegisteredScreens().size() > 45) {
+			
+			packet = new ArrayList<>();
+			
+			for(int i = 45; i < plugin.getRegisteredScreens().size(); i++) {
+				if(i % 45 == 0) {	
+					packet = new ArrayList<>();
+					packets.add(packet);
+				}			
+				packets.get(packets.size()-1).add(plugin.getRegisteredScreens().get(i));
+			}
+		}
+		
+		packet = packets.get(index);
+		
+		for(Screen screen : packet) {
+						
+			ItemStack item = new ItemStack(Material.BLACK_STAINED_GLASS, 1);
+			ItemMeta item_meta = item.getItemMeta();
+		    			
+			item_meta.setDisplayName(ChatColor.GREEN + screen.getName());
+			
+			List<String> lore = new ArrayList<>();
+			
+			lore.add(ChatColor.DARK_AQUA + "uuid: " + ChatColor.BOLD + ChatColor.AQUA + screen.getUUID().toString() + ChatColor.DARK_AQUA + ".");
+			lore.add("");
+			lore.add(ChatColor.DARK_AQUA + "block-type: " + ChatColor.BOLD + ChatColor.AQUA + screen.getBlockType().toString() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "glowing: " + ChatColor.BOLD  + ChatColor.AQUA + screen.isGlowing() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "size: " + ChatColor.BOLD + ChatColor.AQUA + screen.getWidth() + "x" + screen.getHeight() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "creation: " + ChatColor.BOLD + ChatColor.AQUA + screen.getCreation() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "played-video: " + ChatColor.BOLD + ChatColor.AQUA + screen.getVideoName() + ChatColor.DARK_AQUA + ".");
+			lore.add("");
+			lore.add(ChatColor.DARK_AQUA + "location.world: " + ChatColor.BOLD + ChatColor.AQUA + screen.getLocation().getWorld().getName() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "location.x: " + ChatColor.BOLD + ChatColor.AQUA + screen.getLocation().getX() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "location.y: " + ChatColor.BOLD + ChatColor.AQUA + screen.getLocation().getY() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "location.z: " + ChatColor.BOLD + ChatColor.AQUA + screen.getLocation().getZ() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "location.facing: " + ChatColor.BOLD + ChatColor.AQUA + screen.getFacingLocation() + ChatColor.DARK_AQUA + ".");
+			lore.add("");
+			
+			item_meta.setLore(lore);
+			item.setItemMeta(item_meta);
+						
+			screens.addItem(item);
+		}
+		
+		screens.setItem(45, items.glass());
+		screens.setItem(46, items.glass());
+		screens.setItem(47, items.glass());
+		screens.setItem(51, items.glass());
+		screens.setItem(52, items.glass());
+		screens.setItem(53, items.glass());
+		screens.setItem(48, items.previous());
+		screens.setItem(49, items.refresh());
+		screens.setItem(50, items.next());
+		
+		return screens;
+	}
+	
+	/** 
 	* Gets an {@link Inventory} containing videos tools, see {@link ItemStacks}.
 	*
 	* @param video The video that the panel is about.
@@ -139,6 +224,24 @@ public class Interfaces {
 		panel.setItem(11, items.play());
 		panel.setItem(13, items.load());
 		panel.setItem(15, items.delete());
+		
+		return panel;
+	}
+	
+	/** 
+	* Gets an {@link Inventory} containing screens tools, see {@link ItemStacks}.
+	*
+	* @param video The screen that the panel is about.
+	* @return An inventory panel containing screens tools.
+	*/
+	
+	public Inventory getScreenPanel(Screen screen) {
+		
+		Inventory panel = Bukkit.createInventory(null, 27, ChatColor.LIGHT_PURPLE + "Panel (" + plugin.getRegisteredScreens().indexOf(screen) + ")");
+        
+		panel.setItem(11, items.switcher());
+		panel.setItem(13, items.teleport());
+		panel.setItem(15, items.remove());
 		
 		return panel;
 	}

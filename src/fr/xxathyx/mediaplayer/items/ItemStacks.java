@@ -139,6 +139,30 @@ public class ItemStacks {
 	}
 	
 	/** 
+	* Gets an {@link ItemStack} corresponding to a switcher icon in a interface {@link Inventory}.
+	*
+	* <p> <strong>Note: </strong> The returned ItemStack Material name is different if the server
+	* is running under a legacy version of Minecraft (< 1.13), see {@link Main#isLegacy()}.
+	*
+	* @return A switcher icon.
+	*/
+	
+	public ItemStack switcher() {
+		
+        String material = "REPEATER";
+        if(plugin.isLegacy()) material = "DIODE";
+                
+		ItemStack switcher = new ItemStack(Material.getMaterial(material), 1);
+	    ItemMeta switcher_meta = switcher.getItemMeta();
+	    
+	    switcher_meta.setDisplayName(configuration.item_switcher_name());
+	    switcher_meta.setLore(Arrays.asList(new String[] { configuration.item_switcher_lore() }));
+	    switcher.setItemMeta(switcher_meta);
+		
+	    return switcher;
+	}
+	
+	/** 
 	* Gets an {@link ItemStack} corresponding to a load icon in a interface {@link Inventory}.
 	* 
 	* <p> <strong>Note: </strong> The returned ItemStack Material name is different if the server
@@ -163,6 +187,24 @@ public class ItemStacks {
 	}
 	
 	/** 
+	* Gets an {@link ItemStack} corresponding to a teleport icon in a interface {@link Inventory}.
+	*
+	* @return A teleport icon.
+	*/
+	
+	public ItemStack teleport() {
+                
+		ItemStack teleport = new ItemStack(Material.ENDER_EYE, 1);
+	    ItemMeta teleport_meta = teleport.getItemMeta();
+	    
+	    teleport_meta.setDisplayName(configuration.item_teleport_name());
+	    teleport_meta.setLore(Arrays.asList(new String[] { configuration.item_teleport_lore() }));
+	    teleport.setItemMeta(teleport_meta);
+		
+	    return teleport;
+	}
+	
+	/** 
 	* Gets an {@link ItemStack} corresponding to a delete icon in a interface {@link Inventory}.
 	*
 	* @return A delete icon.
@@ -178,6 +220,24 @@ public class ItemStacks {
 	    delete.setItemMeta(delete_meta);
 		
 	    return delete;
+	}
+	
+	/** 
+	* Gets an {@link ItemStack} corresponding to a remove icon in a interface {@link Inventory}.
+	*
+	* @return A remove icon.
+	*/
+	
+	public ItemStack remove() {
+		
+		ItemStack remove = new ItemStack(Material.FLINT_AND_STEEL, 1);
+	    ItemMeta remove_meta = remove.getItemMeta();
+	    
+	    remove_meta.setDisplayName(configuration.item_remove_name());
+	    remove_meta.setLore(Arrays.asList(new String[] { configuration.item_remove_lore_1(), configuration.item_remove_lore_2() }));
+	    remove.setItemMeta(remove_meta);
+		
+	    return remove;
 	}
 	
 	/** 

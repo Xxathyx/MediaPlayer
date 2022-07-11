@@ -47,6 +47,9 @@ public class TaskSyncLoadScreens extends BukkitRunnable {
 		
 		plugin.getRegisteredScreens().clear();
 		
+		plugin.getScreensBlocks().clear();
+		plugin.getScreensFrames().clear();
+		
 		for(File file : files) {
 			
 			File screenConfiguration = new File(configuration.getScreensFolder() + "/" + file.getName(), file.getName() + ".yml");

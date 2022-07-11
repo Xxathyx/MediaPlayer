@@ -26,9 +26,9 @@ public class InventoryClosePanel implements Listener {
 	
     /**
      * Called whenever a {@link Player} close an open inventory, specially a video
-     * panel one, see {@link Interfaces#getVideoPanel(Video)}, see also Bukkit
-     * documentation : {@link InventoryCloseEvent}. This is used to know if a player
-     * is still in a video panel, remove him when he closes the inventory.
+     * panel one, see {@link Interfaces#getVideoPanel(Video)} or {@link Interfaces#getScreenPanel(Video)},
+     * see also Bukkit documentation : {@link InventoryCloseEvent}. This is used to know if
+     * a player is still in a video panel, remove him when he closes the inventory.
      * 
      * @param Event Instance of {@link InventoryCloseEvent}.
      */
@@ -37,6 +37,10 @@ public class InventoryClosePanel implements Listener {
 	public void onClose(InventoryCloseEvent event) {
 		if(plugin.getVideoPanels().containsKey(event.getPlayer().getUniqueId())) {
 			plugin.getVideoPanels().remove(event.getPlayer().getUniqueId());
+			SoundPlayer.playSound((Player) event.getPlayer(), SoundType.NOTIFICATION_DOWN);
+		}
+		if(plugin.getScreenPanels().containsKey(event.getPlayer().getUniqueId())) {
+			plugin.getScreenPanels().remove(event.getPlayer().getUniqueId());
 			SoundPlayer.playSound((Player) event.getPlayer(), SoundType.NOTIFICATION_DOWN);
 		}
 	}

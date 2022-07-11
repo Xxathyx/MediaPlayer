@@ -12,18 +12,17 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
-import fr.xxathyx.mediaplayer.video.Video;
 
 /** 
-* The InventoryClickVideos class implements {@link Listener}, it consist
+* The InventoryClickScreens class implements {@link Listener}, it consist
 * of a single event method {@link #onClick(InventoryClickEvent)}.
 *
 * @author  Xxathyx
 * @version 1.0.0
-* @since   2021-08-23 
+* @since   2022-07-09 
 */
 
-public class InventoryClickVideos implements Listener {
+public class InventoryClickScreens implements Listener {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	
@@ -34,9 +33,9 @@ public class InventoryClickVideos implements Listener {
 	
     /**
      * Called whenever a {@link Player} clicks in an inventory, specially in
-     * videos panel, see {@link Interfaces#getVideos()}, see also Bukkit documentation
-     * : {@link InventoryClickEvent}. This is used to listen for selected video to be
-     * opened in a video panel, see {@link Interfaces#getVideoPanel(Video)}.
+     * screens panel, see {@link Interfaces#getScreens()}, see also Bukkit documentation
+     * : {@link InventoryClickEvent}. This is used to listen for selected screen to be
+     * opened in a screen panel, see {@link Interfaces#getScreenPanel(Screen)}.
      * 
      * @param Event Instance of {@link InventoryClickEvent}.
      */
@@ -44,7 +43,7 @@ public class InventoryClickVideos implements Listener {
 	@EventHandler
 	public void onClick(InventoryClickEvent event) {
 		
-		if(event.getView().getTitle().contains(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Videos")) {
+		if(event.getView().getTitle().contains(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Screens")) {
 						
 			event.setCancelled(true);
 						
@@ -69,46 +68,46 @@ public class InventoryClickVideos implements Listener {
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.previous().getItemMeta().getDisplayName())) {
 	        	
-	        	if(plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())-1 < 0) {
+	        	if(plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())-1 < 0) {
 	        		event.getWhoClicked().sendMessage(configuration.no_page_left());
 	        		return;
 	        	}
 	        	
-	        	plugin.getVideosPages().replace(event.getWhoClicked().getUniqueId(), plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())-1);
+	        	plugin.getScreensPages().replace(event.getWhoClicked().getUniqueId(), plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())-1);
 		        event.getWhoClicked().closeInventory();
-				event.getWhoClicked().openInventory(interfaces.getVideos(plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())));
+				event.getWhoClicked().openInventory(interfaces.getScreens(plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())));
 				return;
 	        }
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.refresh().getItemMeta().getDisplayName())) {      	
 		        event.getWhoClicked().closeInventory();
-				event.getWhoClicked().openInventory(interfaces.getVideos(plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())));
+				event.getWhoClicked().openInventory(interfaces.getScreens(plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())));
 				return;
 	        }
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.next().getItemMeta().getDisplayName())) {
 	        	
-	        	if(plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())+1 > (int) (plugin.getRegisteredVideos().size() / 45)) {
+	        	if(plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())+1 > (int) (plugin.getRegisteredScreens().size() / 45)) {
 	        		event.getWhoClicked().sendMessage(configuration.no_page_left());
 	        		return;
 	        	}
 	        	
-	        	plugin.getVideosPages().replace(event.getWhoClicked().getUniqueId(), plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())+1);
+	        	plugin.getScreensPages().replace(event.getWhoClicked().getUniqueId(), plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())+1);
 		        event.getWhoClicked().closeInventory();
-				event.getWhoClicked().openInventory(interfaces.getVideos(plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())));
+				event.getWhoClicked().openInventory(interfaces.getScreens(plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())));
 				return;
 	        }
 	        
-	        if(event.getCurrentItem().getType() == Material.ITEM_FRAME) {
+	        if(event.getCurrentItem().getType() == Material.BLACK_STAINED_GLASS) {
 	        	
 		        event.getWhoClicked().closeInventory();        
-		        plugin.getVideoPanels().put(event.getWhoClicked().getUniqueId(), plugin.getRegisteredVideos().get(event.getSlot() +
-		        		plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())*45));
+		        plugin.getScreenPanels().put(event.getWhoClicked().getUniqueId(), plugin.getRegisteredScreens().get(event.getSlot() +
+		        		plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())*45));
 		        		        
-		        event.getWhoClicked().openInventory(interfaces.getVideoPanel(plugin.getRegisteredVideos().get(event.getSlot() +
-		        		plugin.getVideosPages().get(event.getWhoClicked().getUniqueId())*45)));
+		        event.getWhoClicked().openInventory(interfaces.getScreenPanel(plugin.getRegisteredScreens().get(event.getSlot() +
+		        		plugin.getScreensPages().get(event.getWhoClicked().getUniqueId())*45)));
 		        
-	        	plugin.getVideosPages().replace(event.getWhoClicked().getUniqueId(), 0);
+	        	plugin.getScreensPages().replace(event.getWhoClicked().getUniqueId(), 0);
 	        }
 		}
 	}

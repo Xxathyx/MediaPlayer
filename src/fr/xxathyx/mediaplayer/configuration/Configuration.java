@@ -170,7 +170,8 @@ public class Configuration {
 						
 			fileconfiguration.set("messages.screen-created", "&aVous venez de créer un écran de dimension : &l%dimension%&a.");
 			fileconfiguration.set("messages.screen-removed", "&aVous venez de retirer l'écran d'index: &l%index%&a.");
-			fileconfiguration.set("messages.screen-teleport", "&aVous venez de vous téléporter sur l'écran d'index: &l%index%&a.");
+			fileconfiguration.set("messages.screen-deleted", "&aVous venez de supprimer l'écran: &l%screen%&a.");
+			fileconfiguration.set("messages.screen-teleport", "&aVous venez de vous téléporter sur l'écran: &l%screen%&a.");
 			fileconfiguration.set("messages.screen-invalid-index", "&cL'écran d'index &l%index% &cest introuvable.");
 			fileconfiguration.set("messages.screen-cannot-create", "&cImpossible de créer un écran à cet emplacement, des blocs gênent sans doute la place.");
 			
@@ -201,17 +202,28 @@ public class Configuration {
 			fileconfiguration.set("messages.item.play.name", "&2&lJouer");
 			fileconfiguration.set("messages.item.play.lore", "&aCliquez-ici pour jouer la vidéo.");
 			
+			fileconfiguration.set("messages.item.switcher.name", "&2&lPause ou continuer");
+			fileconfiguration.set("messages.item.switcher.lore", "&aCliquez-ici pour mettre en pause ou continuer la vidéo.");
+			
 			fileconfiguration.set("messages.item.load.name", "&6&lCharger");
 			fileconfiguration.set("messages.item.load.lore", "&eCliquez-ici pour charger la video.");
+			
+			fileconfiguration.set("messages.item.teleport.name", "&5&lTéléporter");
+			fileconfiguration.set("messages.item.teleport.lore", "&dCliquez-ici pour vous téléport à l'écran.");
 			
 			fileconfiguration.set("messages.item.delete.name", "&4&lSupprimer");
 			fileconfiguration.set("messages.item.delete.lore-1", "&cCliquez-ici pour supprimer la vidéo.");
 			fileconfiguration.set("messages.item.delete.lore-2", "&c&l[!] Aucun retour en arrière une fois supprimée.");
 			
+			fileconfiguration.set("messages.item.remove.name", "&4&lSupprimer");
+			fileconfiguration.set("messages.item.remove.lore-1", "&cCliquez-ici pour supprimer l'écran.");
+			fileconfiguration.set("messages.item.remove.lore-2", "&c&l[!] Aucun retour en arrière une fois supprimé.");
+			
 			fileconfiguration.set("messages.item.poster.lore-1", "&eCliquez-droit avec la carte sur le cadre du coin");
 			fileconfiguration.set("messages.item.poster.lore-2", "&esupérieur gauche de l'écran pour étaler l'image.");
 			fileconfiguration.set("messages.item.poster.lore-3", "&ePour enlever l'image, s'accroupir puis, cliquez-");
 			fileconfiguration.set("messages.item.poster.lore-4", "&edroit sur le coin supérieur gauche de l'écran.");
+			
 			fileconfiguration.set("messages.age-limit-warning", "&c[!] Contient du contenu explicite.");
 			fileconfiguration.set("messages.incompatible", "&4[!] Cette vidéo n'est pas compatible.");
 			fileconfiguration.set("messages.impossible-connection", "&cImpossible de se connecter au serveur demandé.");
@@ -316,6 +328,10 @@ public class Configuration {
 				
 		if(a.contains("%video%")) {
 			a = a.replaceAll("%video%", b);
+		}
+		
+		if(a.contains("%screen%")) {
+			a = a.replaceAll("%screen%", b);
 		}
 		
 		if(a.contains("%index%")) {
@@ -694,8 +710,12 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.screen-removed"), index);
 	}
 	
-	public String screen_teleport(String index) {
-		return getMessage(getConfigFile().getString("messages.screen-teleport"), index);
+	public String screen_deleted(String name) {
+		return getMessage(getConfigFile().getString("messages.screen-deleted"), name);
+	}
+	
+	public String screen_teleport(String name) {
+		return getMessage(getConfigFile().getString("messages.screen-teleport"), name);
 	}
 	
 	public String screen_invalid_index(String index) {
@@ -790,12 +810,28 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.item.play.lore"));
 	}
 	
+	public String item_switcher_name() {
+		return getMessage(getConfigFile().getString("messages.item.switcher.name"));
+	}
+	
+	public String item_switcher_lore() {
+		return getMessage(getConfigFile().getString("messages.item.switcher.lore"));
+	}
+	
 	public String item_load_name() {
 		return getMessage(getConfigFile().getString("messages.item.load.name"));
 	}
 	
 	public String item_load_lore() {
 		return getMessage(getConfigFile().getString("messages.item.load.lore"));
+	}
+	
+	public String item_teleport_name() {
+		return getMessage(getConfigFile().getString("messages.item.teleport.name"));
+	}
+	
+	public String item_teleport_lore() {
+		return getMessage(getConfigFile().getString("messages.item.teleport.lore"));
 	}
 	
 	public String item_delete_name() {
@@ -808,6 +844,18 @@ public class Configuration {
 	
 	public String item_delete_lore_2() {
 		return getMessage(getConfigFile().getString("messages.item.delete.lore-2"));
+	}
+	
+	public String item_remove_name() {
+		return getMessage(getConfigFile().getString("messages.item.remove.name"));
+	}
+	
+	public String item_remove_lore_1() {
+		return getMessage(getConfigFile().getString("messages.item.remove.lore-1"));
+	}
+	
+	public String item_remove_lore_2() {
+		return getMessage(getConfigFile().getString("messages.item.remove.lore-2"));
 	}
 	
 	public String item_poster_lore_1() {

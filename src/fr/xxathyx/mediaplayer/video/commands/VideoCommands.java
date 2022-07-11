@@ -287,7 +287,10 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 						        	
 						        	if(plugin.getPlayingVideos().size() <= configuration.maximum_playing_videos()) {
 						        		
-						        		VideoInstance videoInstance = new VideoInstance(videoTask[0]);
+						        		UUID uuid = UUID.randomUUID();
+						        		VideoInstance videoInstance = new VideoInstance(videoTask[0], new File(videoTask[0].getInstancesFolder(), uuid.toString() + ".yml"));
+						        		
+						        		videoInstance.createConfiguration(videoTask[0], uuid);
 						        		
 						        		if(plugin.getSelectedVideos().containsKey(players[0].getUniqueId())) {
 						        			plugin.getSelectedVideos().replace(players[0].getUniqueId(), videoInstance);
@@ -780,7 +783,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 					Player player = (Player) sender;
 					
 					player.openInventory(interfaces.getVideos(0));
-					plugin.getPages().put(player.getUniqueId(), 0);
+					plugin.getVideosPages().put(player.getUniqueId(), 0);
 					return true;
 				}
 				sendHelp(sender, name);

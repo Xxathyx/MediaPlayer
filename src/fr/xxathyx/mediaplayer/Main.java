@@ -25,6 +25,7 @@ import fr.xxathyx.mediaplayer.image.commands.ImageCommands;
 import fr.xxathyx.mediaplayer.image.listeners.PlayerInteractImage;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickPanel;
+import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickScreens;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickVideos;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClosePanel;
 import fr.xxathyx.mediaplayer.map.util.MapUtilVersion;
@@ -110,9 +111,12 @@ public class Main extends JavaPlugin {
 	
 	private final ArrayList<Group> groups = new ArrayList<>();
 	
-	private final Map<UUID, Integer> pages = new HashMap<>();
+	private final Map<UUID, Integer> videosPages = new HashMap<>();
+	private final Map<UUID, Integer> screensPages = new HashMap<>();
 	
 	private final Map<UUID, Video> videoPanels = new HashMap<>();
+	private final Map<UUID, Screen> screenPanels = new HashMap<>();
+	
 	private final Map<UUID, VideoInstance> selectedVideos = new HashMap<>();
 	
 	private final ArrayList<String> loadingVideos = new ArrayList<>();
@@ -201,6 +205,7 @@ public class Main extends JavaPlugin {
         getCommand("images").setExecutor(new ImageCommands());
         
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickVideos(), this);
+		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickScreens(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickPanel(), this);
 		
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClosePanel(), this);
@@ -214,8 +219,8 @@ public class Main extends JavaPlugin {
 		
 		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
-		new TaskAsyncLoadConfigurations().runTaskAsynchronously(this);
 		new TaskSyncLoadScreens().runTask(this);
+		new TaskAsyncLoadConfigurations().runTaskAsynchronously(this);
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
@@ -467,8 +472,18 @@ public class Main extends JavaPlugin {
      * @return Players that are in videos section and their current page index.
      */
 	
-	public Map<UUID, Integer> getPages() {
-		return pages;
+	public Map<UUID, Integer> getVideosPages() {
+		return videosPages;
+	}
+	
+    /**
+     * Gets all players uuid and their current page index of screens section.
+     *
+     * @return Players that are in screens section and their current page index.
+     */
+	
+	public Map<UUID, Integer> getScreensPages() {
+		return screensPages;
 	}
 	
     /**
@@ -479,6 +494,16 @@ public class Main extends JavaPlugin {
 	
 	public Map<UUID, Video> getVideoPanels() {
 		return videoPanels;
+	}
+	
+    /**
+     * Gets all players uuid that are actually in an screen panel inventory {@link Interfaces#getScreenPanel(Screen)}.
+     *
+     * @return Players that are in a screen panel inventory.
+     */
+	
+	public Map<UUID, Screen> getScreenPanels() {
+		return screenPanels;
 	}
 	
     /**

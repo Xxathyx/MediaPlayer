@@ -72,6 +72,8 @@ public class Screen {
 	private boolean running = false;
 	private boolean linked = true;
 	
+	private boolean launched = false;
+	
 	public int[] tasks = {Bukkit.getScheduler().getPendingTasks().size(), Bukkit.getScheduler().getPendingTasks().size()+1};
 		
 	private int[] ids = {};
@@ -88,22 +90,7 @@ public class Screen {
 	private ArrayList<Block> blocks = new ArrayList<>();
 	
 	private ArrayList<UUID> listeners = new ArrayList<>();
-	
-	public Screen(VideoInstance videoInstance, ArrayList<ItemFrame> frames) {
 		
-		Video video = videoInstance.getVideo();
-		
-		this.frames = frames;
-		this.settings = new ScreenSettings(video);
-		this.id = plugin.getRegisteredScreens().size();
-		this.video = video;
-		this.videoData = video.getVideoData();
-		this.videoInstance = videoInstance;
-		this.ids = ArrayUtils.toPrimitive(Arrays.stream(video.getVideoData().getMaps().getIds().toArray()).map(Object::toString).map(Integer::valueOf).toArray(Integer[]::new));
-		this.width = video.getVideoData().getMinecraftWidth();
-		this.height = video.getVideoData().getMinecraftHeight();
-	}
-	
 	public Screen(UUID uuid, int width, int height, ArrayList<ItemFrame> frames, ArrayList<Block> blocks) {
 				
 		this.file = new File(configuration.getScreensFolder() + "/" + uuid.toString(), uuid.toString() + ".yml");
@@ -169,7 +156,8 @@ public class Screen {
 		fileconfiguration.set("screen.location.z", location.getBlockZ());
 		fileconfiguration.set("screen.location.facing", facingDirection);
 				
-		fileconfiguration.set("screen.played-video", "none");
+		fileconfiguration.set("screen.video.name", "none");
+		fileconfiguration.set("screen.video.instance", "none");
 		fileconfiguration.set("screen.last-frame", 0);
 		fileconfiguration.set("screen.parts-folder", new File(configuration.getScreensFolder() + "/" + uuid + "/parts/").getAbsolutePath());
 		fileconfiguration.set("screen.parts-count", width*height);
@@ -303,17 +291,21 @@ public class Screen {
 		return getConfigFile().getString("screen.location.facing");
 	}
 	
-	public VideoInstance getVideoInstance() {
-		return videoInstance;
-	}
-	
 	public String getVideoName() {
-		return getConfigFile().getString("screen.played-video");
+		return getConfigFile().getString("screen.video.name");
 	}
 	
 	public Video getVideo() {
 		if(video != null) return video;
-		return new Video(getConfigFile().getString("screen.played-video"));
+		return new Video(getConfigFile().getString("screen.video.name"));
+	}
+	
+	public VideoInstance getVideoInstance() {
+		
+		if(videoInstance != null) return videoInstance;
+		
+		videoInstance = new VideoInstance(getVideo(), new File(getVideo().getInstancesFolder(), getConfigFile().getString("screen.video.instance") + ".yml"));
+		return videoInstance;
 	}
 	
 	public int getLastFrame() {
@@ -334,8 +326,12 @@ public class Screen {
 	
 	@SuppressWarnings("unchecked")
 	public int[] getIds() {
+		
 		if(ids != null) return ids;
-		return ArrayUtils.toPrimitive(Arrays.stream(((List<Integer>) getConfigFile().getList("screen.ids")).toArray()).map(Object::toString).map(Integer::valueOf).toArray(Integer[]::new));
+		
+		ids = ArrayUtils.toPrimitive(Arrays.stream(((List<Integer>) getConfigFile().getList("screen.ids")).toArray()).map(Object::toString).map(Integer::valueOf).toArray(Integer[]::new));
+		
+		return ids;
 	}
 	
 	public ArrayList<ItemFrame> getFrames() {
@@ -392,6 +388,21 @@ public class Screen {
 		return parts;
 	}
 	
+	public void setVideo(VideoInstance videoInstance, ArrayList<ItemFrame> frames) {
+		
+		Video video = videoInstance.getVideo();
+		
+		this.frames = frames;
+		this.settings = new ScreenSettings(video);
+		this.id = plugin.getRegisteredScreens().size();
+		this.video = video;
+		this.videoData = video.getVideoData();
+		this.videoInstance = videoInstance;
+		this.ids = getIds();
+		this.width = video.getVideoData().getMinecraftWidth();
+		this.height = video.getVideoData().getMinecraftHeight();
+	}
+	
 	/**
 	* Loads the {@link #getThumbnail()} in order to be again displayed in Minecraft, this method
 	* is called on {@link TaskSyncLoadScreens}.
@@ -429,9 +440,22 @@ public class Screen {
 	}
 	
 	public void remove() {
-		for(int i = 0; i < blocks.size(); i++) {
-			frames.get(i).remove();
-			blocks.get(i).setType(Material.AIR);
+		for(int i = 0; i < getBlocks().size(); i++) {
+			getFrames().get(i).remove();
+			getBlocks().get(i).setType(Material.AIR);
+		}
+	}
+	
+	public void delete() {
+		
+		plugin.getRegisteredScreens().remove(this);
+		
+		remove();
+		
+		try {
+			FileUtils.deleteDirectory(getFile().getParentFile());
+		}catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -442,8 +466,11 @@ public class Screen {
 		plugin.getTasks().add(tasks[1]);
 		
 		if(!frames.isEmpty()) {
+			
+			Object[] ids = videoData.getMaps().getIds().toArray();
+			
 			for(int i = 0; i < frames.size(); i++) {
-				frames.get(i).setItem(itemStacks.getMap(ids[i]));
+				frames.get(i).setItem(itemStacks.getMap((int) ids[i]));
 			}
 		}
 				
@@ -504,6 +531,14 @@ public class Screen {
 				}
 				
 				if(running) {
+					
+					if(launched == false) launched = true;
+					
+					if(launched) {
+						for(int i = 0; i < frames.size(); i++) {
+							frames.get(i).setItem(itemStacks.getMap(ids[i]));
+						}
+					}
 					
 					for(UUID uuid : listeners) {
 						
@@ -644,9 +679,14 @@ public class Screen {
 		
 		running = false;
 				
-		video.getVideoData().loadThumbnail();
+		videoData.loadThumbnail();
 		
-		for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(itemStacks.getMap(ids[i]));
+		Object[] ids = videoData.getMaps().getIds().toArray();
+		
+		for(int i = 0; i < frames.size(); i++) {
+			frames.get(i).setItem(itemStacks.getMap((int) ids[i]));
+		}
+		
 		for(UUID uuid : listeners) { for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i); }
 		
 		plugin.getPlayingVideos().remove(video.getName());
