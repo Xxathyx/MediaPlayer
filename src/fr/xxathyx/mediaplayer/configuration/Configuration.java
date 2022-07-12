@@ -162,6 +162,7 @@ public class Configuration {
 			fileconfiguration.set("messages.video-instance-not-on-screen", "&cCette vidéo n'est affectée à aucun écran, affectez-la avec le /screen create.");
 			
 			fileconfiguration.set("messages.videos-reload-requested", "&aRequête de rechargement des vidéos reçue.");
+			fileconfiguration.set("messages.screens-reload-requested", "&aRequête de rechargement des écrans reçue.");
 			fileconfiguration.set("messages.videos-reloaded", "&aLa liste des vidéos enregistrées vient d'être rafraichie.");
 			fileconfiguration.set("messages.screens-reloaded", "&aLa liste des écrans enregistrées vient d'être rafraichie.");
 			fileconfiguration.set("messages.videos-empty-registered", "&cAucune vidéo n'a été détectée et enregistrée.");
@@ -904,6 +905,10 @@ public class Configuration {
 	
 	public String videos_reload_requested() {
 		return getMessage(getConfigFile().getString("messages.videos-reload-requested"));
+	}
+	
+	public String screens_reload_requested() {
+		return getMessage(getConfigFile().getString("messages.screens-reload-requested"));
 	}
 	
 	public String videos_reloaded() {

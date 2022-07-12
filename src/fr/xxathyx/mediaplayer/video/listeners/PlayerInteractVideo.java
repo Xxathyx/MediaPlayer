@@ -193,7 +193,7 @@ public class PlayerInteractVideo implements Listener {
 				}
 				
 				Screen screen = plugin.getScreensFrames().get((ItemFrame)event.getRightClicked());
-				
+								
 				try {
 					videoInstance.setScreen(screen);
 				}catch (Exception e) {

@@ -41,21 +41,21 @@ public class Stream {
      * and only one time, it launch a ffmpeg process to catch frames.
      */
 	
-	public void update() throws IOException {
-				
-		URL url = video.getStreamURL();
-				
-		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath()),
-				"-hide_banner",
-				"-loglevel", "error",
-				"-i", url.toString(),
-				"-q:v", "0",
-				"-start_number", "0",
-				FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
-        
-        ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
-                 
+	public void update() {        
         try {
+        	
+    		URL url = video.getStreamURL();
+			
+    		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath()),
+    				"-hide_banner",
+    				"-loglevel", "error",
+    				"-i", url.toString(),
+    				"-q:v", "0",
+    				"-start_number", "0",
+    				FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
+            
+            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
+        	
 			plugin.getProcess().add(videoProcessBuilder.inheritIO().start());
 		}catch (IOException e) {
 			e.printStackTrace();

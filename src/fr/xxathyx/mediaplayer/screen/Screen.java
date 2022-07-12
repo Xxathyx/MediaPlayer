@@ -33,6 +33,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.map.MapView;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.google.common.io.Files;
+
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.group.Group;
@@ -71,12 +73,10 @@ public class Screen {
 	
 	private boolean running = false;
 	private boolean linked = true;
-	
-	private boolean launched = false;
-	
+		
 	public int[] tasks = {Bukkit.getScheduler().getPendingTasks().size(), Bukkit.getScheduler().getPendingTasks().size()+1};
 		
-	private int[] ids = {};
+	private int[] ids;
 	
 	private int width;
 	private int height;
@@ -97,12 +97,7 @@ public class Screen {
 		this.uuid = uuid;
 		this.frames = frames;
 		this.blocks = blocks;
-		this.settings = null;
 		this.id = plugin.getRegisteredScreens().size();
-		this.video = null;
-		this.videoData = null;
-		this.videoInstance = null;
-		this.ids = null;
 		this.width = width;
 		this.height = height;
 	}
@@ -111,12 +106,7 @@ public class Screen {
 		
 		this.file = file;
 		this.frames = getFrames();
-		this.settings = null;
 		this.id = plugin.getRegisteredScreens().size();
-		this.video = null;
-		this.videoData = null;
-		this.videoInstance = null;
-		this.ids = null;
 		this.width = getWidth();
 		this.height = getHeight();
 	}
@@ -125,12 +115,7 @@ public class Screen {
 		
 		this.file = new File(configuration.getScreensFolder() + "/" + uuid.toString(), uuid.toString() + ".yml");
 		this.frames = new ArrayList<>();
-		this.settings = null;
 		this.id = plugin.getRegisteredScreens().size();
-		this.video = null;
-		this.videoData = null;
-		this.videoInstance = null;
-		this.ids = null;
 		this.width = getWidth();
 		this.height = getHeight();
 	}
@@ -176,49 +161,18 @@ public class Screen {
 		ItemFrame origin = frames.get(height-1);
 				
 		for(int i = 0; i < height; i++) {
-			for(int j = 0; j < width; j++) {
-								
-				if(facingDirection.equals("N")) {
-					if(getNearbyEntities(origin.getLocation().add(j, -i, 0), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(j, -i, 0), 0).toArray()[0]);
-				}
-				if(facingDirection.equals("E")) {
-					if(getNearbyEntities(origin.getLocation().add(0, -i, j), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(0, -i, j), 0).toArray()[0]);
-				}
-				if(facingDirection.equals("S")) {
-					if(getNearbyEntities(origin.getLocation().add(-j, -i, 0), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(-j, -i, 0), 0).toArray()[0]);
-				}
-				if(facingDirection.equals("W")) {
-					if(getNearbyEntities(origin.getLocation().add(0, -i, -j), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(0, -i, -j), 0).toArray()[0]);
-				}									
+			for(int j = 0; j < width; j++) {			
+				if(facingDirection.equals("N")) if(getNearbyEntities(origin.getLocation().add(j, -i, 0), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(j, -i, 0), 0).toArray()[0]);
+				if(facingDirection.equals("E")) if(getNearbyEntities(origin.getLocation().add(0, -i, j), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(0, -i, j), 0).toArray()[0]);
+				if(facingDirection.equals("S")) if(getNearbyEntities(origin.getLocation().add(-j, -i, 0), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(-j, -i, 0), 0).toArray()[0]);
+				if(facingDirection.equals("W")) if(getNearbyEntities(origin.getLocation().add(0, -i, -j), 0).toArray().length >= 0) sorted.add((ItemFrame) getNearbyEntities(origin.getLocation().add(0, -i, -j), 0).toArray()[0]);							
 			}
 		}
 		
 		frames = sorted;
 				
 		for(int i = 0; i < blocks.size(); i++) new Part(new File(getPartsFolder(), i + ".yml")).createConfiguration(uuid, blocks.get(i), frames.get(i), false, false, i);
-		
-		try {
-			Image base = ImageIO.read(Main.class.getResource("resources/default.png"));
-			BufferedImage bufferedBase = (BufferedImage) base;
-								
-			Image resizedBase = base.getScaledInstance((int) Math.round(bufferedBase.getWidth()*((double) width*128/bufferedBase.getWidth())),
-					(int) Math.round(bufferedBase.getHeight()*((double) height*128/bufferedBase.getHeight())), Image.SCALE_DEFAULT);
-						
-			ImageIO.write(ImageUtil.convertToBufferedImage(resizedBase), "png", getThumbnail());
-			
-			ImageRenderer imageRenderer = new ImageRenderer(ImageIO.read(getThumbnail()));		
-			imageRenderer.createMaps(Bukkit.getWorlds().get(0));
-			
-			ids = ArrayUtils.toPrimitive(Arrays.stream(imageRenderer.getIds().toArray()).map(Object::toString).map(Integer::valueOf).toArray(Integer[]::new));
-			
-			fileconfiguration = new YamlConfiguration();
-			fileconfiguration.load(file);
-			fileconfiguration.set("screen.ids", imageRenderer.getIds());
-			fileconfiguration.save(file);
-			
-		}catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}		
+		createThumbnail();
 		for(int i = 0; i < getFrames().size(); i++) getFrames().get(i).setItem(new ItemStacks().getMap(getIds()[i]));
 	}
 	
@@ -324,29 +278,22 @@ public class Screen {
 		return getConfigFile().getString("screen.thumbnail-path");
 	}
 	
+
 	@SuppressWarnings("unchecked")
 	public int[] getIds() {
-		
 		if(ids != null) return ids;
-		
 		ids = ArrayUtils.toPrimitive(Arrays.stream(((List<Integer>) getConfigFile().getList("screen.ids")).toArray()).map(Object::toString).map(Integer::valueOf).toArray(Integer[]::new));
-		
 		return ids;
 	}
 	
-	public ArrayList<ItemFrame> getFrames() {
-		
-		if(!frames.isEmpty()) return frames;
-				
-		for(int i = 0; i < width*height; i++) frames.add(new Part(new File(getPartsFolder(), i + ".yml")).getItemFrame());
-		
+	public ArrayList<ItemFrame> getFrames() {		
+		if(!frames.isEmpty()) return frames;		
+		for(int i = 0; i < width*height; i++) frames.add(new Part(new File(getPartsFolder(), i + ".yml")).getItemFrame());		
 		return frames;
 	}
 	
 	public ArrayList<Block> getBlocks() {
-		
 		if(!blocks.isEmpty()) return blocks;
-		
 		for(int i = 0; i < width*height; i++) blocks.add(new Part(new File(getPartsFolder(), i + ".yml")).getBlock());
 		return blocks;
 	}
@@ -380,10 +327,8 @@ public class Screen {
 		return this;
 	}
 	
-	public ArrayList<Part> getParts() {
-		
+	public ArrayList<Part> getParts() {	
 		if(!parts.isEmpty()) return parts;
-		
 		for(int i = 0; i < width*height; i++) parts.add(new Part(new File(getPartsFolder(), i + ".yml")));
 		return parts;
 	}
@@ -401,6 +346,38 @@ public class Screen {
 		this.ids = getIds();
 		this.width = video.getVideoData().getMinecraftWidth();
 		this.height = video.getVideoData().getMinecraftHeight();
+		
+		try {
+			Files.copy(videoData.getThumbnail(), getThumbnail());
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void createThumbnail() {
+		
+		try {
+			Image base = ImageIO.read(Main.class.getResource("resources/default.png"));
+			BufferedImage bufferedBase = (BufferedImage) base;
+								
+			Image resizedBase = base.getScaledInstance((int) Math.round(bufferedBase.getWidth()*((double) width*128/bufferedBase.getWidth())),
+					(int) Math.round(bufferedBase.getHeight()*((double) height*128/bufferedBase.getHeight())), Image.SCALE_DEFAULT);
+						
+			ImageIO.write(ImageUtil.convertToBufferedImage(resizedBase), "png", getThumbnail());
+			
+			ImageRenderer imageRenderer = new ImageRenderer(ImageIO.read(getThumbnail()));		
+			imageRenderer.createMaps(Bukkit.getWorlds().get(0));
+			
+			ids = ArrayUtils.toPrimitive(Arrays.stream(imageRenderer.getIds().toArray()).map(Object::toString).map(Integer::valueOf).toArray(Integer[]::new));
+			
+			fileconfiguration = new YamlConfiguration();
+			fileconfiguration.load(file);
+			fileconfiguration.set("screen.ids", imageRenderer.getIds());
+			fileconfiguration.save(file);
+			
+		}catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -413,9 +390,10 @@ public class Screen {
 	*/
 	
 	public void loadThumbnail() {
+		
 		try {
 			if(getIds().length > 0) {
-								
+				
 				BufferedImage bufferedImage = ImageHelper.getImage(getThumbnail().getPath());
 				
 				ImageRenderer imageRenderer = new ImageRenderer(bufferedImage);
@@ -449,7 +427,6 @@ public class Screen {
 	public void delete() {
 		
 		plugin.getRegisteredScreens().remove(this);
-		
 		remove();
 		
 		try {
@@ -462,27 +439,16 @@ public class Screen {
 	@SuppressWarnings("deprecation")
 	public void display() {
 		
-		plugin.getTasks().add(tasks[0]);
-		plugin.getTasks().add(tasks[1]);
+		plugin.getTasks().add(tasks[0]); plugin.getTasks().add(tasks[1]);
 		
-		if(!frames.isEmpty()) {
-			
-			Object[] ids = videoData.getMaps().getIds().toArray();
-			
-			for(int i = 0; i < frames.size(); i++) {
-				frames.get(i).setItem(itemStacks.getMap((int) ids[i]));
-			}
-		}
+		loadThumbnail();
+		
+		if(!frames.isEmpty()) for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(itemStacks.getMap(ids[i]));
 				
 		if(video.isStreamed()) {
 			
 			stream = new Stream(video);
-			
-			try {
-				stream.update();
-			}catch (IOException e) {
-				e.printStackTrace();
-			}
+			stream.update();
 			
 			tasks[0] = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {  
 				@Override
@@ -532,14 +498,6 @@ public class Screen {
 				
 				if(running) {
 					
-					if(launched == false) launched = true;
-					
-					if(launched) {
-						for(int i = 0; i < frames.size(); i++) {
-							frames.get(i).setItem(itemStacks.getMap(ids[i]));
-						}
-					}
-					
 					for(UUID uuid : listeners) {
 						
 						if(plugin.getPlayersScreens().containsKey(uuid)) {
@@ -567,7 +525,6 @@ public class Screen {
                 						settings.count++;
                 					}
                 				}else {
-                					System.out.println(settings.framerate-settings.fps + " frames added");
 		                			settings.count = settings.count + (settings.framerate-settings.fps);
                 				}
 	                		}
@@ -577,9 +534,7 @@ public class Screen {
 								if(settings.showFPS) {
 									message = message + ChatColor.GREEN + " - " + ChatColor.BOLD + settings.fps + ChatColor.GREEN + " FPS";
 								}
-			                	for(Player player : Bukkit.getOnlinePlayers()) {
-				                	plugin.getActionBar().send(player, message);
-			                	}
+			                	for(Player player : Bukkit.getOnlinePlayers()) plugin.getActionBar().send(player, message);
 		                	}
 		                	settings.fps = 0;
 		                	settings.time = System.currentTimeMillis();
@@ -615,9 +570,7 @@ public class Screen {
 													buffer = com.bergerkiller.bukkit.common.map.MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]);
 													
 													for(Entity entity : entities) {
-														if(entity.getType() == EntityType.PLAYER) {
-															plugin.getMapUtil().update((Player)entity, ids[j], buffer);
-														}
+														if(entity.getType() == EntityType.PLAYER) plugin.getMapUtil().update((Player)entity, ids[j], buffer);
 													}
 							    	    		}
 											}catch (IOException e) {
@@ -632,9 +585,7 @@ public class Screen {
 													buffer = FileUtils.readFileToByteArray(new File(videoData.getCacheFolder() + "/" + settings.count + "/", String.valueOf(j) + ".cache"));
 													
 													for(Entity entity : entities) {
-														if(entity.getType() == EntityType.PLAYER) {
-															plugin.getMapUtil().update((Player)entity, ids[j], buffer);
-														}
+														if(entity.getType() == EntityType.PLAYER) plugin.getMapUtil().update((Player)entity, ids[j], buffer);
 													}
 												}catch (IOException e) {
 													e.printStackTrace();
@@ -651,13 +602,8 @@ public class Screen {
 						}
 						settings.max = 1;
 					}else {
-						if(video.isLoopping()) {
-							settings.count = 0;
-						}
-						
-						if(!video.isStreamed()) {
-							end();
-						}
+						if(video.isLoopping()) settings.count = 0;
+						if(!video.isStreamed()) end();
 					}
 				}
 			}

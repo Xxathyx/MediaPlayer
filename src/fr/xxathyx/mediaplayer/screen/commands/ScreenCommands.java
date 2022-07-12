@@ -27,6 +27,7 @@ import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
+import fr.xxathyx.mediaplayer.tasks.TaskSyncLoadScreens;
 import fr.xxathyx.mediaplayer.util.FacingLocation;
 import fr.xxathyx.mediaplayer.video.Video;
 
@@ -232,6 +233,12 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 					return false;
 				}
 				
+				if(arg3[0].equalsIgnoreCase("reload")) {
+					new TaskSyncLoadScreens().runTask(plugin);
+					sender.sendMessage(configuration.screens_reload_requested());
+					return true;
+				}
+				
 				if(sender instanceof Player) {
 					
 					Player player = (Player) sender;
@@ -371,6 +378,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " remove (selected-screen)");
 		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " remove <screen-index>");
 		sender.sendMessage("");
+		sender.sendMessage(ChatColor.GOLD + "» /screens reload");
 		sender.sendMessage(ChatColor.GOLD + "» /screens");
 	}
 }
