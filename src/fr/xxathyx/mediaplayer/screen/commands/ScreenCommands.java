@@ -308,7 +308,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 						locBlock.getBlock().setType(Material.getMaterial(configuration.screen_block()));
 						itemFrame = (ItemFrame) player.getWorld().spawnEntity(new Location(player.getWorld(), locBlock.getBlockX()+1, locBlock.getBlockY(), locBlock.getBlockZ()), EntityType.fromName(entityName));
 					}
-					
+									
 					frames.add(itemFrame);
 					blocks.add(locBlock.getBlock());
 				}

@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.api.listeners.PlayerInteractScreenEvent;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
@@ -29,8 +30,11 @@ public class PlayerInteractScreen implements Listener {
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
+	private final Interfaces interfaces = new Interfaces();
+	
     @EventHandler
     public void onInteract(PlayerInteractEntityEvent event) {
+    	
         if(event.getRightClicked() instanceof ItemFrame) {
         	
         	Material material = Material.MAP;
@@ -41,9 +45,12 @@ public class PlayerInteractScreen implements Listener {
 					
 					Screen screen = plugin.getScreensFrames().get((ItemFrame) event.getRightClicked());
 					
+			        plugin.getScreenPanels().put(event.getPlayer().getUniqueId(), screen);
+			        		        
+			        event.getPlayer().openInventory(interfaces.getScreenPanel(screen));					
 					event.setCancelled(true);
 					
-					if(screen.getVideoInstance() != null) {
+					if(screen.getVideoInstance() != null && !screen.getVideoName().equals("none")) {
 						
 						VideoData videoData = screen.getVideoInstance().getVideo().getVideoData();
 												

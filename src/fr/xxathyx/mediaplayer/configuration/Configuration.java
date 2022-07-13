@@ -159,6 +159,8 @@ public class Configuration {
 			
 			fileconfiguration.set("messages.video-instance-started", "&aVous venez de lancer la vidéo &l%video% &asur l'écran d'ID: &l%id%&a.");
 			fileconfiguration.set("messages.video-instance-stopped", "&aVous venez d'arrêter la vidéo &l%video%&a.");
+			fileconfiguration.set("messages.video-instance-pause", "&aVous venez de mettre en pause la vidéo &l%video%&a.");
+			fileconfiguration.set("messages.video-instance-resume", "&aVous venez de relancer la vidéo &l%video%&a.");
 			fileconfiguration.set("messages.video-instance-not-on-screen", "&cCette vidéo n'est affectée à aucun écran, affectez-la avec le /screen create.");
 			
 			fileconfiguration.set("messages.videos-reload-requested", "&aRequête de rechargement des vidéos reçue.");
@@ -685,6 +687,14 @@ public class Configuration {
 	
 	public String video_instance_stopped(String video) {
 		return getMessage(getConfigFile().getString("messages.video-instance-stopped"), video);
+	}
+	
+	public String video_instance_pause(String video) {
+		return getMessage(getConfigFile().getString("messages.video-instance-pause"), video);
+	}
+	
+	public String video_instance_resume(String video) {
+		return getMessage(getConfigFile().getString("messages.video-instance-resume"), video);
 	}
 	
 	public String video_instance_not_on_screen() {

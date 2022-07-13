@@ -203,6 +203,8 @@ public class PlayerInteractVideo implements Listener {
 				screen.setVideo(videoInstance, frames);
 				screen.display();
 				
+				player.closeInventory();
+				
 				plugin.getVideoPlayers().put(player.getUniqueId(), new VideoPlayer(screen));				
 				plugin.getSelectedVideos().remove(player.getUniqueId());
 				

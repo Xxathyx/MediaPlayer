@@ -222,11 +222,17 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							}
 							
 							if(arg3[0].equalsIgnoreCase("pause")) {
-								
+					        	videoPlayer.getScreen().setRunning(false);
+								player.sendMessage(configuration.video_instance_pause(videoPlayer.getScreen().getVideoName()));
+								SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+								return true;
 							}
 							
 							if(arg3[0].equalsIgnoreCase("resume")) {
-								
+					        	videoPlayer.getScreen().setRunning(true);
+								player.sendMessage(configuration.video_instance_resume(videoPlayer.getScreen().getVideoName()));
+								SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+								return true;
 							}
 						}
 					}

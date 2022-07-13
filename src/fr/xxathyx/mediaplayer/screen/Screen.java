@@ -348,8 +348,14 @@ public class Screen {
 		this.height = video.getVideoData().getMinecraftHeight();
 		
 		try {
+			
+			fileconfiguration = new YamlConfiguration();
+			fileconfiguration.load(file);
+			fileconfiguration.set("screen.video.name", video.getName());
+			fileconfiguration.save(file);
+			
 			Files.copy(videoData.getThumbnail(), getThumbnail());
-		}catch (IOException e) {
+		}catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
 	}
@@ -374,7 +380,6 @@ public class Screen {
 			fileconfiguration.load(file);
 			fileconfiguration.set("screen.ids", imageRenderer.getIds());
 			fileconfiguration.save(file);
-			
 		}catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -391,30 +396,35 @@ public class Screen {
 	
 	public void loadThumbnail() {
 		
-		try {
-			if(getIds().length > 0) {
-				
-				BufferedImage bufferedImage = ImageHelper.getImage(getThumbnail().getPath());
-				
-				ImageRenderer imageRenderer = new ImageRenderer(bufferedImage);
-				
-				imageRenderer.calculateDimensions();
-				imageRenderer.splitImages();
-				
-				MapView map;
-				
-				for(int i = 0; i < imageRenderer.getBufferedImages().length; i++) {
-					map = plugin.getMapUtil().getMapView(getIds()[i]);
-					map = new ImageRenderer(imageRenderer.getBufferedImages()[i]).resetRenderers(map);
-					
-					map.setScale(MapView.Scale.FARTHEST);
-					if(!plugin.isLegacy()) map.setUnlimitedTracking(false);
-					map.addRenderer(new ImageRenderer(imageRenderer.getBufferedImages()[i]));
+		Bukkit.getScheduler().runTask(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if(getIds().length > 0) {
+						
+						BufferedImage bufferedImage = ImageHelper.getImage(getThumbnail().getPath());
+						
+						ImageRenderer imageRenderer = new ImageRenderer(bufferedImage);
+						
+						imageRenderer.calculateDimensions();
+						imageRenderer.splitImages();
+						
+						MapView map;
+						
+						for(int i = 0; i < imageRenderer.getBufferedImages().length; i++) {
+							map = plugin.getMapUtil().getMapView(getIds()[i]);
+							map = new ImageRenderer(imageRenderer.getBufferedImages()[i]).resetRenderers(map);
+							
+							map.setScale(MapView.Scale.FARTHEST);
+							if(!plugin.isLegacy()) map.setUnlimitedTracking(false);
+							map.addRenderer(new ImageRenderer(imageRenderer.getBufferedImages()[i]));
+						}
+					}
+				}catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
+		});
 	}
 	
 	public void remove() {
@@ -656,6 +666,10 @@ public class Screen {
 	
 	public void setHighestFrame(ItemFrame highest) {
 		this.highest = highest;
+	}
+	
+	public void setFrames(ArrayList<ItemFrame> frames) {
+		this.frames = frames;
 	}
 	
     /**

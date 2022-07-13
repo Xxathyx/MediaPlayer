@@ -1,6 +1,7 @@
 package fr.xxathyx.mediaplayer;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -179,7 +180,7 @@ public class Main extends JavaPlugin {
 		mapUtil = new MapUtilVersion().getMapUtil();
 		actionBar = new ActionBarVersion().getActionBar();
 		audioUtil = new AudioUtilVersion().getAudioUtil();
-		
+				
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
         if(serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
@@ -250,7 +251,7 @@ public class Main extends JavaPlugin {
 	*/
 	
 	public void onDisable() {
-		
+				
 		for(Player player : Bukkit.getOnlinePlayers()) {
 			player.closeInventory();
 		}
@@ -362,6 +363,28 @@ public class Main extends JavaPlugin {
 	
 	public AudioUtil getAudioUtil() {
 		return audioUtil;
+	}
+	
+    /**
+     * Gets whether the plugin has been reloaded once a time.
+     *
+     * @return Whether the plugin has been reloaded once a time.
+     */
+	
+	public boolean isReloaded() {
+		
+		int tickvalue = -1;
+		
+		try {
+			Field tick = Bukkit.getScheduler().getClass().getDeclaredField("currentTick");
+			tick.setAccessible(true);
+			tickvalue = (Integer) tick.get(Bukkit.getScheduler());
+		}catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+				
+		if(tickvalue > 1) return true;	
+		return false;
 	}
 	
     /**

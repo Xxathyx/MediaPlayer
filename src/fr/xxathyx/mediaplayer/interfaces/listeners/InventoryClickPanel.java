@@ -208,8 +208,21 @@ public class InventoryClickPanel implements Listener {
 	        }
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.switcher().getItemMeta().getDisplayName())) {
-	        	screen.setRunning(!screen.isRunning());
-	        	return;
+	        	
+	        	if(!screen.getVideoName().equals("none")) {
+		        	if(screen.isRunning()) {
+			        	screen.setRunning(false);
+						player.sendMessage(configuration.video_instance_pause(screen.getVideoName()));
+						SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+						player.closeInventory();
+						return;
+		        	}
+		        	screen.setRunning(true);
+					player.sendMessage(configuration.video_instance_resume(screen.getVideoName()));
+					SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+					player.closeInventory();
+		        	return;
+	        	}
 	        }
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.teleport().getItemMeta().getDisplayName())) {
