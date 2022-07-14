@@ -1,9 +1,11 @@
 package fr.xxathyx.mediaplayer.video.listeners;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,6 +23,8 @@ import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.image.listeners.PlayerInteractImage;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.Screen;
+import fr.xxathyx.mediaplayer.screen.content.Content;
+import fr.xxathyx.mediaplayer.screen.content.ContentType;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
 import fr.xxathyx.mediaplayer.util.FacingLocation;
@@ -207,6 +211,11 @@ public class PlayerInteractVideo implements Listener {
 				
 				plugin.getVideoPlayers().put(player.getUniqueId(), new VideoPlayer(screen));				
 				plugin.getSelectedVideos().remove(player.getUniqueId());
+				
+				UUID uuid = UUID.randomUUID();
+				
+				Content content = new Content(new File(screen.getContentsFolder(), uuid.toString() + ".yml"));
+				content.createConfiguration(screen, uuid, videoInstance.getVideo().getFile(), ContentType.VIDEO, screen.getFrames().indexOf((ItemFrame) event.getRightClicked()));
 				
 				Collection<Entity> entities = getNearbyEntities(frames.get(videoInstance.getVideo().getVideoData().getMaps().getIds().size()/2).getLocation(), 32);
 	 	        

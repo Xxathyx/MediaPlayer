@@ -1,8 +1,10 @@
 package fr.xxathyx.mediaplayer.image.listeners;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,6 +23,9 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.image.Image;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
+import fr.xxathyx.mediaplayer.screen.Screen;
+import fr.xxathyx.mediaplayer.screen.content.Content;
+import fr.xxathyx.mediaplayer.screen.content.ContentType;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
 import fr.xxathyx.mediaplayer.sound.SoundType;
 import fr.xxathyx.mediaplayer.util.FacingLocation;
@@ -127,9 +132,7 @@ public class PlayerInteractImage implements Listener {
 							}
 							
 							if(player.isSneaking()) {
-								for(int i = 0; i < frames.size(); i++) {
-									frames.get(i).setItem(new ItemStack(new ItemStack(Material.AIR, 1)));
-								}
+								for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(new ItemStack(new ItemStack(Material.AIR, 1)));
 								player.sendMessage(configuration.image_removed(image.getName()));
 								SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
 								return;
@@ -182,6 +185,16 @@ public class PlayerInteractImage implements Listener {
 									}
 								}
 				 	        }, 0L);
+							
+							if(plugin.getScreensFrames().containsKey((ItemFrame) event.getRightClicked())) {
+								
+								Screen screen = plugin.getScreensFrames().get((ItemFrame) event.getRightClicked());
+								
+								UUID uuid = UUID.randomUUID();
+								
+								Content content = new Content(new File(screen.getContentsFolder(), uuid.toString() + ".yml"));
+								content.createConfiguration(screen, uuid, image.getFile(), ContentType.IMAGE, screen.getFrames().indexOf((ItemFrame) event.getRightClicked()));
+							}
 							
 							player.sendMessage(configuration.image_placed(image.getName()));
 							SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);

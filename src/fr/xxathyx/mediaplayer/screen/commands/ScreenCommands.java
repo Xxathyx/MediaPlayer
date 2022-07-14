@@ -233,10 +233,12 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 					return false;
 				}
 				
-				if(arg3[0].equalsIgnoreCase("reload")) {
-					new TaskSyncLoadScreens().runTask(plugin);
-					sender.sendMessage(configuration.screens_reload_requested());
-					return true;
+				if(arg3.length > 0) {
+					if(arg3[0].equalsIgnoreCase("reload")) {
+						new TaskSyncLoadScreens().runTask(plugin);
+						sender.sendMessage(configuration.screens_reload_requested());
+						return true;
+					}
 				}
 				
 				if(sender instanceof Player) {

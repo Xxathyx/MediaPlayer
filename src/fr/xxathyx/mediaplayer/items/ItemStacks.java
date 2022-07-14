@@ -141,18 +141,12 @@ public class ItemStacks {
 	/** 
 	* Gets an {@link ItemStack} corresponding to a switcher icon in a interface {@link Inventory}.
 	*
-	* <p> <strong>Note: </strong> The returned ItemStack Material name is different if the server
-	* is running under a legacy version of Minecraft (< 1.13), see {@link Main#isLegacy()}.
-	*
 	* @return A switcher icon.
 	*/
 	
 	public ItemStack switcher() {
 		
-        String material = "REPEATER";
-        if(plugin.isLegacy()) material = "DIODE";
-                
-		ItemStack switcher = new ItemStack(Material.getMaterial(material), 1);
+		ItemStack switcher = new ItemStack(Material.JUKEBOX, 1);
 	    ItemMeta switcher_meta = switcher.getItemMeta();
 	    
 	    switcher_meta.setDisplayName(configuration.item_switcher_name());
@@ -160,6 +154,30 @@ public class ItemStacks {
 	    switcher.setItemMeta(switcher_meta);
 		
 	    return switcher;
+	}
+	
+	/** 
+	* Gets an {@link ItemStack} corresponding to a remote icon in a interface {@link Inventory}.
+	*
+	* <p> <strong>Note: </strong> The returned ItemStack Material name is different if the server
+	* is running under a legacy version of Minecraft (< 1.13), see {@link Main#isLegacy()}.
+	*
+	* @return A remote icon.
+	*/
+	
+	public ItemStack remote() {
+		
+        String material = "REPEATER";
+        if(plugin.isLegacy()) material = "DIODE";
+                
+		ItemStack remote = new ItemStack(Material.getMaterial(material), 1);
+	    ItemMeta remote_meta = remote.getItemMeta();
+	    
+	    remote_meta.setDisplayName(configuration.item_remote_name());
+	    remote_meta.setLore(Arrays.asList(new String[] { configuration.item_remote_lore() }));
+	    remote.setItemMeta(remote_meta);
+		
+	    return remote;
 	}
 	
 	/** 

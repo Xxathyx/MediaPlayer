@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
+import org.bukkit.Bukkit;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.system.SystemType;
 
 /** 
@@ -22,6 +24,7 @@ import fr.xxathyx.mediaplayer.system.SystemType;
 public class Ffmpeg {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	private final Configuration configuration = new Configuration();
 	
     /**
      * Gets the ffmpeg library file according to used operating system.
@@ -41,7 +44,18 @@ public class Ffmpeg {
      */
 	
 	public boolean isInstalled() {
-		return getLibraryFile().exists();
+		
+		if(getLibraryFile().exists()) {
+			if(getLibraryFile().length() > getFileLength()) return true;
+		}
+		return false;
+	}
+	
+	public long getFileLength() {
+		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX)) {return 76000000;}
+		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) {return 112000000;}
+		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.MAC)) {return 76000000;}
+		return 76000000;
 	}
 	
     /**
@@ -54,7 +68,14 @@ public class Ffmpeg {
     		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) { FileUtils.copyURLToFile(new URL("https://www.dropbox.com/s/47mj4sc6p3c2s2m/ffmpeg.exe?dl=1"), getLibraryFile()); return;}
     		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.MAC)) { FileUtils.copyURLToFile(new URL("https://www.dropbox.com/s/aozdf7slrwcrv40/ffmpeg?dl=1"), getLibraryFile()); return;}
     	}catch (IOException e) {
-			e.printStackTrace();
+    		try {
+    			if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX)) { FileUtils.copyURLToFile(new URL(configuration.plugin_alternative_server() + "mediaplayer/download/libraries/linux/ffmpeg"), getLibraryFile()); return;}
+        		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) { FileUtils.copyURLToFile(new URL(configuration.plugin_alternative_server() + "mediaplayer/download/libraries/windows/ffmpeg.exe"), getLibraryFile()); return;}
+        		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.MAC)) { FileUtils.copyURLToFile(new URL(configuration.plugin_alternative_server() + "mediaplayer/download/libraries/mac/ffmpeg"), getLibraryFile()); return;}
+    		}catch (IOException e1) {
+		        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download plugin libraries, try again later or join our discord community, invitation visible on spigot ressource page.");
+    			e1.printStackTrace();
+    		}
 		}
 	}
 }

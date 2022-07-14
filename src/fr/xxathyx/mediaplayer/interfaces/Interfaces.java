@@ -16,6 +16,7 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.Screen;
+import fr.xxathyx.mediaplayer.screen.content.Content;
 import fr.xxathyx.mediaplayer.video.Video;
 
 /** 
@@ -211,6 +212,61 @@ public class Interfaces {
 	}
 	
 	/** 
+	* Gets an {@link Inventory} containing all specific registered screen contents on a {@link ItemStack}
+	* aspect.
+	*
+	* @param screen Screen which the contents is registered on.
+	* @param index Shown page index.
+	*
+	* @throws FileNotFoundException When a video configuration-file ins't found.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+	* @return An inventory containing registered videos.
+	*/
+	
+	public Inventory getContents(Screen screen, int index) {
+		
+		Inventory contents = Bukkit.createInventory(null, 54, ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Contents (" + screen.getContents().size() + ")");
+		
+		ArrayList<ArrayList<Content>> packets = new ArrayList<>();
+		ArrayList<Content> packet = new ArrayList<>();
+		
+		int first = 45;
+		if(screen.getContents().size() < 45) first = screen.getContents().size();
+		
+		packet.addAll(screen.getContents().subList(0, first));
+		packets.add(packet);
+				
+		if(screen.getContents().size() > 45) {
+			
+			packet = new ArrayList<>();
+			
+			for(int i = 45; i < screen.getContents().size(); i++) {
+				if(i % 45 == 0) {	
+					packet = new ArrayList<>();
+					packets.add(packet);
+				}			
+				packets.get(packets.size()-1).add(screen.getContents().get(i));
+			}
+		}
+		
+		packet = packets.get(index);
+		
+		for(Content content : packet) contents.addItem(content.getIcon());
+		
+		contents.setItem(45, items.glass());
+		contents.setItem(46, items.glass());
+		contents.setItem(47, items.glass());
+		contents.setItem(51, items.glass());
+		contents.setItem(52, items.glass());
+		contents.setItem(53, items.glass());
+		contents.setItem(48, items.previous());
+		contents.setItem(49, items.refresh());
+		contents.setItem(50, items.next());
+		
+		return contents;
+	}
+	
+	/** 
 	* Gets an {@link Inventory} containing videos tools, see {@link ItemStacks}.
 	*
 	* @param video The video that the panel is about.
@@ -239,9 +295,10 @@ public class Interfaces {
 		
 		Inventory panel = Bukkit.createInventory(null, 27, ChatColor.LIGHT_PURPLE + "Panel (" + plugin.getRegisteredScreens().indexOf(screen) + ")");
         
-		panel.setItem(11, items.switcher());
-		panel.setItem(13, items.teleport());
-		panel.setItem(15, items.remove());
+		panel.setItem(10, items.switcher());
+		panel.setItem(12, items.remote());
+		panel.setItem(14, items.teleport());
+		panel.setItem(16, items.remove());
 		
 		return panel;
 	}

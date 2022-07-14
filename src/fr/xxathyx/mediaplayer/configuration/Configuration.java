@@ -80,6 +80,7 @@ public class Configuration {
 			fileconfiguration.set("plugin.free-audio-server-token", token);
 			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
 			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
+			fileconfiguration.set("plugin.alternative-server", "http://37.187.196.226/");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -205,8 +206,11 @@ public class Configuration {
 			fileconfiguration.set("messages.item.play.name", "&2&lJouer");
 			fileconfiguration.set("messages.item.play.lore", "&aCliquez-ici pour jouer la vidéo.");
 			
-			fileconfiguration.set("messages.item.switcher.name", "&2&lPause ou continuer");
-			fileconfiguration.set("messages.item.switcher.lore", "&aCliquez-ici pour mettre en pause ou continuer la vidéo.");
+			fileconfiguration.set("messages.item.switcher.name", "&6&lChanger de contenu");
+			fileconfiguration.set("messages.item.switcher.lore", "&aCliquez-ici pour changer le contenu affiché.");
+			
+			fileconfiguration.set("messages.item.remote.name", "&2&lPause ou continuer");
+			fileconfiguration.set("messages.item.remote.lore", "&aCliquez-ici pour mettre en pause ou continuer la vidéo.");
 			
 			fileconfiguration.set("messages.item.load.name", "&6&lCharger");
 			fileconfiguration.set("messages.item.load.lore", "&eCliquez-ici pour charger la video.");
@@ -227,6 +231,7 @@ public class Configuration {
 			fileconfiguration.set("messages.item.poster.lore-3", "&ePour enlever l'image, s'accroupir puis, cliquez-");
 			fileconfiguration.set("messages.item.poster.lore-4", "&edroit sur le coin supérieur gauche de l'écran.");
 			
+			fileconfiguration.set("messages.libraries-not-installed", "Les bibliothéques nécessaires au bon fonctionnement du plugin ne sont pas installées, veuillez patienter le temps de l'installation, puis réessayer plus tard.");
 			fileconfiguration.set("messages.age-limit-warning", "&c[!] Contient du contenu explicite.");
 			fileconfiguration.set("messages.incompatible", "&4[!] Cette vidéo n'est pas compatible.");
 			fileconfiguration.set("messages.impossible-connection", "&cImpossible de se connecter au serveur demandé.");
@@ -445,6 +450,10 @@ public class Configuration {
 	
 	public int own_audio_server_handling_port() {
 		return getConfigFile().getInt("plugin.own-audio-server-handling-port");
+	}
+	
+	public String plugin_alternative_server() {
+		return getConfigFile().getString("plugin.alternative-server");
 	}
 	
 	public String plugin_langage() {
@@ -829,6 +838,14 @@ public class Configuration {
 		return getMessage(getConfigFile().getString("messages.item.switcher.lore"));
 	}
 	
+	public String item_remote_name() {
+		return getMessage(getConfigFile().getString("messages.item.remote.name"));
+	}
+	
+	public String item_remote_lore() {
+		return getMessage(getConfigFile().getString("messages.item.remote.lore"));
+	}
+	
 	public String item_load_name() {
 		return getMessage(getConfigFile().getString("messages.item.load.name"));
 	}
@@ -883,6 +900,10 @@ public class Configuration {
 	
 	public String item_poster_lore_4() {
 		return getMessage(getConfigFile().getString("messages.item.poster.lore-4"));
+	}
+	
+	public String libraries_not_installed() {
+		return getMessage(getConfigFile().getString("messages.libraries-not-installed"));
 	}
 	
 	public String age_limit_warning() {

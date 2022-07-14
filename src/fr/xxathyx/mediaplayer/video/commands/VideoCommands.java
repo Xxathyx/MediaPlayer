@@ -26,6 +26,7 @@ import org.bukkit.util.StringUtil;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.image.helpers.ImageHelper;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.sound.SoundPlayer;
@@ -54,6 +55,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
+	private final Ffmpeg ffmpeg = new Ffmpeg();
 	private final Interfaces interfaces = new Interfaces();
 	
     private final String[] commands = { "play", "load", "unload", "info", "delete", "start",  "stop", "pause", "resume", "download", "stop", "list" };
@@ -328,6 +330,11 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 						}
 						
 						if(arg3[0].equalsIgnoreCase("load")) {
+							
+							if(!ffmpeg.isInstalled()) {
+						        Bukkit.getLogger().warning("[MediaPlayer]: " + configuration.libraries_not_installed());
+								return true;
+							}
 							
 							Player[] players = {player};
 							Video[] videoTask = {video};

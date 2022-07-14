@@ -43,5 +43,9 @@ public class InventoryClosePanel implements Listener {
 			plugin.getScreenPanels().remove(event.getPlayer().getUniqueId());
 			SoundPlayer.playSound((Player) event.getPlayer(), SoundType.NOTIFICATION_DOWN);
 		}
+		if(plugin.getContentsPanels().containsKey(event.getPlayer().getUniqueId())) {
+			plugin.getContentsPanels().remove(event.getPlayer().getUniqueId());
+			SoundPlayer.playSound((Player) event.getPlayer(), SoundType.NOTIFICATION_DOWN);
+		}
 	}
 }

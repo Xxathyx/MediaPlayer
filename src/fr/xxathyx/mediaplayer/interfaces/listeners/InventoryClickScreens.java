@@ -44,27 +44,20 @@ public class InventoryClickScreens implements Listener {
 	public void onClick(InventoryClickEvent event) {
 		
 		if(event.getView().getTitle().contains(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Screens")) {
-						
+			
+			if(!event.getWhoClicked().hasPermission("mediaplayer.permission.admin")) {
+				event.getWhoClicked().closeInventory();
+				return;
+			}
+			
 			event.setCancelled(true);
 						
-	        if(event.getSlotType() == InventoryType.SlotType.OUTSIDE) {
-	            return;
-	        }
-	        if(event.getCurrentItem() == null) {
-	        	return;
-	        }
-	        if(event.getCurrentItem().getType() == Material.AIR) {
-	            return;
-	        }
-	        if(!event.getCurrentItem().hasItemMeta()) {
-	            return;
-	        }
-	        if(!event.getCurrentItem().getItemMeta().hasDisplayName()) {
-	            return;
-	        }
-	        if(event.getSlot() > 54) {
-	        	return;
-	        }
+	        if(event.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
+	        if(event.getCurrentItem() == null) return;
+	        if(event.getCurrentItem().getType() == Material.AIR) return;
+	        if(!event.getCurrentItem().hasItemMeta()) return;
+	        if(!event.getCurrentItem().getItemMeta().hasDisplayName()) return;
+	        if(event.getSlot() > 54) return;
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.previous().getItemMeta().getDisplayName())) {
 	        	

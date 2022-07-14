@@ -43,6 +43,8 @@ import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.notification.Notification;
 import fr.xxathyx.mediaplayer.notification.NotificationType;
+import fr.xxathyx.mediaplayer.screen.content.Content;
+import fr.xxathyx.mediaplayer.screen.content.ContentType;
 import fr.xxathyx.mediaplayer.screen.part.Part;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
 import fr.xxathyx.mediaplayer.stream.Stream;
@@ -69,6 +71,8 @@ public class Screen {
 	private Video video;
 	private Stream stream;
 	private VideoData videoData;
+	
+	private Content content;
 	private VideoInstance videoInstance;
 	
 	private boolean running = false;
@@ -84,6 +88,7 @@ public class Screen {
 	private ItemFrame lowest;
 	private ItemFrame highest;
 	
+	private ArrayList<Content> contents = new ArrayList<>();
 	private ArrayList<Part> parts = new ArrayList<>();
 	
 	private ArrayList<ItemFrame> frames = new ArrayList<>();
@@ -144,6 +149,7 @@ public class Screen {
 		fileconfiguration.set("screen.video.name", "none");
 		fileconfiguration.set("screen.video.instance", "none");
 		fileconfiguration.set("screen.last-frame", 0);
+		fileconfiguration.set("screen.contents-folder", new File(configuration.getScreensFolder() + "/" + uuid + "/contents/").getAbsolutePath());
 		fileconfiguration.set("screen.parts-folder", new File(configuration.getScreensFolder() + "/" + uuid + "/parts/").getAbsolutePath());
 		fileconfiguration.set("screen.parts-count", width*height);
 		fileconfiguration.set("screen.thumbnail-path", new File(configuration.getScreensFolder() + "/" + uuid + "/thumbnail", "thumbnail.jpg").getAbsolutePath());
@@ -155,6 +161,7 @@ public class Screen {
 			e.printStackTrace();
 		}
 		
+		new File(configuration.getScreensFolder() + "/" + uuid + "/contents/").mkdir();
 		getThumbnail().getParentFile().mkdir();
 		
 		ArrayList<ItemFrame> sorted = new ArrayList<>();
@@ -171,7 +178,7 @@ public class Screen {
 		
 		frames = sorted;
 				
-		for(int i = 0; i < blocks.size(); i++) new Part(new File(getPartsFolder(), i + ".yml")).createConfiguration(uuid, blocks.get(i), frames.get(i), false, false, i);
+		for(int i = 0; i < blocks.size(); i++) new Part(new File(getPartsFolder(), i + ".yml")).createConfiguration(uuid, blocks.get(i), frames.get(i), configuration.glowing_screen_frames_support(), configuration.visible_screen_frames_support(), i);
 		createThumbnail();
 		for(int i = 0; i < getFrames().size(); i++) getFrames().get(i).setItem(new ItemStacks().getMap(getIds()[i]));
 	}
@@ -255,15 +262,21 @@ public class Screen {
 	}
 	
 	public VideoInstance getVideoInstance() {
-		
 		if(videoInstance != null) return videoInstance;
-		
 		videoInstance = new VideoInstance(getVideo(), new File(getVideo().getInstancesFolder(), getConfigFile().getString("screen.video.instance") + ".yml"));
 		return videoInstance;
 	}
 	
+	public Content getContent() {
+		return content;
+	}
+	
 	public int getLastFrame() {
 		return getConfigFile().getInt("screen.last-frame");
+	}
+	
+	public File getContentsFolder() {
+		return new File(configuration.getScreensFolder() + "/" + getUUID() + "/contents/");
 	}
 	
 	public File getPartsFolder() {
@@ -327,6 +340,14 @@ public class Screen {
 		return this;
 	}
 	
+	public ArrayList<Content> getContents() {	
+		File[] files = getContentsFolder().listFiles();
+		if(files.length == contents.size()) return contents;
+		contents.clear();
+		for(File file : files) if(!file.isDirectory()) contents.add(new Content(file));
+		return contents;
+	}
+	
 	public ArrayList<Part> getParts() {	
 		if(!parts.isEmpty()) return parts;
 		for(int i = 0; i < width*height; i++) parts.add(new Part(new File(getPartsFolder(), i + ".yml")));
@@ -346,6 +367,90 @@ public class Screen {
 		this.ids = getIds();
 		this.width = video.getVideoData().getMinecraftWidth();
 		this.height = video.getVideoData().getMinecraftHeight();
+		
+		try {
+			
+			fileconfiguration = new YamlConfiguration();
+			fileconfiguration.load(file);
+			fileconfiguration.set("screen.video.name", video.getName());
+			fileconfiguration.save(file);
+			
+			Files.copy(videoData.getThumbnail(), getThumbnail());
+		}catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void setContent(Content content) {
+		
+		if(isRunning()) end();
+		
+		if(content.getType() == ContentType.IMAGE) {
+			
+			if(video != null) end();
+			
+			fr.xxathyx.mediaplayer.image.Image image = content.getImage();
+			
+			this.frames = getFrames();
+			this.content = content;
+			this.ids = getIds();
+			this.width = image.getWidth();
+			this.height = image.getHeight();
+			
+			ArrayList<ItemFrame> frames = new ArrayList<>();
+			ItemFrame keyframe = getFrames().get(content.getKeyFrame());
+			
+			for(int i = 0; i < image.getHeight(); i++) {
+				for(int j = 0; j < image.getWidth(); j++) {
+					
+					ItemFrame itemFrame = null;
+					
+					if(getFacingLocation().equals("N")) {
+						if(getNearbyEntities(keyframe.getLocation().add(j, -i, 0), 0).toArray().length <= 0) {
+							return;
+						}
+						itemFrame = (ItemFrame) getNearbyEntities(keyframe.getLocation().add(j, -i, 0), 0).toArray()[0];
+					}
+					if(getFacingLocation().equals("E")) {
+						if(getNearbyEntities(keyframe.getLocation().add(0, -i, j), 0).toArray().length <= 0) {
+							return;
+						}
+						itemFrame = (ItemFrame) getNearbyEntities(keyframe.getLocation().add(0, -i, j), 0).toArray()[0];
+					}
+					if(getFacingLocation().equals("S")) {
+						if(getNearbyEntities(keyframe.getLocation().add(-j, -i, 0), 0).toArray().length <= 0) {
+							return;
+						}
+						itemFrame = (ItemFrame) getNearbyEntities(keyframe.getLocation().add(-j, -i, 0), 0).toArray()[0];
+					}
+					if(getFacingLocation().equals("W")) {
+						if(getNearbyEntities(keyframe.getLocation().add(0, -i, -j), 0).toArray().length <= 0) {
+							return;
+						}
+						itemFrame = (ItemFrame) getNearbyEntities(keyframe.getLocation().add(0, -i, -j), 0).toArray()[0];
+					}									
+					if(itemFrame != null) {
+						frames.add(itemFrame);
+					}
+				}
+			}
+			for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(itemStacks.getMap(image.getIds().get(i)));
+			return;
+		}
+		
+		if(content.getType() == ContentType.VIDEO) {
+			
+			Video video = content.getVideo();
+			
+			this.frames = getFrames();
+			this.settings = new ScreenSettings(video);
+			this.id = plugin.getRegisteredScreens().size();
+			this.video = video;
+			this.videoData = video.getVideoData();
+			this.ids = getIds();
+			this.width = video.getVideoData().getMinecraftWidth();
+			this.height = video.getVideoData().getMinecraftHeight();
+		}
 		
 		try {
 			

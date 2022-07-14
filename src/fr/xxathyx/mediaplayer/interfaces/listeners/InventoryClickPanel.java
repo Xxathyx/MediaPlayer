@@ -15,6 +15,7 @@ import org.bukkit.event.inventory.InventoryType;
 
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
 import fr.xxathyx.mediaplayer.items.ItemStacks;
 import fr.xxathyx.mediaplayer.screen.Screen;
@@ -43,6 +44,9 @@ public class InventoryClickPanel implements Listener {
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
+	private final Ffmpeg ffmpeg = new Ffmpeg();
+	
+	private final Interfaces interfaces = new Interfaces();
 	private final ItemStacks items = new ItemStacks();
 	
     /**
@@ -61,29 +65,22 @@ public class InventoryClickPanel implements Listener {
 		
 		if(plugin.getVideoPanels().containsKey(event.getWhoClicked().getUniqueId())) {
 			
+			if(!event.getWhoClicked().hasPermission("mediaplayer.permission.admin")) {
+				event.getWhoClicked().closeInventory();
+				return;
+			}
+			
 			Video video = plugin.getVideoPanels().get(event.getWhoClicked().getUniqueId());
 			Player player = (Player) event.getWhoClicked();
 			
 			event.setCancelled(true);
 			
-	        if(event.getSlotType() == InventoryType.SlotType.OUTSIDE) {
-	            return;
-	        }
-	        if(event.getCurrentItem() == null) {
-	        	return;
-	        }
-	        if(event.getCurrentItem().getType() == Material.AIR) {
-	            return;
-	        }
-	        if(!event.getCurrentItem().hasItemMeta()) {
-	            return;
-	        }
-	        if(!event.getCurrentItem().getItemMeta().hasDisplayName()) {
-	            return;
-	        }
-	        if(event.getSlot() > 54) {
-	        	return;
-	        }
+	        if(event.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
+	        if(event.getCurrentItem() == null) return;
+	        if(event.getCurrentItem().getType() == Material.AIR) return;
+	        if(!event.getCurrentItem().hasItemMeta()) return;
+	        if(!event.getCurrentItem().getItemMeta().hasDisplayName()) return;
+	        if(event.getSlot() > 54) return;
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.play().getItemMeta().getDisplayName())) {
 				
@@ -131,6 +128,11 @@ public class InventoryClickPanel implements Listener {
 	        }
 	        
 	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.load().getItemMeta().getDisplayName())) {
+	        	
+	    		if(!ffmpeg.isInstalled()) {
+	    	        Bukkit.getLogger().warning("[MediaPlayer]: " + configuration.libraries_not_installed());
+	    			return;
+	    		}
 	        	
 	        	if(video.isLoaded()) {
 	        		player.sendMessage(configuration.video_already_loaded(video.getName()));
@@ -183,6 +185,11 @@ public class InventoryClickPanel implements Listener {
 		
 		if(plugin.getScreenPanels().containsKey(event.getWhoClicked().getUniqueId())) {
 			
+			if(!event.getWhoClicked().hasPermission("mediaplayer.permission.admin")) {
+				event.getWhoClicked().closeInventory();
+				return;
+			}
+			
 			Screen screen = plugin.getScreenPanels().get(event.getWhoClicked().getUniqueId());
 			Player player = (Player) event.getWhoClicked();
 			
@@ -207,7 +214,14 @@ public class InventoryClickPanel implements Listener {
 	        	return;
 	        }
 	        
-	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.switcher().getItemMeta().getDisplayName())) {
+	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.switcher().getItemMeta().getDisplayName())) {			
+				player.openInventory(interfaces.getContents(screen, 0));
+				plugin.getContentsPages().put(player.getUniqueId(), 0);
+				plugin.getContentsPanels().put(player.getUniqueId(), screen);
+	        	return;
+	        }
+	        
+	        if(event.getCurrentItem().getItemMeta().getDisplayName().equals(items.remote().getItemMeta().getDisplayName())) {
 	        	
 	        	if(!screen.getVideoName().equals("none")) {
 		        	if(screen.isRunning()) {

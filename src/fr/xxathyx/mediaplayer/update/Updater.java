@@ -82,7 +82,7 @@ public class Updater {
 	            return true;
 	        }
 	    }catch (Exception e) {
-	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't verify plugin version.");
+	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't verify plugin version, try again later maybe Spigot is down.");
 	    }
 	    return false;
 	}
@@ -104,7 +104,7 @@ public class Updater {
 	*/
 	
 	public boolean download() {
-						
+		
 		try {
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 			File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
@@ -112,10 +112,22 @@ public class Updater {
 	    	URL onlineJar = new URL("https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1");
 	    	
 	    	FileUtils.copyURLToFile(onlineJar, newJar);
+	    	
 		}catch (URISyntaxException | IOException e) {
-	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin.");
-			e.printStackTrace();
-	        return false;
+			
+			try {
+				File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+				File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
+				
+				URL onlineJar = new URL(configuration.plugin_alternative_server() + "mediaplayer/download/MediaPlayer.jar");
+				
+		    	FileUtils.copyURLToFile(onlineJar, newJar);
+		    	
+			}catch (URISyntaxException | IOException e1) {
+		        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin, download it manually or join our discord support server.");
+				e1.printStackTrace();
+		        return false;
+			}
 		}
 		return true;
 	}

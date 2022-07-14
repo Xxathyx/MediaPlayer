@@ -25,6 +25,7 @@ import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.commands.ImageCommands;
 import fr.xxathyx.mediaplayer.image.listeners.PlayerInteractImage;
 import fr.xxathyx.mediaplayer.interfaces.Interfaces;
+import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickContents;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickPanel;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickScreens;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickVideos;
@@ -115,8 +116,12 @@ public class Main extends JavaPlugin {
 	private final Map<UUID, Integer> videosPages = new HashMap<>();
 	private final Map<UUID, Integer> screensPages = new HashMap<>();
 	
+	private final Map<UUID, Integer> contentsPages = new HashMap<>();
+	
 	private final Map<UUID, Video> videoPanels = new HashMap<>();
 	private final Map<UUID, Screen> screenPanels = new HashMap<>();
+	
+	private final Map<UUID, Screen> contentsPanels = new HashMap<>();
 	
 	private final Map<UUID, VideoInstance> selectedVideos = new HashMap<>();
 	
@@ -207,6 +212,7 @@ public class Main extends JavaPlugin {
         
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickVideos(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickScreens(), this);
+		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickContents(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClickPanel(), this);
 		
 		Bukkit.getServer().getPluginManager().registerEvents(new InventoryClosePanel(), this);
@@ -366,9 +372,9 @@ public class Main extends JavaPlugin {
 	}
 	
     /**
-     * Gets whether the plugin has been reloaded once a time.
+     * Gets whether the plugin has been reloaded one a time.
      *
-     * @return Whether the plugin has been reloaded once a time.
+     * @return Whether the plugin has been reloaded one a time.
      */
 	
 	public boolean isReloaded() {
@@ -510,6 +516,16 @@ public class Main extends JavaPlugin {
 	}
 	
     /**
+     * Gets all players uuid and their current page index of contents section.
+     *
+     * @return Players that are in contents section and their current page index.
+     */
+	
+	public Map<UUID, Integer> getContentsPages() {
+		return contentsPages;
+	}
+	
+    /**
      * Gets all players uuid that are actually in an video panel inventory {@link Interfaces#getVideoPanel(Video)}.
      *
      * @return Players that are in a video panel inventory.
@@ -527,6 +543,16 @@ public class Main extends JavaPlugin {
 	
 	public Map<UUID, Screen> getScreenPanels() {
 		return screenPanels;
+	}
+	
+    /**
+     * Gets all players uuid that are actually in an screen contents panel inventory {@link Interfaces#getContents(Screen, Integer)}.
+     *
+     * @return Players that are in a screen contents panel inventory.
+     */
+	
+	public Map<UUID, Screen> getContentsPanels() {
+		return contentsPanels;
 	}
 	
     /**

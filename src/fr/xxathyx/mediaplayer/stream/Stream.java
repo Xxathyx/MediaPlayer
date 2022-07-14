@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
+import org.bukkit.Bukkit;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.video.Video;
 
 /** 
@@ -22,6 +25,9 @@ import fr.xxathyx.mediaplayer.video.Video;
 public class Stream {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
+	private final Configuration configuration = new Configuration();
+	
+	private final Ffmpeg ffmpeg = new Ffmpeg();
 	
 	private Video video;
 	
@@ -41,7 +47,13 @@ public class Stream {
      * and only one time, it launch a ffmpeg process to catch frames.
      */
 	
-	public void update() {        
+	public void update() {
+		
+		if(!ffmpeg.isInstalled()) {
+	        Bukkit.getLogger().warning("[MediaPlayer]: " + configuration.libraries_not_installed());
+			return;
+		}
+		
         try {
         	
     		URL url = video.getStreamURL();

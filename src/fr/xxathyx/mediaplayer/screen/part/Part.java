@@ -74,7 +74,7 @@ public class Part {
 	}
 	
 	public Screen getScreen() {
-		return new Screen(UUID.fromString(getConfigFile().getString("screen.part-id")));
+		return new Screen(UUID.fromString(getConfigFile().getString("screen.uuid")));
 	}
 	
 	public int getId() {
