@@ -74,7 +74,7 @@ public class Configuration {
 			
 			fileconfiguration = new YamlConfiguration();
 			
-			fileconfiguration.set("plugin.auto-update", false);
+			fileconfiguration.set("plugin.auto-update", true);
 			fileconfiguration.set("plugin.force-permissions", false);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
 			fileconfiguration.set("plugin.free-audio-server-address", "37.187.196.226");
