@@ -1,7 +1,0 @@
-package org.bukkit.craftbukkit.block.data;
-
-optional class CraftBlockData {
-    public (com.bergerkiller.bukkit.common.wrappers.BlockData) net.minecraft.world.level.block.state.IBlockData getState();
-
-    public static (Object) CraftBlockData fromData((com.bergerkiller.bukkit.common.wrappers.BlockData) net.minecraft.world.level.block.state.IBlockData data);
-}
