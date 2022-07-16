@@ -6,7 +6,7 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.util.ActionBar;
 
 /** 
-* The ActionBarVersion is only called once, while the plugin
+* The ActionBarVersion class is only called once, while the plugin
 * is loading, see {@link Main#onEnable()}. It is based on a
 * single method {@link #getActionBar}, that return an adequate
 * instance of {@link ActionBar} according to the server running

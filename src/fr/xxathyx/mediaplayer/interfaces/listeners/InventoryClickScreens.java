@@ -37,7 +37,7 @@ public class InventoryClickScreens implements Listener {
      * : {@link InventoryClickEvent}. This is used to listen for selected screen to be
      * opened in a screen panel, see {@link Interfaces#getScreenPanel(Screen)}.
      * 
-     * @param Event Instance of {@link InventoryClickEvent}.
+     * @param event Instance of {@link InventoryClickEvent}.
      */
 	
 	@EventHandler

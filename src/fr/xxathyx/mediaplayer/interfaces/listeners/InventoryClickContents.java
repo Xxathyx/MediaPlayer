@@ -39,7 +39,7 @@ public class InventoryClickContents implements Listener {
      * contents panel, see {@link Interfaces#getContents()}, see also Bukkit documentation
      * : {@link InventoryClickEvent}.
      * 
-     * @param Event Instance of {@link InventoryClickEvent}.
+     * @param event Instance of {@link InventoryClickEvent}.
      */
 	
 	@EventHandler

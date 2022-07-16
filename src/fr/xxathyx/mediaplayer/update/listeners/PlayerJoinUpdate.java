@@ -36,7 +36,7 @@ public class PlayerJoinUpdate implements Listener {
      * the server, it will alert him using the {@link Notification} system three seconds after
      * the connection if the plugin is outdated.
      * 
-     * @param Event Instance of {@link PlayerJoinEvent}.
+     * @param event Instance of {@link PlayerJoinEvent}.
      */
 	
 	public void onJoin(PlayerJoinEvent event) throws UnknownHostException, IOException {

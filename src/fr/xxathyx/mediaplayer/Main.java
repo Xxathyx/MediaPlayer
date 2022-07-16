@@ -18,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
 import fr.xxathyx.mediaplayer.audio.util.AudioUtilVersion;
+import fr.xxathyx.mediaplayer.commands.MediaPlayerCommands;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffprobe;
@@ -30,6 +31,8 @@ import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickPanel;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickScreens;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClickVideos;
 import fr.xxathyx.mediaplayer.interfaces.listeners.InventoryClosePanel;
+import fr.xxathyx.mediaplayer.map.colors.MCSDGenBukkit;
+import fr.xxathyx.mediaplayer.map.colors.MapColorSpaceData;
 import fr.xxathyx.mediaplayer.map.util.MapUtilVersion;
 import fr.xxathyx.mediaplayer.resourcepack.listeners.ResourcePackStatus;
 import fr.xxathyx.mediaplayer.screen.Screen;
@@ -128,6 +131,8 @@ public class Main extends JavaPlugin {
 	private final ArrayList<String> loadingVideos = new ArrayList<>();
 	private final ArrayList<String> playingVideos = new ArrayList<>();
 	
+	private final MapColorSpaceData mapColorSpaceData = new MapColorSpaceData();
+	
 	private Configuration configuration;
 	private Client client;
 	
@@ -185,7 +190,16 @@ public class Main extends JavaPlugin {
 		mapUtil = new MapUtilVersion().getMapUtil();
 		actionBar = new ActionBarVersion().getActionBar();
 		audioUtil = new AudioUtilVersion().getAudioUtil();
-				
+		
+		Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+			@Override
+			public void run() {
+			      MCSDGenBukkit bukkitGen = new MCSDGenBukkit();
+			      bukkitGen.generate();
+			      mapColorSpaceData.readFrom((MapColorSpaceData)bukkitGen);
+			}
+		});
+		
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
         if(serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
@@ -197,6 +211,8 @@ public class Main extends JavaPlugin {
         	old = true;
 	        Bukkit.getLogger().warning("[MediaPlayer]: The server running version is old and isn't well supported, you may encounter future issues while playing videos.");
         }
+        
+        getCommand("mediaplayer").setExecutor(new MediaPlayerCommands());
         
         getCommand("video").setExecutor(new VideoCommands());
         getCommand("video").setTabCompleter(new VideoCommands());
@@ -423,6 +439,12 @@ public class Main extends JavaPlugin {
 		return tasks;
 	}
 	
+    /**
+     * Gets process such as ffmpeg and ffprobe tasks.
+     *
+     * @return The plugin libraries program process.
+     */
+	
 	public ArrayList<Process> getProcess() {
 		return process;
 	}
@@ -436,6 +458,13 @@ public class Main extends JavaPlugin {
 	public ArrayList<Video> getRegisteredVideos() {
 		return registeredVideos;
 	}
+	
+    /**
+     * Gets all detected and registered screens after running an {@link TaskSyncLoadConfigurations},
+     * or one time screen creation.
+     *
+     * @return Detected and registered videos from respective video folder.
+     */
 	
 	public ArrayList<Screen> getRegisteredScreens() {
 		return registeredScreens;
@@ -461,9 +490,21 @@ public class Main extends JavaPlugin {
 		return playedStreams;
 	}
 	
+    /**
+     * Gets blocks belonging to screens structure.
+     *
+     * @return Blocks belonging to screens structure.
+     */
+	
 	public Map<Block, Screen> getScreensBlocks() {
 		return screensBlocks;
 	}
+	
+    /**
+     * Gets {@link ItemFrame} belonging to screens structure.
+     *
+     * @return {@link ItemFrame} belonging to screens structure.
+     */
 	
 	public Map<ItemFrame, Screen> getScreensFrames() {
 		return screensFrames;
@@ -478,6 +519,12 @@ public class Main extends JavaPlugin {
 	public Map<UUID, VideoPlayer> getVideoPlayers() {
 		return videoPlayers;
 	}
+	
+    /**
+     * Gets players affiliated with screen instances, this is use for audio loading.
+     *
+     * @return A HashMap of players that are affiliated with screen instances.
+     */
 	
 	public Map<UUID, Screen> getPlayersScreens() {
 		return playersScreens;
@@ -585,5 +632,15 @@ public class Main extends JavaPlugin {
 	
 	public ArrayList<String> getPlayingVideos() {
 		return playingVideos;
+	}
+	
+    /**
+     * Gets {@link MapColorSpaceData} for {@link MapColorPalette}.
+     *
+     * @return {@link MapColorSpaceData} for {@link MapColorPalette}.
+     */
+	
+	public MapColorSpaceData getMapColorSpaceData() {
+		return mapColorSpaceData;
 	}
 }

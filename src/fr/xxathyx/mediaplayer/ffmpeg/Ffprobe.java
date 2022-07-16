@@ -47,6 +47,12 @@ public class Ffprobe {
 		return getLibraryFile().exists();
 	}
 	
+    /**
+     * Gets the ffprobe library file lenght according to used operating system.
+     *
+     * @return The ffprobe library file lenght.
+     */
+	
 	public long getFileLength() {
 		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX)) {return 76000000;}
 		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) {return 112000000;}
@@ -55,7 +61,7 @@ public class Ffprobe {
 	}
 	
     /**
-     * Download from dropbox the ffprobe library according to used operating system.
+     * Download from dropbox or fallback server the ffprobe library according to used operating system.
      */
 	
 	public void download() {

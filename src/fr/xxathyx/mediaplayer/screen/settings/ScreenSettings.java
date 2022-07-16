@@ -2,6 +2,15 @@ package fr.xxathyx.mediaplayer.screen.settings;
 
 import fr.xxathyx.mediaplayer.video.Video;
 
+/** 
+* The ScreenSettings class is used in {@link Screen} in order to propose adequate settings
+* to a screen accord to a {@link Video}. This class only has one constructor.
+* 
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2022-07-16 
+*/
+
 public class ScreenSettings {
 	
 	private Video video;
@@ -31,6 +40,13 @@ public class ScreenSettings {
 	
 	public long time = System.currentTimeMillis();
 	public int fps = 0;
+	
+	/**
+	* Constructor for ScreenSettings class, creates an ScreenSettings variable according
+	* to a {@link Video}.
+	* 
+	* @param video The video that the settings are about.
+	*/
 	
 	public ScreenSettings(Video video) {
 		
@@ -62,6 +78,12 @@ public class ScreenSettings {
 		time = System.currentTimeMillis();
 		fps = 0;
 	}
+	
+	/**
+	* Gets the the video that the settings are about.
+	* 
+	* @param video The video that the settings are about.
+	*/
 	
 	public Video getVideo() {
 		return video;

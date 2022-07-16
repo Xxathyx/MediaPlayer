@@ -25,12 +25,30 @@ import fr.xxathyx.mediaplayer.sound.SoundType;
 import fr.xxathyx.mediaplayer.util.FacingLocation;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 
+/** 
+* The PlayerInteractScreen class implements {@link Listener}, it consist
+* of a two event methods {@link #onInteract(PlayerInteractEntityEvent)},
+* and {@link #onInteractAtScreen(PlayerInteractAtEntityEvent)}.
+*
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2021-08-23 
+*/
+
 public class PlayerInteractScreen implements Listener {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 	private final Configuration configuration = new Configuration();
 	
 	private final Interfaces interfaces = new Interfaces();
+	
+    /**
+     * Called whenever a {@link Player} interact with an {@link Entity},
+     * see Bukkit documentation : {@link PlayerInteractEntityEvent}. This
+     * is used to detected manual player playing video from thumbnail-icon. 
+     *
+     * @param event Instance of {@link PlayerInteractEntityEvent}.
+     */
 	
     @EventHandler
     public void onInteract(PlayerInteractEntityEvent event) {
@@ -66,6 +84,14 @@ public class PlayerInteractScreen implements Listener {
 			}
         }
     }
+    
+    /**
+     * Called whenever a {@link Player} interact with an {@link Entity},
+     * see Bukkit documentation : {@link PlayerInteractAtEntityEvent}. This
+     * is used to detected, and send a {@link PlayerInteractScreenEvent}.
+     *
+     * @param Event Instance of {@link PlayerInteractAtEntityEvent}.
+     */
     
     @EventHandler
     public void onInteractAtScreen(PlayerInteractAtEntityEvent event) {

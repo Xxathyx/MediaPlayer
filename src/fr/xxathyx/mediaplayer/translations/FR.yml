@@ -1,6 +1,6 @@
 messages:
   plugin-outdated: "&cLa version utilisée du plugin n'est plus à jour, activez l'option
-    auto-update depuis la configuration, ou faîtes le manuellement depuis: https://www.dropbox.com/s/v1h95zrd5cnken2/MediaPlayer.jar?dl=1"
+    auto-update depuis la configuration, ou faîtes le manuellement depuis: https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1"
   video-load-requested: "&aRequête de chargement envoyé, vous serez informé sur la
     progression du chargement."
   video-load-notice: "&7(Plus une vidéo est longue plus le chargement en est de même)"
@@ -14,8 +14,6 @@ messages:
   video-invalid-index: "&cLa vidéo d'index &l%index% &cest introuvable."
   video-selected: "&aVous venez de sélectionner la video &l%video%&a, affectez la
     en cliquant sur le coin supérieur gauche d'un écran."
-  video-already-selected: "&cVeuillez affecter d'abord &l%video% &cavant d'en choisir
-    une nouvelle."
   video-assigned: "&aVous venez d'assigner la video &l%video% &aà cet écran, &l/video
     start &apour la jouer."
   video-not-enought-space: "&cVous n'avez pas assez d'espace pour charger &l%video%&c."
@@ -74,10 +72,14 @@ messages:
   video-instance-started: "&aVous venez de lancer la vidéo &l%video% &asur l'écran
     d'ID: &l%id%&a."
   video-instance-stopped: "&aVous venez d'arrêter la vidéo &l%video%&a."
+  video-instance-pause: "&aVous venez de mettre en pause la vidéo &l%video%&a."
+  video-instance-resume: "&aVous venez de relancer la vidéo &l%video%&a."
   video-instance-not-on-screen: "&cCette vidéo n'est affectée à aucun écran, affectez-la
     avec le /screen create."
   videos-reload-requested: "&aRequête de rechargement des vidéos reçue."
+  screens-reload-requested: "&aRequête de rechargement des écrans reçue."
   videos-reloaded: "&aLa liste des vidéos enregistrées vient d'être rafraichie."
+  screens-reloaded: "&aLa liste des écrans enregistrées vient d'être rafraichie."
   videos-empty-registered: "&cAucune vidéo n'a été détectée et enregistrée."
   videos-canceled-tasks: "&aToutes les tâches en cours d'exécution ont été annulées.
     &8(%tasks%)"
@@ -85,10 +87,14 @@ messages:
     interface graphique : /videos)"
   screen-created: "&aVous venez de créer un écran de dimension : &l%dimension%&a."
   screen-removed: "&aVous venez de retirer l'écran d'index: &l%index%&a."
-  screen-teleport: "&aVous venez de vous téléporter sur l'écran d'index: &l%index%&a."
+  screen-deleted: "&aVous venez de supprimer l'écran: &l%screen%&a."
+  screen-teleport: "&aVous venez de vous téléporter sur l'écran: &l%screen%&a."
   screen-invalid-index: "&cL'écran d'index &l%index% &cest introuvable."
   screen-cannot-create: "&cImpossible de créer un écran à cet emplacement, des blocs
     gênent sans doute la place."
+  screen-not-ready: "&c&l%player% &cn'a pas encore télécharger tous les addons nécessaires."
+  screen-everyone-ready: "&aTous les utilisateurs sont prêts, vous pouvez lancer la
+    vidéo : &a&l/video start&a."
   image-rendered: "&aLe rendu de l'image &l%image% &aest terminé."
   image-deleted: "&aVous venez de supprimer l'image &l%image%&a."
   image-received: "&aVous venez de recevoir le poster de l'image : &l%image%&a."
@@ -116,20 +122,37 @@ messages:
     play:
       name: "&2&lJouer"
       lore: "&aCliquez-ici pour jouer la vidéo."
+    switcher:
+      name: "&6&lChanger de contenu"
+      lore: "&aCliquez-ici pour changer le contenu affiché."
+    remote:
+      name: "&2&lPause ou continuer"
+      lore: "&aCliquez-ici pour mettre en pause ou continuer la vidéo."
     load:
       name: "&6&lCharger"
       lore: "&eCliquez-ici pour charger la video."
+    teleport:
+      name: "&5&lTéléporter"
+      lore: "&dCliquez-ici pour vous téléport à l'écran."
     delete:
       name: "&4&lSupprimer"
       lore-1: "&cCliquez-ici pour supprimer la vidéo."
       lore-2: "&c&l[!] Aucun retour en arrière une fois supprimée."
+    remove:
+      name: "&4&lSupprimer"
+      lore-1: "&cCliquez-ici pour supprimer l'écran."
+      lore-2: "&c&l[!] Aucun retour en arrière une fois supprimé."
     poster:
       lore-1: "&eCliquez-droit avec la carte sur le cadre du coin"
       lore-2: "&esupérieur gauche de l'écran pour étaler l'image."
       lore-3: "&ePour enlever l'image, s'accroupir puis, cliquez-"
       lore-4: "&edroit sur le coin supérieur gauche de l'écran."
+  libraries-not-installed: Les bibliothéques nécessaires au bon fonctionnement du
+    plugin ne sont pas installées, veuillez patienter le temps de l"installation,
+    puis réessayer plus tard.
   age-limit-warning: "&c[!] Contient du contenu explicite."
   incompatible: "&4[!] Cette vidéo n'est pas compatible."
+  impossible-connection: "&cImpossible de se connecter au serveur demandé."
   no-page-left: "&cVous ne pouvez pas tourner la page car cette page semble inexistante."
   too-much-loading: "&cChargement impossible, trop de vidéos sont en cours de chargements."
   too-much-playing: "&cLancement impossible, trop de vidéos sont jouées."

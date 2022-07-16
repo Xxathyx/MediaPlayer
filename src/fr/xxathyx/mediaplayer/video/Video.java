@@ -52,7 +52,7 @@ import net.bramp.ffmpeg.probe.FFmpegStream.CodecType;
 * Registered videos can be found here {@link Main#getRegisteredVideos()}.
 * 
 * <p>{@link Video} corresponds to an video configuration file, for each video
-* that can be registered there have an configuration that is used as we can see
+* that can be registered they have an configuration that is used as we can see
 * here {@link TaskAsyncLoadConfiguration}. In the YAML configuration-file are
 * related all informations about the video itself.
 * 

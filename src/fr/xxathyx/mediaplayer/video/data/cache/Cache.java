@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 
+import fr.xxathyx.mediaplayer.map.colors.MapColorPalette;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadVideo;
 
 /** 
@@ -55,7 +56,7 @@ public class Cache {
     */
 	
 	public void createCache(BufferedImage bufferedImage) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		writeBytesToFile(file.getPath(), com.bergerkiller.bukkit.common.map.MapColorPalette.convertImage(bufferedImage));
+		writeBytesToFile(file.getPath(), MapColorPalette.convertImage(bufferedImage));
 	}
 	
 	/**

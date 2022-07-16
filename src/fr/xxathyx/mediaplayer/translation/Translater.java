@@ -17,20 +17,27 @@ import org.bukkit.ChatColor;
 
 import fr.xxathyx.mediaplayer.Main;
 
+/** 
+* The Translater class is used in {@link Main} in order to extract plugin langage translations.
+* It consists in a single method, see {@link #createTranslationFile(String)}.
+* 
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2022-07-16 
+*/
+
 public class Translater {
 	
+	private Main plugin = Main.getPlugin(Main.class);
 	private File file;
 	
-	public Translater(File file) {
-		this.file = file;
-	}
+    /**
+     * Export the translation-file contained within the jar-file, onto the translations
+     * folder, according to a country-code.
+     *
+     * @param langage The langage country-code to be export.
+     */
 	
-	public Translater() {
-		
-	}
-
-	private Main plugin = Main.getPlugin(Main.class);
-		
     public void createTranslationFile(String langage) throws URISyntaxException, IOException {
 		
 		file = new File(plugin.getDataFolder() + "/translations/", langage + ".yml");
@@ -54,7 +61,6 @@ public class Translater {
 			        }
 			    }
 			}
-			
 			Path source = Paths.get(uri);
 			
 			Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GRAY + "Installing langage: " + langage + ".");

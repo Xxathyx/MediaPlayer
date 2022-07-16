@@ -51,12 +51,12 @@ public class InventoryClickPanel implements Listener {
 	
     /**
      * Called whenever a {@link Player} clicks in an inventory, specially in a
-     * video panel, see {@link Interfaces#getVideoPanel(Video)}, see also Bukkit
-     * documentation : {@link InventoryClickEvent}. This is used to list for
-     * requests to perform actions such as {@link Video#load()}.
+     * video and screen panels, see {@link Interfaces#getVideoPanel(Video)},
+     * see also Bukkit documentation : {@link InventoryClickEvent}. This is
+     * used to list for requests to perform actions such as {@link Video#load()}.
      * 
      * @throws IOException When failed or interrupted I/O operations occurs.
-     * @param Event Instance of {@link InventoryClickEvent}.
+     * @param event Instance of {@link InventoryClickEvent}.
      */
 	
 	@SuppressWarnings("deprecation")

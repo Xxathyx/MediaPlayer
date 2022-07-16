@@ -25,12 +25,12 @@ public class InventoryClosePanel implements Listener {
 	private final Main plugin = Main.getPlugin(Main.class);
 	
     /**
-     * Called whenever a {@link Player} close an open inventory, specially a video
-     * panel one, see {@link Interfaces#getVideoPanel(Video)} or {@link Interfaces#getScreenPanel(Video)},
+     * Called whenever a {@link Player} close an open inventory, specially video and screen
+     * panels, see {@link Interfaces#getVideoPanel(Video)} or {@link Interfaces#getScreenPanel(Video)},
      * see also Bukkit documentation : {@link InventoryCloseEvent}. This is used to know if
      * a player is still in a video panel, remove him when he closes the inventory.
      * 
-     * @param Event Instance of {@link InventoryCloseEvent}.
+     * @param event Instance of {@link InventoryCloseEvent}.
      */
 	
 	@EventHandler

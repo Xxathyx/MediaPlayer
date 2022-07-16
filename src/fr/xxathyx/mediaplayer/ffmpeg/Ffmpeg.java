@@ -51,6 +51,12 @@ public class Ffmpeg {
 		return false;
 	}
 	
+    /**
+     * Gets the ffmpeg library file lenght according to used operating system.
+     *
+     * @return The ffmpeg library file lenght.
+     */
+	
 	public long getFileLength() {
 		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX)) {return 76000000;}
 		if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.WINDOWS)) {return 112000000;}
@@ -59,7 +65,7 @@ public class Ffmpeg {
 	}
 	
     /**
-     * Download from dropbox the ffmpeg library according to used operating system.
+     * Download from dropbox or fallback server the ffmpeg library according to used operating system.
      */
 	
 	public void download() {

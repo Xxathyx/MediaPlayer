@@ -62,9 +62,7 @@ public class GIFUtil {
 	    BufferedImage image = reader.read(index);
 	    BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 
-	    if(lastImage != null) {
-	        newImage.getGraphics().drawImage(lastImage, 0, 0, null);
-	    }
+	    if(lastImage != null) newImage.getGraphics().drawImage(lastImage, 0, 0, null);
 	    newImage.getGraphics().drawImage(image, 0, 0, null);
 
 	    return newImage;

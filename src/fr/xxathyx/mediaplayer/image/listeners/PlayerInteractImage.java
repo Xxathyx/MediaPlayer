@@ -51,7 +51,7 @@ public class PlayerInteractImage implements Listener {
      * see Bukkit documentation : {@link PlayerInteractEntityEvent}. This
      * is used to place/remove an image-poster. 
      *
-     * @param Event Instance of {@link PlayerInteractEntityEvent}.
+     * @param event Instance of {@link PlayerInteractEntityEvent}.
      */
 	
 	@SuppressWarnings("deprecation")

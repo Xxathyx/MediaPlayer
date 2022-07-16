@@ -7,6 +7,9 @@ website: https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1
 api-version: 1.13
 
 commands:
+  mediaplayer:
+    description: "The plugin informative command, leading to rest of it."
+    permission: mediaplayer.command
   video:
     description: "Allows you to interact with the available videos."
     aliases: [vid]

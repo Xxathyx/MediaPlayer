@@ -50,7 +50,7 @@ public class PlayerInteractVideo implements Listener {
      * interact with an {@link Entity}, see Bukkit documentation : {@link PlayerInteractEntityEvent}.
      * This is used to detected a player trying to assign a {@link Screen} to an existing {@link VideoInstance}.
      *
-     * @param Event Instance of {@link PlayerInteractEntityEvent}.
+     * @param event Instance of {@link PlayerInteractEntityEvent}.
      */
 	
 	@EventHandler

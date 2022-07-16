@@ -43,7 +43,6 @@ import fr.xxathyx.mediaplayer.video.data.cache.Cache;
 public class TaskAsyncLoadVideo extends BukkitRunnable {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
-	
 	private final Configuration configuration = new Configuration();
 		
     private Video video;
@@ -216,7 +215,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 		}catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
-        
+                
         if(!videoData.getRealTimeRendering()) {
         	
         	int total = video.getTotalFrames();

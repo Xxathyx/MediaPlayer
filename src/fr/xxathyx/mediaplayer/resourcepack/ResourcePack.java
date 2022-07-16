@@ -24,12 +24,29 @@ import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 
+/** 
+* The ResourcePack class is only called once, while a video
+* is loading, and within the audio is enabled, see {@link Video#hasAudio()}
+*
+* @author  Xxathyx
+* @version 1.0.0
+* @since   2022-07-16 
+*/
+
 public class ResourcePack {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
 		
+	/**
+	* Creates a resource-pack file base on a video, its used if the video is short enought during video loading.
+	* 
+	* @param The video containing audio track.
+	*/
+	
 	@SuppressWarnings("unchecked")
 	public void create(Video video) {
+		
+		if(!video.hasAudio()) return;
 		
 		VideoData videoData = video.getVideoData();
 		
@@ -106,12 +123,18 @@ public class ResourcePack {
 		}
 	}
 	
+	/**
+	* Sends a file to the free audio server handling
+	* 
+	* @param dataOutputStream Specific to output data.
+	* @param file The file to be send.
+	*/
+	
     private void sendFile(DataOutputStream dataOutputStream, File file) throws Exception {
     	
         int bytes = 0;
         
         FileInputStream fileInputStream = new FileInputStream(file);
-        
         dataOutputStream.writeLong(file.length());  
         
         byte[] buffer = new byte[4*1024];
@@ -130,15 +153,15 @@ public class ResourcePack {
 	* 
 	* <p> <strong>Note: </strong>
 	* 
-	* 1 for versions 1.6.1 – 1.8.9,
-	* 2 for versions 1.9 – 1.10.2,
-	* 3 for versions 1.11 – 1.12.2,
-	* 4 for versions 1.13 – 1.14.4,
-	* 5 for versions 1.15 – 1.16.1,
-	* 6 for versions 1.16.2 – 1.16.5,
-    * 7 for versions 1.17.x,
-	* 8 for versions 1.18.x,
-	* 9 for versions 1.19.x,
+	* 1 is for versions 1.6.1 – 1.8.9,
+	* 2 is for versions 1.9 – 1.10.2,
+	* 3 is for versions 1.11 – 1.12.2,
+	* 4 is for versions 1.13 – 1.14.4,
+	* 5 is for versions 1.15 – 1.16.1,
+	* 6 is for versions 1.16.2 – 1.16.5,
+    * 7 is for versions 1.17.x,
+	* 8 is for versions 1.18.x,
+	* 9 is for versions 1.19.x,
 	* 
 	* @return The resource pack-format.
 	*/

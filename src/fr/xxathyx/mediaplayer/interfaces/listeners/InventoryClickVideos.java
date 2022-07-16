@@ -38,7 +38,7 @@ public class InventoryClickVideos implements Listener {
      * : {@link InventoryClickEvent}. This is used to listen for selected video to be
      * opened in a video panel, see {@link Interfaces#getVideoPanel(Video)}.
      * 
-     * @param Event Instance of {@link InventoryClickEvent}.
+     * @param event Instance of {@link InventoryClickEvent}.
      */
 	
 	@EventHandler
