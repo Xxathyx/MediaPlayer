@@ -1,5 +1,0 @@
-package net.minecraft.server.dedicated;
-
-class DedicatedPlayerList extends net.minecraft.server.players.PlayerList {
-
-}

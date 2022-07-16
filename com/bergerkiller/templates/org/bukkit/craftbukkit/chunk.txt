@@ -1,5 +1,0 @@
-package org.bukkit.craftbukkit;
-
-class CraftChunk {
-    public (Object) net.minecraft.world.level.chunk.Chunk getHandle();
-}
