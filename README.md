@@ -35,9 +35,9 @@ Notice that those integers represent the real location of the click according to
 
 ### How to setup your own audio handling server :
 
-In order to setup you own audio handling server you will need to have a web-server that supports HTTP protocol, then download and
-place https://github.com/Xxathyx/MediaPlayer-server jar archive, somewhere in your server, most likely in a folder in which the program
-could write and read informations, so make sure to put in a folder only with write-execute permissions.
+In order to setup you own audio handling server you will need to have a web-server that supports HTTP protocol and Java installed on it,
+then download and place https://github.com/Xxathyx/MediaPlayer-server jar archive, somewhere in your server, most likely in a folder
+in which the program could write and read informations, so make sure to put in a folder only with write-execute permissions.
 
 Then make it run everytime on web-server startup by creating a service file such as
 
