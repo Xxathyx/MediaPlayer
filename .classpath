@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.13.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/ffmpeg-fork.jar"/>
-	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.13.2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.7.2-R0.4-SNAPSHOT-1339.jar"/>
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.7.5-R0.1-SNAPSHOT-1387.jar"/>
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.7.9-R0.2-SNAPSHOT.jar"/>
@@ -27,5 +27,6 @@
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.18.2-R0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/jeka-core-0.9.20.RC26.jar"/>
 	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.19-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/xxath/Desktop/Spigot Server Versions &amp; API/spigot-1.19.3-R0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -103,7 +103,6 @@ public class Image {
     	
 		Bukkit.getScheduler().runTask(plugin, new Runnable() {
 			
-			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
 		    	
