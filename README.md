@@ -33,7 +33,7 @@ the player itself : ```getPlayer``` and the click location with ```getCursorX```
 Notice that those integers represent the real location of the click according to the size of the content displayed insed it.
 
 
-### How to setup your own audio handling server
+### How to setup your own audio handling server :
 
 In order to setup you own audio handling server you will need to have a web-server that supports HTTP protocol, then download and
 place https://github.com/Xxathyx/MediaPlayer-server jar archive, somewhere in your server, most likely in a folder in which the program
