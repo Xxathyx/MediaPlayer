@@ -19,15 +19,15 @@ into you server plugin folder.
 
 ### Brows into plugin informations with MediaPlayerAPI class :
 
-First step : ```java import fr.xxathyx.mediaplayer.api.MediaPlayerAPI;```
+First step : ```import fr.xxathyx.mediaplayer.api.MediaPlayerAPI;```
 
-Then call ```java getPlugin``` method in order to gain access to live running plugin informations.
+Then call ```getPlugin``` method in order to gain access to live running plugin informations.
 
 ### A player interacts with a screen, use the PlayerInteractScreenEvent to detect it :
 
-You will need to : ```java import fr.xxathyx.mediaplayer.api.listeners.PlayerInteractScreenEvent```
+You will need to : ```import fr.xxathyx.mediaplayer.api.listeners.PlayerInteractScreenEvent```
 
-Then you can access informations such as the screen that as been touched with ```java getScreen```,
-the player itself : ```java getPlayer``` and the click location with ```java getCursorX```, ```java getCursorY```.
+Then you can access informations such as the screen that as been touched with ```getScreen```,
+the player itself : ```getPlayer``` and the click location with ```getCursorX```, ```getCursorY```.
 
 Notice that those integers represent the real location of the click according to the size of the content displayed insed it.
