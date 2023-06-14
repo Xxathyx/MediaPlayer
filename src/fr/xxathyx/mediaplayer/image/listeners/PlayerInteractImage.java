@@ -176,6 +176,7 @@ public class PlayerInteractImage implements Listener {
 											ItemFrame itemFrame = (ItemFrame) player.getWorld().spawnEntity(first, EntityType.ITEM_FRAME);
 											itemFrame.setItem(new ItemStacks().getMap(image.getIds().get(0)));
 											
+											if(plugin.getServerVersion().equals("v1_19_R3")) ((org.bukkit.craftbukkit.v1_19_R3.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											if(plugin.getServerVersion().equals("v1_19_R2")) ((org.bukkit.craftbukkit.v1_19_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											if(plugin.getServerVersion().equals("v1_19_R1")) ((org.bukkit.craftbukkit.v1_19_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											if(plugin.getServerVersion().equals("v1_18_R2")) ((org.bukkit.craftbukkit.v1_18_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
