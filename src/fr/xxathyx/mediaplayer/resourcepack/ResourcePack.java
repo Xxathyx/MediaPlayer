@@ -153,20 +153,23 @@ public class ResourcePack {
 	* 
 	* <p> <strong>Note: </strong>
 	* 
-	* 1 is for versions 1.6.1 – 1.8.9,
-	* 2 is for versions 1.9 – 1.10.2,
-	* 3 is for versions 1.11 – 1.12.2,
-	* 4 is for versions 1.13 – 1.14.4,
-	* 5 is for versions 1.15 – 1.16.1,
-	* 6 is for versions 1.16.2 – 1.16.5,
+	* 1 is for versions 1.6.1 - 1.8.9,
+	* 2 is for versions 1.9 - 1.10.2,
+	* 3 is for versions 1.11 - 1.12.2,
+	* 4 is for versions 1.13 - 1.14.4,
+	* 5 is for versions 1.15 - 1.16.1,
+	* 6 is for versions 1.16.2 - 1.16.5,
     * 7 is for versions 1.17.x,
 	* 8 is for versions 1.18.x,
-	* 9 is for versions 1.19.x,
+	* 9 is for versions 1.19.1,
+	* 12 is for versions 1.19.2-3,
+	* 13 is for versions 1.19.4,
 	* 
 	* @return The resource pack-format.
 	*/
 	
 	public int getResourcePackFormat() {
+        if(plugin.getServerVersion().equals("v1_19_R3")) return 13;
         if(plugin.getServerVersion().equals("v1_19_R2")) return 12;
         if(plugin.getServerVersion().equals("v1_19_R1")) return 9;
         if(plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_18_R2")) return 8;
