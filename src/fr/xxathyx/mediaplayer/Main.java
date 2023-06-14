@@ -56,7 +56,7 @@ import fr.xxathyx.mediaplayer.video.listeners.PlayerInteractVideo;
 import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 
 /*
- * Copyright or © or Copr. xxathyxlive@gmail.com (2022)
+ * Copyright or ï¿½ or Copr. xxathyxlive@gmail.com (2022)
  *
  * This software is a computer program add the possibility to use various
  * media on minecraft
@@ -202,7 +202,7 @@ public class Main extends JavaPlugin {
 		
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
-        if(serverVersion.equals("v1_19_R2") || serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
+        if(serverVersion.equals("v1_19_R3") || serverVersion.equals("v1_19_R2") || serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
         		serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1") || serverVersion.equals("v1_14_R1") || serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
