@@ -22,7 +22,7 @@ public class MapUtilVersion {
     /**
      * Gets {@link MapUtil} variable according to the running server version.
      * 
-     * <p> <strong>Note: </strong> Does return null if the server running version is unreconized or isn't supported.
+     * <p> <strong>Note: </strong> Does return null if the server running version is sunreconized or isn't supported.
      * 
      * @return MapUtil of the server version.
      */
@@ -31,6 +31,10 @@ public class MapUtilVersion {
 		
         final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
+        if(serverVersion.equals("v1_20_R1")) {
+        	System.out.print("MediaPlayer is running on the last minecraft version : " + serverVersion + "\n");
+        	return new v1_20_R1();
+        }
         if(serverVersion.equals("v1_19_R3")) {
         	return new v1_19_R3();
         }

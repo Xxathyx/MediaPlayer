@@ -14,7 +14,7 @@ import fr.xxathyx.mediaplayer.util.MapUtil;
  *  
  * @author  Xxathyx
  * @version 1.0.0
- * @since   2022-06-14 
+ * @since   2023-06-14 
  */
 
 public class v1_19_R3 implements MapUtil {
