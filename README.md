@@ -9,7 +9,7 @@ Videos : https://youtu.be/LYVOkX7uQ5M
 Livestreams : https://youtu.be/swcMQTto5rI
 
 
-Download compiled plugin (working on 1.7-1.19) : https://www.dropbox.com/s/xchs5b54d71k0oh/MediaPlayer.jar?dl=1
+Download compiled plugin (working on 1.7-1.20) : https://www.dropbox.com/s/xchs5b54d71k0oh/MediaPlayer.jar?dl=1
 
 
 ### How to use MediaPlayer API
