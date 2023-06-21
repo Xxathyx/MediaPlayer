@@ -21,11 +21,10 @@ import fr.xxathyx.mediaplayer.util.MapUtil;
 
 public class v1_17_R1 implements MapUtil {
 	
-	private Method method;
+	private final Method method = net.minecraft.server.network.PlayerConnection.class.getMethods()[60];
 	
-	public v1_17_R1(Method method) {
+	public v1_17_R1() {
 		method.setAccessible(true);
-		this.method = method;
 	}
 	
 	@Override
