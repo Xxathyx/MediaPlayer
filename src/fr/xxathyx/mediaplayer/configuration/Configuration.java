@@ -76,6 +76,7 @@ public class Configuration {
 			
 			fileconfiguration.set("plugin.auto-update", true);
 			fileconfiguration.set("plugin.force-permissions", false);
+			fileconfiguration.set("plugin.external-communication", true);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
 			fileconfiguration.set("plugin.free-audio-server-address", "37.187.196.226");
 			fileconfiguration.set("plugin.free-audio-server-token", token);
@@ -313,6 +314,10 @@ public class Configuration {
 	
 	public boolean plugin_force_permissions() {
 		return getConfigFile().getBoolean("plugin.force-permissions");
+	}
+	
+	public boolean plugin_external_communication() {
+		return getConfigFile().getBoolean("plugin.external-communication");
 	}
 	
 	public boolean plugin_free_audio_server_handling() {
