@@ -247,18 +247,20 @@ public class Main extends JavaPlugin {
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
-		if(configuration.plugin_free_audio_server_handling() && client.getSocket() == null) {
-			
-			Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-				@Override
-				public void run() {
-					
-					client.connect();
-					
-					client.write("mediaplayer.connect: ", configuration.free_audio_server_token());
-					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
-				}
-			});
+		if(configuration.plugin_external_communication()) {
+			if(configuration.plugin_free_audio_server_handling() && client.getSocket() == null) {
+				
+				Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+					@Override
+					public void run() {
+						
+						client.connect();
+						
+						client.write("mediaplayer.connect: ", configuration.free_audio_server_token());
+						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
+					}
+				});
+			}
 		}
 	}
 	
@@ -297,12 +299,13 @@ public class Main extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
-		
-		try {
-			client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
-			client.getSocket().close();
-		}catch (IOException e) {
-			e.printStackTrace();
+		if(configuration.plugin_external_communication()) {
+			try {
+				client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
+				client.getSocket().close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import dev.jeka.core.api.file.JkPathTree;
 
 import fr.xxathyx.mediaplayer.Main;
+import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
@@ -36,7 +37,8 @@ import fr.xxathyx.mediaplayer.video.data.VideoData;
 public class ResourcePack {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
-		
+	private final Configuration configuration = new Configuration();
+	
 	/**
 	* Creates a resource-pack file base on a video, its used if the video is short enought during video loading.
 	* 
@@ -109,17 +111,19 @@ public class ResourcePack {
 		
 		JkPathTree.of(resourcePackFolder.toPath()).zipTo(zipFile.toPath());
 		
-		Client client = plugin.getClient();
-		
-		client.write("mediaplayer.upload: ", video.getName());
-		client.refresh();
-		
-		try {
-			DataOutputStream dataOutputStream = new DataOutputStream(plugin.getClient().getSocket().getOutputStream());
+		if(configuration.plugin_external_communication()) {
+			Client client = plugin.getClient();
+			
+			client.write("mediaplayer.upload: ", video.getName());
+			client.refresh();
+			
+			try {
+				DataOutputStream dataOutputStream = new DataOutputStream(plugin.getClient().getSocket().getOutputStream());
 
-	        sendFile(dataOutputStream, zipFile);
-		}catch (Exception e) {
-			e.printStackTrace();
+		        sendFile(dataOutputStream, zipFile);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
