@@ -1,8 +1,10 @@
 # MediaPlayer
 
-[![icon.png](https://i.postimg.cc/gj8Pj7mb/icon.png)](https://postimg.cc/tnqcm2sB)
+<p align="center">
+  <img width="160" height="160" src="[https://picsum.photos/460/300](https://i.postimg.cc/gj8Pj7mb/icon.png)](https://postimg.cc/tnqcm2sB)">
+</p>
 
-Plugin that allows you to play and use various medias such as images, videos, and livestreams on Minecraft.
+Currently in development, plugin that allows you to play and use various medias such as images, videos, and livestreams on Minecraft.
 
 Videos : https://youtu.be/LYVOkX7uQ5M
 
