@@ -76,13 +76,13 @@ public class Configuration {
 			
 			fileconfiguration.set("plugin.auto-update", true);
 			fileconfiguration.set("plugin.force-permissions", false);
-			fileconfiguration.set("plugin.external-communication", true);
+			fileconfiguration.set("plugin.external-communication", false);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
-			fileconfiguration.set("plugin.free-audio-server-address", "37.187.196.226");
+			fileconfiguration.set("plugin.free-audio-server-address", "5.196.220.114");
 			fileconfiguration.set("plugin.free-audio-server-token", token);
 			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
 			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
-			fileconfiguration.set("plugin.alternative-server", "http://37.187.196.226/");
+			fileconfiguration.set("plugin.alternative-server", "http://5.196.220.114/");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
