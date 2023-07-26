@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapView;
 
-import fr.xxathyx.mediaplayer.map.util.MapUtilVersion;
 import fr.xxathyx.mediaplayer.util.MapUtil;
 
 /**

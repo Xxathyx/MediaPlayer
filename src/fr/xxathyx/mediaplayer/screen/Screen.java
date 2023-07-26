@@ -115,7 +115,7 @@ public class Screen {
 	private ArrayList<ItemFrame> frames = new ArrayList<>();
 	private ArrayList<Block> blocks = new ArrayList<>();
 	
-	private ArrayList<UUID> listeners = new ArrayList<>();
+	public ArrayList<UUID> listeners = new ArrayList<>();
 	
 	/**
 	* Constructor for Screen class, creates an Screen variable according
@@ -235,7 +235,18 @@ public class Screen {
 		
 		frames = sorted;
 				
-		if(facingDirection.equals("E") || facingDirection.equals("W")) Collections.reverse(frames);
+		if(facingDirection.equals("E") || facingDirection.equals("W")) {
+			
+			Collections.reverse(frames);
+			ArrayList<ItemFrame> temp = new ArrayList<>();
+			
+			for(int j = height; j>0; j--) {
+				for(int i = 0; i<width; i++) {
+					temp.add(frames.get((j-1)*width+i));
+				}
+			}
+			frames=temp;
+		}
 		
 		for(int i = 0; i < blocks.size(); i++) new Part(new File(getPartsFolder(), i + ".yml")).createConfiguration(uuid, blocks.get(i), frames.get(i), configuration.glowing_screen_frames_support(), configuration.visible_screen_frames_support(), i);
 		createThumbnail();
@@ -899,7 +910,7 @@ public class Screen {
 		
 		plugin.getRegisteredScreens().remove(this);
 		remove();
-		
+				
 		try {
 			FileUtils.deleteDirectory(getFile().getParentFile());
 		}catch (IOException e) {
@@ -1117,18 +1128,16 @@ public class Screen {
 		Bukkit.getScheduler().cancelTask(tasks[1]);
 		
 		running = false;
-				
-		videoData.loadThumbnail();
-		
-		Object[] ids = videoData.getMaps().getIds().toArray();
+		loadThumbnail();
 		
 		for(int i = 0; i < frames.size(); i++) {
-			frames.get(i).setItem(itemStacks.getMap((int) ids[i]));
+			frames.get(i).setItem(itemStacks.getMap(getIds()[i]));
 		}
 		
-		for(UUID uuid : listeners) { for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i); }
-		
-		plugin.getPlayingVideos().remove(video.getName());
+		if(video != null) {
+			for(UUID uuid : listeners) { for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i); }
+			plugin.getPlayingVideos().remove(video.getName());
+		}
 		
 		if(configuration.remove_screen_on_end()) {
 			remove();

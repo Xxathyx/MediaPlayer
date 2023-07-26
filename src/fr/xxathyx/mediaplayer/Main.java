@@ -39,6 +39,7 @@ import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.screen.commands.ScreenCommands;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerBreakScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerDamageScreen;
+import fr.xxathyx.mediaplayer.screen.listeners.PlayerDisconnectScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerInteractScreen;
 import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
@@ -239,6 +240,7 @@ public class Main extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerBreakScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDamageScreen(), this);
+		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDisconnectScreen(), this);
 		
 		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
@@ -281,7 +283,7 @@ public class Main extends JavaPlugin {
 		}
 		
 		for(Screen screen : registeredScreens) {
-			screen.end();
+			//screen.end();
 			if(configuration.remove_screen_on_restart()) {
 				screen.remove();
 			}
@@ -290,7 +292,7 @@ public class Main extends JavaPlugin {
 		for(Process process : process) {
 			process.destroy();
 		}
-		
+				
 		for(Video video : playedStreams) {
 			
 			try {

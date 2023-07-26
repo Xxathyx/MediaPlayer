@@ -44,23 +44,25 @@ public class Updater {
 	*/
 	
 	public void update() {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-			@Override
-			public void run() {
-				if(isOutdated()) {
-					Updater.createFolders();
-					if(configuration.plugin_auto_update()) {
-						if(!download()) return;
-						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "The new plugin version has been downloaded,"
-								+ " and will be applied on the next server restart.");
-						return;
+		if(configuration.plugin_external_communication()) {
+			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+				@Override
+				public void run() {
+					if(isOutdated()) {
+						Updater.createFolders();
+						if(configuration.plugin_auto_update()) {
+							if(!download()) return;
+							Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "The new plugin version has been downloaded,"
+									+ " and will be applied on the next server restart.");
+							return;
+						}
+					    Bukkit.getLogger().warning("[MediaPlayer]: Plugin version is out of date. Please enable auto-update in configuration, or update it manually from: " + plugin.getDescription().getWebsite());
+					    return;
 					}
-				    Bukkit.getLogger().warning("[MediaPlayer]: Plugin version is out of date. Please enable auto-update in configuration, or update it manually from: " + plugin.getDescription().getWebsite());
-				    return;
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "You are using the last version of the plugin (" + plugin.getDescription().getVersion() + ")");
 				}
-				Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "You are using the last version of the plugin (" + plugin.getDescription().getVersion() + ")");
-			}
-		});
+			});
+		}
 	}
 	
 	/** 

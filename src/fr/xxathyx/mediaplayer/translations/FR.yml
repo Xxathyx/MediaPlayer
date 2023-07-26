@@ -156,7 +156,7 @@ messages:
   no-page-left: "&cVous ne pouvez pas tourner la page car cette page semble inexistante."
   too-much-loading: "&cChargement impossible, trop de vidéos sont en cours de chargements."
   too-much-playing: "&cLancement impossible, trop de vidéos sont jouées."
-  no-screen-playing: "&cAucun écran n'est en train de jouer une vidéo."
+  no-screen-playing: "&cAucun écran n'est enregistré."
   not-number: "&cLe nombre choisi est invalide."
   available-images: "&2Liste des images disponnibles:"
   available-videos: "&2Liste des vidéos disponnibles:"

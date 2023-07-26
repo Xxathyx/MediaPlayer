@@ -155,7 +155,7 @@ messages:
   no-page-left: "&cYou can't turn the page because this page doesn't seem to exist."
   too-much-loading: "&cCannot load, too many videos are being loaded."
   too-much-playing: "&cNot possible to launch, too many videos are playing."
-  no-screen-playing: "&cNo screen is playing a video."
+  no-screen-playing: "&cNo screens registered."
   not-number: "&cThe number chosen is invalid."
   available-images: "&2List of available images:"
   available-videos: "&2List of available videos:"
