@@ -4,7 +4,7 @@
 
 Currently in development, plugin that allows you to play and use various medias such as images, videos (with audio, yes), and livestreams on Minecraft.
 
-<p align="center"> <img width="320" height="180" src="https://i.postimg.cc/gj8Pj7mb/icon.png"> </p>
+<p align="center"> <img width="640" height="360" src="https://i.ibb.co/nDBXRgg/th.jpg"> </p>
 
 Videos : https://youtu.be/2uF8IeQ0Dto
 
