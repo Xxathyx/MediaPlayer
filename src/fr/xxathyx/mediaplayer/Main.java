@@ -57,7 +57,7 @@ import fr.xxathyx.mediaplayer.video.listeners.PlayerInteractVideo;
 import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 
 /*
- * Copyright or � or Copr. xxathyxlive@gmail.com (2022)
+ * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2023)
  *
  * This software is a computer program add the possibility to use various
  * media on minecraft

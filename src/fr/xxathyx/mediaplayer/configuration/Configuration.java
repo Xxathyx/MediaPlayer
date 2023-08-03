@@ -57,21 +57,6 @@ public class Configuration {
 			
 			String token = new RandomToken().random(10);
 			
-			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-				@Override
-				public void run() {
-										
-					Client client = new Client();
-					client.connect();
-					
-					plugin.setClient(client);
-					
-					client.write("mediaplayer.register: ", token);
-					
-					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
-				}
-			});
-			
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
@@ -79,7 +64,7 @@ public class Configuration {
 			fileconfiguration.set("plugin.external-communication", false);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
 			fileconfiguration.set("plugin.free-audio-server-address", "5.196.220.114");
-			fileconfiguration.set("plugin.free-audio-server-token", token);
+			fileconfiguration.set("plugin.free-audio-server-token", "none");
 			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
 			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
 			fileconfiguration.set("plugin.alternative-server", "http://5.196.220.114/");
@@ -115,6 +100,21 @@ public class Configuration {
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
+						
+			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+				@Override
+				public void run() {
+										
+					Client client = new Client();
+					client.connect();
+					
+					plugin.setClient(client);
+					
+					client.write("mediaplayer.register: ", token);
+					
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
+				}
+			});
 		}
 		
 		if(!videosFolder.exists()) {
