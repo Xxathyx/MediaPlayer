@@ -2,9 +2,11 @@
 
 <p align="center"> <img width="160" height="160" src="https://i.postimg.cc/gj8Pj7mb/icon.png"> </p>
 
-Currently in development, plugin that allows you to play and use various medias such as images, videos, audios, and livestreams on Minecraft.
+Currently in development, plugin that allows you to play and use various medias such as images, videos (with audio, yes), and livestreams on Minecraft.
 
-Videos : https://youtu.be/LYVOkX7uQ5M
+<p align="center"> <img width="640" height="360" src="https://i.ibb.co/nDBXRgg/th.jpg"> </p>
+
+Videos : https://youtu.be/2uF8IeQ0Dto
 
 Livestreams : https://youtu.be/swcMQTto5rI
 
