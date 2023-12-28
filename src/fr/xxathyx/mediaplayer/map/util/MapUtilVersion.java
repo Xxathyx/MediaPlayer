@@ -31,8 +31,14 @@ public class MapUtilVersion {
 		
         final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         
-        if(serverVersion.equals("v1_20_R1")) {
+        if(serverVersion.equals("v1_20_R3")) {
         	System.out.print("MediaPlayer is running on the last minecraft version : " + serverVersion + "\n");
+        	return new v1_20_R3();
+        }
+        if(serverVersion.equals("v1_20_R2")) {
+        	return new v1_20_R2();
+        }
+        if(serverVersion.equals("v1_20_R1")) {
         	return new v1_20_R1();
         }
         if(serverVersion.equals("v1_19_R3")) {

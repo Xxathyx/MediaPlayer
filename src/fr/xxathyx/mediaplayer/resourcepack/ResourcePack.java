@@ -169,11 +169,15 @@ public class ResourcePack {
 	* 12 is for versions 1.19.2-3,
 	* 13 is for versions 1.19.4,
 	* 15 is for versions 1.20.1.
+	* 18 is for versions 1.20.2.
+	* 18 is for versions 1.20.3.
 	* 
 	* @return The resource pack-format.
 	*/
 	
 	public int getResourcePackFormat() {
+        if(plugin.getServerVersion().equals("v1_20_R3")) return 18;
+        if(plugin.getServerVersion().equals("v1_20_R2")) return 18;
         if(plugin.getServerVersion().equals("v1_20_R1")) return 15;
         if(plugin.getServerVersion().equals("v1_19_R3")) return 13;
         if(plugin.getServerVersion().equals("v1_19_R2")) return 12;

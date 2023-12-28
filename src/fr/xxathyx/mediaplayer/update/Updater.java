@@ -76,7 +76,7 @@ public class Updater {
 	
 	public boolean isOutdated() {
 	    try {
-	        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=79033").openConnection();
+			HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=79033").openConnection();
 	        String newVersion = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).readLine();
 	        httpURLConnection.disconnect();
 
@@ -111,7 +111,7 @@ public class Updater {
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 			File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
 			
-	    	URL onlineJar = new URL("https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1");
+			URL onlineJar = new URL("https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1");
 	    	
 	    	FileUtils.copyURLToFile(onlineJar, newJar);
 	    	
