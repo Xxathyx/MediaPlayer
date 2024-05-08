@@ -176,7 +176,8 @@ public class ResourcePack {
 	*/
 	
 	public int getResourcePackFormat() {
-        if(plugin.getServerVersion().equals("v1_20_R3")) return 18;
+        if(plugin.getServerVersion().equals("v1_20_R4")) return 31;
+        if(plugin.getServerVersion().equals("v1_20_R3")) return 23;
         if(plugin.getServerVersion().equals("v1_20_R2")) return 18;
         if(plugin.getServerVersion().equals("v1_20_R1")) return 15;
         if(plugin.getServerVersion().equals("v1_19_R3")) return 13;

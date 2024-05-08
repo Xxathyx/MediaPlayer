@@ -203,12 +203,12 @@ public class Main extends JavaPlugin {
 		
         String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		
-        if(serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") || serverVersion.equals("v1_19_R3") || serverVersion.equals("v1_19_R2") || serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
-        		serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1") || serverVersion.equals("v1_14_R1") || serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2")) {
+        if(serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
+        		serverVersion.equals("v1_16_R2") | serverVersion.equals("v1_16_R1") | serverVersion.equals("v1_15_R1") | serverVersion.equals("v1_14_R1") | serverVersion.equals("v1_13_R1") | serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
         
-        if(serverVersion.equals("v1_7_R4") || serverVersion.equals("v1_7_R3") || serverVersion.equals("v1_7_R2") || serverVersion.equals("v1_7_R1")) {
+        if(serverVersion.equals("v1_7_R4") | serverVersion.equals("v1_7_R3") | serverVersion.equals("v1_7_R2") | serverVersion.equals("v1_7_R1")) {
         	old = true;
 	        Bukkit.getLogger().warning("[MediaPlayer]: The server running version is old and isn't well supported, you may encounter future issues while playing videos.");
         }
