@@ -41,5 +41,6 @@
 	<classpathentry kind="lib" path="C:/Users/atwao/Desktop/libraries/spigot-1.19.3-R0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="C:/Users/atwao/Desktop/libraries/spigot-1.19.jar"/>
 	<classpathentry kind="lib" path="C:/Users/atwao/Desktop/libraries/spigot-1.19-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/atwao/Desktop/libraries/spigot-1.20.6-R0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
