@@ -64,6 +64,7 @@ public class Configuration {
 			fileconfiguration.set("plugin.external-communication", false);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
 			fileconfiguration.set("plugin.free-audio-server-address", "5.196.220.114");
+			fileconfiguration.set("plugin.free-audio-server-port", "41");
 			fileconfiguration.set("plugin.free-audio-server-token", "none");
 			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
 			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
@@ -326,6 +327,10 @@ public class Configuration {
 	
 	public String plugin_free_audio_server_address() {
 		return getConfigFile().getString("plugin.free-audio-server-address");
+	}
+	
+	public int plugin_free_audio_server_port() {
+		return getConfigFile().getInt("plugin.free-audio-server-port");
 	}
 	
 	public String free_audio_server_token() {
