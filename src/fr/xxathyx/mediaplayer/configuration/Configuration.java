@@ -64,10 +64,10 @@ public class Configuration {
 			fileconfiguration.set("plugin.external-communication", true);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
 			fileconfiguration.set("plugin.free-audio-server-address", "51.77.210.10");
-			fileconfiguration.set("plugin.free-audio-server-port", "2048");
+			fileconfiguration.set("plugin.free-audio-server-port", 2048);
 			fileconfiguration.set("plugin.free-audio-server-token", "none");
 			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
-			fileconfiguration.set("plugin.own-audio-server-handling-port", "2048");
+			fileconfiguration.set("plugin.own-audio-server-handling-port", 2048);
 			fileconfiguration.set("plugin.alternative-server", "http://51.77.210.10/");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
