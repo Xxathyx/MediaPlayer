@@ -2,7 +2,8 @@
 
 [![icon.png](https://i.postimg.cc/gj8Pj7mb/icon.png)](https://postimg.cc/tnqcm2sB)
 
-Allows you to play and use various medias such as videos on Minecraft.
+Allows you to play and use various medias such as videos on Minecraft (1.7-1.20.6).
+For better performance, set network-compression-threshold to -1 in server.properties
 
 Videos : https://youtu.be/LYVOkX7uQ5M
 
