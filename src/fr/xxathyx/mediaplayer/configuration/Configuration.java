@@ -61,14 +61,14 @@ public class Configuration {
 			
 			fileconfiguration.set("plugin.auto-update", true);
 			fileconfiguration.set("plugin.force-permissions", true);
-			fileconfiguration.set("plugin.external-communication", false);
+			fileconfiguration.set("plugin.external-communication", true);
 			fileconfiguration.set("plugin.free-audio-server-handling", true);
-			fileconfiguration.set("plugin.free-audio-server-address", "5.196.220.114");
-			fileconfiguration.set("plugin.free-audio-server-port", "41");
+			fileconfiguration.set("plugin.free-audio-server-address", "51.77.210.10");
+			fileconfiguration.set("plugin.free-audio-server-port", "2048");
 			fileconfiguration.set("plugin.free-audio-server-token", "none");
 			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
-			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
-			fileconfiguration.set("plugin.alternative-server", "http://5.196.220.114/");
+			fileconfiguration.set("plugin.own-audio-server-handling-port", "2048");
+			fileconfiguration.set("plugin.alternative-server", "http://51.77.210.10/");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -808,7 +808,7 @@ public class Configuration {
 	}
 	
 	public String impossible_connection() {
-		return getMessage(getMessagesFile().getString("messages.messages.impossible-connection"));
+		return getMessage(getMessagesFile().getString("messages.impossible-connection"));
 	}
 	
 	public String no_page_left() {

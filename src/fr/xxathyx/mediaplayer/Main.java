@@ -301,7 +301,7 @@ public class Main extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
-		if(configuration.plugin_external_communication()) {
+		if(configuration.plugin_external_communication() && !client.getSocket().isClosed()) {
 			try {
 				client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
 				client.getSocket().close();
