@@ -250,7 +250,7 @@ public class Main extends JavaPlugin {
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
 		if(configuration.plugin_external_communication()) {
-			if(configuration.plugin_free_audio_server_handling() && client.getSocket() == null) {
+			if(configuration.plugin_free_audio_server_handling()) {
 				
 				Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
 					@Override
@@ -301,7 +301,7 @@ public class Main extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
-		if(configuration.plugin_external_communication() && client != null) {
+		if(configuration.plugin_external_communication() && client.getSocket() != null) {
 			try {
 				client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
 				client.getSocket().close();

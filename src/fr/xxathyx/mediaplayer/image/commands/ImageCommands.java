@@ -342,12 +342,12 @@ public class ImageCommands implements CommandExecutor, TabCompleter {
 	public void sendHelp(CommandSender sender, String cmd) {
 		sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "Image's commands");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " render <url|file>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " delete <index|name>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " render <url|file>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " delete <index|name>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " give <index|name> <player-name>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " give <index|name>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " give <index|name> <player-name>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " give <index|name>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /images");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/images");
 	}
 }
