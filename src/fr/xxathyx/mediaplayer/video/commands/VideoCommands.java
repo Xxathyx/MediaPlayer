@@ -422,6 +422,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							sender.sendMessage(ChatColor.DARK_PURPLE + "duration: " + ChatColor.LIGHT_PURPLE + video.getDuration());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "speed: " + ChatColor.LIGHT_PURPLE + video.getSpeed());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "size: " + ChatColor.LIGHT_PURPLE + video.getSize());
+							sender.sendMessage(ChatColor.DARK_PURPLE + "compress: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isCacheCompressed()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "age-limit: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isRestricted()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "creation: " + ChatColor.LIGHT_PURPLE + video.getCreation());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "data-folder: " + ChatColor.LIGHT_PURPLE + video.getDataFolder().getPath());
@@ -582,6 +583,28 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
 								}
+							}
+							
+							if(arg3[2].equalsIgnoreCase("compress") | arg3[2].equalsIgnoreCase("cp")) {
+								if(arg3[3].equalsIgnoreCase("true")) {
+									try {
+										video.setCompress(true);
+										sender.sendMessage(configuration.video_compress_enabled(video.getName()));
+										return true;
+									}catch (IOException | InvalidConfigurationException e) {
+										e.printStackTrace();
+									}
+								}
+								
+								if(arg3[3].equalsIgnoreCase("false")) {
+									try {
+										video.setCompress(false);
+										sender.sendMessage(configuration.video_compress_disabled(video.getName()));
+										return true;
+									}catch (IOException | InvalidConfigurationException e) {
+										e.printStackTrace();
+									}
+								}	
 							}
 							
 							if(arg3[2].equalsIgnoreCase("age-limit") | arg3[2].equalsIgnoreCase("al")) {
@@ -887,6 +910,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set frame-rate <integer>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set speed <double>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set volume <double>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set compress <true|false>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set age-limit <true|false>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set audio <true|false>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set looping <true|false>");

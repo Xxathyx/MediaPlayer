@@ -25,6 +25,8 @@ messages:
     &ato &l%speed%x&a."
   video-volume-updated: "&aYou have just updated the volume of &l%video% &ato
     &l%volume%x&a."
+  video-compress-disabled: "&aThe &l%video% &acompression is no longer enabled."
+  video-compress-enabled: "&aThe &l%video% &acompression is now enabled."
   video-age-limit-disabled: "&aThe &l%video% &a is no longer restricted to a certain
     audience."
   video-age-limit-enabled: "&aThe &l%video% &ais now restricted to a certain

@@ -475,6 +475,14 @@ public class Configuration {
 		return getMessage(getMessagesFile().getString("messages.video-speed-updated"), video, speed);
 	}
 	
+	public String video_compress_enabled(String video) {
+		return getMessage(getMessagesFile().getString("messages.video-compress-enabled"), video);
+	}
+	
+	public String video_compress_disabled(String video) {
+		return getMessage(getMessagesFile().getString("messages.video-compress-disabled"), video);
+	}
+	
 	public String video_volume_updated(String video, String volume) {
 		return getMessage(getMessagesFile().getString("messages.video-volume-updated"), video, volume);
 	}

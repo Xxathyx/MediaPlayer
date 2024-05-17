@@ -119,7 +119,6 @@ public class ResourcePack {
 			
 			try {
 				DataOutputStream dataOutputStream = new DataOutputStream(plugin.getClient().getSocket().getOutputStream());
-
 		        sendFile(dataOutputStream, zipFile);
 			}catch (Exception e) {
 				e.printStackTrace();

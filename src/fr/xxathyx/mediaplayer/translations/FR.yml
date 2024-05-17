@@ -25,6 +25,8 @@ messages:
     &aen &l%speed%x&a."
   video-volume-updated: "&aVous venez de mettre à jour le volume de &l%video% &aà
     &l%volume%x&a."
+  video-compress-disabled: "&aLa compression du cache de &l%video% &acn'est plus active."
+  video-compress-enabled: "&aLa compression du cache &l%video% &aest active."
   video-age-limit-disabled: "&aLa vidéo &l%video% &an'est plus réservée à un certain
     publique."
   video-age-limit-enabled: "&aLa vidéo &l%video% &aest maintenant réservée à un certain

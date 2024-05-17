@@ -36,8 +36,10 @@ public class Client {
     public void write(String header, String content) {
 		try {		
 			refresh();
-			DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-			dataOutputStream.writeUTF(header + content);	
+			if(socket != null) {
+				DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+				dataOutputStream.writeUTF(header + content);
+			}	
 		}catch (IOException e) {
 			e.printStackTrace();
 		}

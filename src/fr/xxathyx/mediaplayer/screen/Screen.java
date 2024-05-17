@@ -4,14 +4,18 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
@@ -95,6 +99,8 @@ public class Screen {
 	
 	private Content content;
 	private VideoInstance videoInstance;
+	
+	private boolean compressed = false;
 	
 	private boolean running = false;
 	private boolean linked = true;
@@ -711,6 +717,7 @@ public class Screen {
 		this.video = video;
 		this.videoData = video.getVideoData();
 		this.videoInstance = videoInstance;
+		this.compressed = video.isCacheCompressed();
 		this.ids = getIds();
 		this.width = video.getVideoData().getMinecraftWidth();
 		this.height = video.getVideoData().getMinecraftHeight();
@@ -795,6 +802,7 @@ public class Screen {
 			
 			this.frames = getFrames();
 			this.settings = new ScreenSettings(video);
+			this.compressed = video.isCacheCompressed();
 			this.id = plugin.getRegisteredScreens().size();
 			this.video = video;
 			this.videoData = video.getVideoData();
@@ -1063,12 +1071,30 @@ public class Screen {
 												e.printStackTrace();
 											}
 										}else {
-											byte[] buffer;
+											byte[] buffer = null;
+										    ZipFile zipFile = null; Enumeration<?extends ZipEntry> entries = null;
+											
+										    if(compressed) {
+										        try {
+													zipFile = new ZipFile(videoData.getCacheFolder() + "/" + String.valueOf(settings.count) + ".zip");
+												}catch (IOException e) {
+													e.printStackTrace();
+												}
+										        entries = zipFile.entries();
+										    }
 											
 											for(int j = 0; j < ids.length; j++) {
 												try {
 													
-													buffer = FileUtils.readFileToByteArray(new File(videoData.getCacheFolder() + "/" + settings.count + "/", String.valueOf(j) + ".cache"));
+													if(!compressed) {
+														buffer = FileUtils.readFileToByteArray(new File(videoData.getCacheFolder() + "/" + settings.count + "/", String.valueOf(j) + ".cache"));
+													}else {
+														if(entries.hasMoreElements()) {
+													        InputStream stream = zipFile.getInputStream(entries.nextElement());
+													        buffer = stream.readAllBytes();
+													        stream.close();
+														}
+													}
 													
 													for(Entity entity : entities) {
 														if(entity.getType() == EntityType.PLAYER) plugin.getMapUtil().update((Player)entity, ids[j], buffer);
