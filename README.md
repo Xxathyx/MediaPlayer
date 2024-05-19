@@ -69,4 +69,4 @@ register mediaplater service by executing the following instructions : ```sudo s
 You can now eventually restart you web-server and then specify your web-server adress in the plugin configuration file field : ```own-audio-server-handling-address```
 and the port in ```own-audio-server-handling-port```, and restart your server.
 
-### Notice that if you already have a token, you would have to delete the plugin folder in order to generate a new one for the newly created server.
+### Notice that if you already have a token, you would have to delete the plugin folder in order to generate a new one for the newly created audio-server.
