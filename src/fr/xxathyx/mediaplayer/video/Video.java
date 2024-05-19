@@ -151,6 +151,7 @@ public class Video {
     * @throws InvalidConfigurationException When non-respect of YAML syntax.
 	*/
 	
+	@SuppressWarnings("deprecation")
 	public void createConfiguration(File videoFile) throws FileNotFoundException, IOException, InvalidConfigurationException {
 		
 		String format = FilenameUtils.getExtension(videoFile.getName());
@@ -299,6 +300,7 @@ public class Video {
 			fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 			fileconfiguration.set("video.audio-volume", 1.0);
 			fileconfiguration.set("video.audio-channels", audioChannels);
+			fileconfiguration.set("video.audio-offset", 0.0);
 			fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 			fileconfiguration.set("video.frame-rate", framerate);
 			fileconfiguration.set("video.frames", frames);
@@ -312,6 +314,8 @@ public class Video {
 			fileconfiguration.set("video.looping", false);
 			fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
 			fileconfiguration.set("video.data-folder", getDataFolder().getPath());
+			fileconfiguration.set("video.instances-folder", getInstancesFolder().getPath());
+			fileconfiguration.set("video.compress-cache", true);
 			fileconfiguration.set("video.real-time-rendering", Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.skip-duplicated-frames", false);
 			fileconfiguration.set("video.show-informations", true);
@@ -359,6 +363,7 @@ public class Video {
 		fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 		fileconfiguration.set("video.audio-volume", 1.0);
 		fileconfiguration.set("video.audio-channels", 0);
+		fileconfiguration.set("video.audio-offset", 0.0);
 		fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 		fileconfiguration.set("video.frame-rate", source.getFramerate());
 		fileconfiguration.set("video.frames", source.getTotalFrames());
@@ -373,6 +378,7 @@ public class Video {
 		fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
 		fileconfiguration.set("video.data-folder", getDataFolder().getPath());
 		fileconfiguration.set("video.instances-folder", getInstancesFolder().getPath());
+		fileconfiguration.set("video.compress-cache", true);
 		fileconfiguration.set("video.real-time-rendering", true);
 		fileconfiguration.set("video.skip-duplicated-frames", false);
 		fileconfiguration.set("video.show-informations", source.showInformations());
@@ -433,6 +439,29 @@ public class Video {
 		
 		fileconfiguration.load(file);
 		fileconfiguration.set("video.audio-volume", volume);
+		fileconfiguration.save(file);
+	}
+	
+	/**
+	* Sets the video-audio offset.
+	* 
+	* <p> <strong>Note: </strong>Audio offset is the countdown, once finished video frames
+	* will appear and thus the video begin, this is used to manually synchronize both audio
+	* and video.
+	* 
+	* @param offset The audio-offset in seconds.
+	* 
+	* @throws FileNotFoundException When the configuration {@link File#exists()} return false.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void setAudioOffset(double offset) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("video.audio-offset", offset);
 		fileconfiguration.save(file);
 	}
 	
@@ -499,6 +528,27 @@ public class Video {
 		
 		fileconfiguration.load(file);
 		fileconfiguration.set("video.speed", speed);
+		fileconfiguration.save(file);
+	}
+	
+	/**
+	* Sets compress status of the video-cache.
+	* 
+	* <p> <strong>Note: </strong>Video-cache is compressed by default.
+	* 
+	* @param restricted Whether the video-cache should be compressed or not.
+	* 
+	* @throws FileNotFoundException When the configuration {@link File#exists()} return false.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void setCompress(boolean compress) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("video.compress-cache", compress);
 		fileconfiguration.save(file);
 	}
 	
@@ -924,6 +974,18 @@ public class Video {
 	}
 	
 	/**
+	* Gets wheter video-cache is compressed or not.
+	*  
+	* <p>Compression is enabled by default
+	* 
+	* @return Wheter video-cache is compressed or not.
+	*/
+	
+	public boolean isCacheCompressed() {
+		return getConfigFile().getBoolean("video.compress-cache");
+	}
+	
+	/**
 	* Gets the folder containing all video instances.
 	*  
 	* <p>The folder is empty until a video has been played once time.
@@ -1022,8 +1084,18 @@ public class Video {
 	* @return The number of audio channels
 	*/
 	
-	public double getAudioChannels() {
-		return getConfigFile().getDouble("video.audio-channels");
+	public int getAudioChannels() {
+		return getConfigFile().getInt("video.audio-channels");
+	}
+	
+	/**
+	* Gets audio-offset of the video in seconds. 
+	*  
+	* @return The audio-offset of the video
+	*/
+	
+	public double getAudioOffset() {
+		return getConfigFile().getDouble("video.audio-offset");
 	}
 	
 	/**

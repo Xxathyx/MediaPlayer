@@ -22,6 +22,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StringUtil;
 
 import fr.xxathyx.mediaplayer.Main;
@@ -210,9 +211,16 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								
 								//if(!Bukkit.getScheduler().isCurrentlyRunning(videoPlayer.getScreen().task[0])) videoPlayer.getScreen().setSettings(new ScreenSettings(videoPlayer.getScreen().getVideo())); videoPlayer.getScreen().display();
 								
-								videoPlayer.getScreen().setRunning(true);
+								new BukkitRunnable() {
+							        public void run() {
+							        	videoPlayer.getScreen().setOffset(true);
+							        	}
+							    }.runTaskLater(plugin, (long) (videoPlayer.getScreen().getVideo().getAudioOffset()*20L));
+							    
+							    videoPlayer.getScreen().setRunning(true);
 								player.sendMessage(configuration.video_instance_started(videoPlayer.getScreen().getVideoInstance().getVideo().getName(), String.valueOf(videoPlayer.getScreen().getId())));
 								if(sender instanceof Player) SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+								player.sendMessage(configuration.video_offset_notice(videoPlayer.getScreen().getVideoInstance().getVideo().getName()));
 								return true;
 							}
 							
@@ -413,6 +421,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							sender.sendMessage(ChatColor.DARK_PURPLE + "enable-audio: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isAudioEnabled()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-folder-path: " + ChatColor.LIGHT_PURPLE + video.getAudioFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-volume: " + ChatColor.LIGHT_PURPLE + video.getVolume());
+							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-offset: " + ChatColor.LIGHT_PURPLE + video.getAudioOffset());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "frames-folder: " + ChatColor.LIGHT_PURPLE + video.getFramesFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "frame-rate: " + ChatColor.LIGHT_PURPLE + video.getFrameRate());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "frames: " + ChatColor.LIGHT_PURPLE + video.getTotalFrames());
@@ -579,6 +588,30 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 						        try {
 									video.setVolume(volume);
 									sender.sendMessage(configuration.video_volume_updated(video.getName(), String.valueOf(volume)));
+									return true;
+								}catch (IOException | InvalidConfigurationException e) {
+									e.printStackTrace();
+								}
+							}
+							
+							if(arg3[2].equalsIgnoreCase("offset")) {
+						        try { 
+						            Double.parseDouble(arg3[3]); 
+						        } catch (NumberFormatException e) { 
+						        	sender.sendMessage(configuration.not_number());
+						            return false;
+						        }
+						        
+						        if(Double.parseDouble(arg3[3]) < 0) {
+						        	sender.sendMessage(configuration.negative_number());
+						        	return false;
+						        }
+						        
+						        double offset = Double.parseDouble(arg3[3]);
+						        
+						        try {
+									video.setAudioOffset(offset);
+									sender.sendMessage(configuration.video_audio_offset_updated(video.getName(), String.valueOf(offset)));
 									return true;
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
@@ -869,8 +902,8 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
             
             if(args.length > 2) {
             	
-                String[] modifiers = { "description", "frame-rate", "speed", "volume", "age-limit", "audio",  "looping", "real-time-rendering",
-                		"skip-duplicated-frames", "show-informations", "show-fps", "run-on-startup" };
+                String[] modifiers = { "description", "frame-rate", "speed", "volume", "age-limit", "compress", "audio", "offset", "looping",
+                		"real-time-rendering", "skip-duplicated-frames", "show-informations", "show-fps", "run-on-startup" };
                 
                 StringUtil.copyPartialMatches(args[2], Arrays.asList(modifiers), completions);
             }
@@ -910,6 +943,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set frame-rate <integer>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set speed <double>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set volume <double>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set offset <seconds>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set compress <true|false>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set age-limit <true|false>");
 		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set audio <true|false>");

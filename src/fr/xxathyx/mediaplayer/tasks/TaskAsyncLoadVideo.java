@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.FileOutputStream;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 
@@ -18,6 +21,7 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
+import fr.xxathyx.mediaplayer.map.colors.MapColorPalette;
 import fr.xxathyx.mediaplayer.notification.Notification;
 import fr.xxathyx.mediaplayer.notification.NotificationType;
 import fr.xxathyx.mediaplayer.resourcepack.ResourcePack;
@@ -65,6 +69,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	* The estimated time shown is a magnified average, it shouldn't be trusted anymore.
 	*/
     
+	@SuppressWarnings("deprecation")
 	public void run() {
 		
 		plugin.getTasks().add(getTaskId());
@@ -147,8 +152,9 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
             				"-vn", FilenameUtils.separatorsToUnix(new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath())};
                 	
                     ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
+                    
                     try {
-            			Process process = audioProcessBuilder.inheritIO().start();
+                    	Process process = audioProcessBuilder.inheritIO().start();
 		    			plugin.getProcess().add(process);
             			process.waitFor();
             		}catch (IOException | InterruptedException e) {
@@ -225,16 +231,33 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
         	
         	while(count < total) {
     			try {
-    				File file = new File(videoData.getCacheFolder(), String.valueOf(count));
-    				file.mkdir();
-    				
     				imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), count + framesExtension)));
     	    		imageRenderer.calculateDimensions();
     	    		imageRenderer.splitImages();
-    						    		
-    				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
-    					new Cache(new File(file, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
-    				}
+    				
+    	    		if(!video.isCacheCompressed()) {
+    	    			
+        				File file = new File(videoData.getCacheFolder(), String.valueOf(count));
+        				file.mkdir();
+        	    		
+        				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+        					new Cache(new File(file, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
+        				}
+    	    		}else {
+    	    			
+    	    			FileOutputStream fout = new FileOutputStream(video.getVideoData().getCacheFolder() + "/" + String.valueOf(count) + ".zip");
+    	    			ZipOutputStream zout = new ZipOutputStream(fout);
+    	    			
+    	    			for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+    	    			    ZipEntry ze = new ZipEntry(String.valueOf(j) + ".cache");
+    	    			    zout.putNextEntry(ze);
+    	    			    zout.write(MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]));
+    	    			    zout.closeEntry();
+    	    			}
+    	    			zout.close();
+    	    			fout.close();
+    	    		}
+    	    		
     				count++;
     			}catch (IOException | InvalidConfigurationException e) {
     				e.printStackTrace();

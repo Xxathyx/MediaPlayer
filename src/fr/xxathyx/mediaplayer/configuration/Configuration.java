@@ -293,6 +293,10 @@ public class Configuration {
 			a = a.replaceAll("%volume%", c);
 		}
 		
+		if(a.contains("%offset%")) {
+			a = a.replaceAll("%offset%", c);
+		}
+		
 		if(a.contains("%time%")) {
 			a = a.replaceAll("%time%", c);
 		}
@@ -427,6 +431,10 @@ public class Configuration {
 		return getMessage(getMessagesFile().getString("messages.video-load-notice"));
 	}
 	
+	public String video_offset_notice(String video) {
+		return getMessage(getMessagesFile().getString("messages.video-offset-notice"), video);
+	}
+	
 	public String video_unloaded(String video) {
 		return getMessage(getMessagesFile().getString("messages.video-unloaded"), video);
 	}
@@ -485,6 +493,10 @@ public class Configuration {
 	
 	public String video_volume_updated(String video, String volume) {
 		return getMessage(getMessagesFile().getString("messages.video-volume-updated"), video, volume);
+	}
+	
+	public String video_audio_offset_updated(String video, String volume) {
+		return getMessage(getMessagesFile().getString("messages.video-audio-offset-updated"), video, volume);
 	}
 	
 	public String video_age_limit_disabled(String video) {

@@ -4,6 +4,8 @@ messages:
   video-load-requested: "&aLoad request sent, you will be informed about the
     progress of the load."
   video-load-notice: "&7(The longer a video is, the more it will load)"
+  video-offset-notice: "&7(You notice that the audio plays for a while after displaying,
+  to define an image and audio offset : /video %video%&7set offset <seconds>)"
   video-unloaded: "&aThe video &l%video% &has just been unloaded."
   video-downloaded: "&aYou have just downloaded the video &l%video%&a."
   video-deleted: "&aThe video &l%video% &has been successfully deleted."
@@ -25,6 +27,8 @@ messages:
     &ato &l%speed%x&a."
   video-volume-updated: "&aYou have just updated the volume of &l%video% &ato
     &l%volume%x&a."
+  video-audio-offset-updated: "&aYou have just updated the audio offset of &l%video% &ato
+    &l%offset%&a seconds."
   video-compress-disabled: "&aThe &l%video% &acompression is no longer enabled."
   video-compress-enabled: "&aThe &l%video% &acompression is now enabled."
   video-age-limit-disabled: "&aThe &l%video% &a is no longer restricted to a certain

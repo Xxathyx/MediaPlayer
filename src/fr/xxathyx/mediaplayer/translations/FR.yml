@@ -4,6 +4,8 @@ messages:
   video-load-requested: "&aRequête de chargement envoyé, vous serez informé sur la
     progression du chargement."
   video-load-notice: "&7(Plus une vidéo est longue plus le chargement en est de même)"
+  video-offset-notice: "&7(Vous remarquez que l'audio se joue un certain temps après l'affichage,
+  pour définir un décalage image et audio : /video %video%&7set offset <secondes>)"
   video-unloaded: "&aLa vidéo &l%video% &avient d'être déchargée."
   video-downloaded: "&aVous venez de télécharger la video &l%video%&a."
   video-deleted: "&aLa vidéo &l%video% &aa été supprimée avec succès."
@@ -25,7 +27,9 @@ messages:
     &aen &l%speed%x&a."
   video-volume-updated: "&aVous venez de mettre à jour le volume de &l%video% &aà
     &l%volume%x&a."
-  video-compress-disabled: "&aLa compression du cache de &l%video% &acn'est plus active."
+  video-audio-offset-updated: "&aVous venez de mettre à jour le decalage audio de &l%video% &aà
+    &l%offset%&a secondes."
+  video-compress-disabled: "&aLa compression du cache de &l%video% &an'est plus active."
   video-compress-enabled: "&aLa compression du cache &l%video% &aest active."
   video-age-limit-disabled: "&aLa vidéo &l%video% &an'est plus réservée à un certain
     publique."
