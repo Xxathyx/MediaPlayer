@@ -440,7 +440,7 @@ public class Configuration {
 	}
 	
 	public String video_offset_start(String offset) {
-		return getMessage(getMessagesFile().getString("messages.video-start"), offset);
+		return getMessage(getMessagesFile().getString("messages.video-start-offset"), offset);
 	}
 	
 	public String video_unloaded(String video) {
