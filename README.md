@@ -1,6 +1,8 @@
 # MediaPlayer
 
-[![icon.png](https://i.postimg.cc/gj8Pj7mb/icon.png)](https://postimg.cc/tnqcm2sB)
+<h1 align="center">
+  <img src="https://i.postimg.cc/gj8Pj7mb/icon.png" alt="MediaPlayer">
+</h1>
 
 Allows you to play and use various medias such as videos with audio on Minecraft (1.7-1.20.6).
 For better performance, set network-compression-threshold to -1 in server.properties
