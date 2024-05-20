@@ -223,6 +223,10 @@ public class Configuration {
 			a = a.replaceAll("%video%", b);
 		}
 		
+		if(a.contains("%offset%")) {
+			a = a.replaceAll("%offset%", b);
+		}
+		
 		if(a.contains("%screen%")) {
 			a = a.replaceAll("%screen%", b);
 		}
@@ -433,6 +437,10 @@ public class Configuration {
 	
 	public String video_offset_notice(String video) {
 		return getMessage(getMessagesFile().getString("messages.video-offset-notice"), video);
+	}
+	
+	public String video_offset_start(String offset) {
+		return getMessage(getMessagesFile().getString("messages.video-start"), offset);
 	}
 	
 	public String video_unloaded(String video) {

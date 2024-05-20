@@ -211,11 +211,14 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								
 								//if(!Bukkit.getScheduler().isCurrentlyRunning(videoPlayer.getScreen().task[0])) videoPlayer.getScreen().setSettings(new ScreenSettings(videoPlayer.getScreen().getVideo())); videoPlayer.getScreen().display();
 								
-								new BukkitRunnable() {
-							        public void run() {
-							        	videoPlayer.getScreen().setOffset(true);
-							        	}
-							    }.runTaskLater(plugin, (long) (videoPlayer.getScreen().getVideo().getAudioOffset()*20L));
+								if(videoPlayer.getScreen().getVideo().getAudioOffset() > 0) {
+									player.sendMessage(configuration.video_offset_start(String.valueOf(videoPlayer.getScreen().getVideo().getAudioOffset())));
+									new BukkitRunnable() {
+								        public void run() {
+								        	videoPlayer.getScreen().setOffset(true);
+								        	}
+								    }.runTaskLater(plugin, (long) (videoPlayer.getScreen().getVideo().getAudioOffset()*20L));
+								}
 							    
 							    videoPlayer.getScreen().setRunning(true);
 								player.sendMessage(configuration.video_instance_started(videoPlayer.getScreen().getVideoInstance().getVideo().getName(), String.valueOf(videoPlayer.getScreen().getId())));
