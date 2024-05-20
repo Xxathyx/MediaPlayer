@@ -5,7 +5,7 @@ messages:
     progress of the load."
   video-load-notice: "&7(The longer a video is, the more it will load)"
   video-offset-notice: "&7(You notice that the audio plays for a while after displaying,
-  to define an image and audio offset : /video %video%&7set offset <seconds>)"
+  to define an image and audio offset : /video %video%&7 set offset <seconds>)"
   video-offset-start: "&aThis video will start in %offset%&a seconds."
   video-unloaded: "&aThe video &l%video% &has just been unloaded."
   video-downloaded: "&aYou have just downloaded the video &l%video%&a."

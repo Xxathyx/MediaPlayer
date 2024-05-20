@@ -5,7 +5,7 @@ messages:
     progression du chargement."
   video-load-notice: "&7(Plus une vidéo est longue plus le chargement en est de même)"
   video-offset-notice: "&7(Vous remarquez que l'audio se joue un certain temps après l'affichage,
-  pour définir un décalage image et audio : /video %video%&7set offset <secondes>)"
+  pour définir un décalage image et audio : /video %video%&7 set offset <secondes>)"
   video-offset-start: "&aLa vidéo démarrera dans %offset%&a secondes."
   video-unloaded: "&aLa vidéo &l%video% &avient d'être déchargée."
   video-downloaded: "&aVous venez de télécharger la video &l%video%&a."
