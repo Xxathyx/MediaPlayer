@@ -66,7 +66,8 @@ ExecStart=/usr/bin/java -jar /var/www/html/server.jar
 WantedBy=multi-user.target
 ```
 Notice that server.jar is located in ```/var/www/html/``` and mediaplater.service file is located in ```/etc/systemd/system/```. You can now
-register mediaplater service by executing the following instructions : ```sudo systemctl daemon-reload``` and ```sudo systemctl start mediaplayer.service```.
+register mediaplater service by executing the following instructions : ```sudo systemctl daemon-reload``` and ```sudo systemctl start mediaplayer.service```,
+then enable it on boot : ``` sudo systemctl enable mediaplayer```.
 
 You can now eventually restart you web-server and then specify your web-server adress in the plugin configuration file field : ```own-audio-server-handling-address```
 and the port in ```own-audio-server-handling-port```, and restart your server.
