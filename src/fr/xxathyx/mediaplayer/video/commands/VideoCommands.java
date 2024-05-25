@@ -218,6 +218,8 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								        	videoPlayer.getScreen().setOffset(true);
 								        	}
 								    }.runTaskLater(plugin, (long) (videoPlayer.getScreen().getVideo().getAudioOffset()*20L));
+								}else {
+						        	videoPlayer.getScreen().setOffset(true);
 								}
 							    
 							    videoPlayer.getScreen().setRunning(true);
