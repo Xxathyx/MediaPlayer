@@ -4,7 +4,7 @@
   <img src="https://i.postimg.cc/gj8Pj7mb/icon.png" alt="MediaPlayer">
 </h1>
 
-Allows you to play and use various medias such as videos with audio on Minecraft (1.7-1.20.6).
+Allows you to play and use various medias such as videos with audio on Minecraft (1.7-1.21).
 For better performance, set network-compression-threshold to -1 in server.properties
 
 Videos : https://youtu.be/LYVOkX7uQ5M
