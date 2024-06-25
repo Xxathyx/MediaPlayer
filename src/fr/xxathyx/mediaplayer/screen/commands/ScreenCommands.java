@@ -325,6 +325,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 			
 			plugin.getRegisteredScreens().add(screen);
 		}catch (IllegalArgumentException | NullPointerException e) {
+			e.printStackTrace();
 			player.sendMessage(configuration.screen_cannot_create());
 			if(screen != null) screen.delete();
 		}

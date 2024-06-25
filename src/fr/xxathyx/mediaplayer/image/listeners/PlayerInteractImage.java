@@ -140,7 +140,7 @@ public class PlayerInteractImage implements Listener {
 							
 					        boolean visible = true;
 					        
-					        if(plugin.getServerVersion().equals("v1_20_R4")  || plugin.getServerVersion().equals("v1_20_R3")  || plugin.getServerVersion().equals("v1_20_R2") || plugin.getServerVersion().equals("v1_20_R1") || plugin.getServerVersion().equals("v1_19_R3") || plugin.getServerVersion().equals("v1_19_R2") || plugin.getServerVersion().equals("v1_19_R1") || plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") ||
+					        if(plugin.getServerVersion().equals("v1_21_R1")  || plugin.getServerVersion().equals("v1_20_R4")  || plugin.getServerVersion().equals("v1_20_R3")  || plugin.getServerVersion().equals("v1_20_R2") || plugin.getServerVersion().equals("v1_20_R1") || plugin.getServerVersion().equals("v1_19_R3") || plugin.getServerVersion().equals("v1_19_R2") || plugin.getServerVersion().equals("v1_19_R1") || plugin.getServerVersion().equals("v1_18_R2") || plugin.getServerVersion().equals("v1_18_R1") ||
 					        		plugin.getServerVersion().equals("v1_17_R1") || plugin.getServerVersion().equals("v1_16_R3") || plugin.getServerVersion().equals("v1_16_R2") ||
 					        		plugin.getServerVersion().equals("v1_16_R1")) {
 					        	visible = configuration.visible_screen_frames_support();
@@ -148,6 +148,7 @@ public class PlayerInteractImage implements Listener {
 					        
 							for(int i = 0; i < frames.size(); i++) {
 								
+								if(plugin.getServerVersion().equals("v1_21_R1")) ((org.bukkit.craftbukkit.v1_21_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								if(plugin.getServerVersion().equals("v1_20_R4")) ((org.bukkit.craftbukkit.v1_20_R4.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								if(plugin.getServerVersion().equals("v1_20_R3")) ((org.bukkit.craftbukkit.v1_20_R3.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								if(plugin.getServerVersion().equals("v1_20_R2")) ((org.bukkit.craftbukkit.v1_20_R2.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
@@ -180,6 +181,7 @@ public class PlayerInteractImage implements Listener {
 											ItemFrame itemFrame = (ItemFrame) player.getWorld().spawnEntity(first, EntityType.ITEM_FRAME);
 											itemFrame.setItem(new ItemStacks().getMap(image.getIds().get(0)));
 											
+											if(plugin.getServerVersion().equals("v1_21_R1")) ((org.bukkit.craftbukkit.v1_21_R1.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											if(plugin.getServerVersion().equals("v1_20_R4")) ((org.bukkit.craftbukkit.v1_20_R4.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											if(plugin.getServerVersion().equals("v1_20_R3")) ((org.bukkit.craftbukkit.v1_20_R3.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											if(plugin.getServerVersion().equals("v1_20_R2")) ((org.bukkit.craftbukkit.v1_20_R2.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
