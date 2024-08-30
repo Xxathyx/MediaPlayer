@@ -69,9 +69,7 @@ Notice that server.jar is located in ```/var/www/html/``` and mediaplater.servic
 register mediaplayer service by executing the following instructions : ```sudo systemctl daemon-reload``` and ```sudo systemctl start mediaplayer.service```,
 then enable it on boot : ``` sudo systemctl enable mediaplayer```.
 
-To confirm that mediaplayer is running : ```systemctl status mediaplayer```.
-
-You can now eventually restart you web-server and then specify your web-server adress in the plugin configuration file field : ```own-audio-server-handling-address```
-and the port in ```own-audio-server-handling-port```, and restart your server.
+You can now eventually restart you web-server (then to confirm that mediaplayer is running : ```sudo systemctl status mediaplayer```), specify your web-server
+adress in the plugin configuration file field : ```own-audio-server-handling-address``` and the port in ```own-audio-server-handling-port```, and restart your server.
 
 ### Notice that if you already have a token, you would have to delete the plugin folder in order to generate a new one for the newly created audio-server.
