@@ -53,7 +53,7 @@ In order to setup you own audio handling server you will need to have a web-serv
 then download and place https://github.com/Xxathyx/MediaPlayer-server jar archive, somewhere in your server, most likely in a folder
 in which the program could write and read informations, so make sure to put in a folder only with write-execute permissions.
 
-Then make it run everytime on web-server startup by creating a service file such as
+Then make it run everytime on web-server startup by creating a service file (mediaplater.service) such as
 
 ```
 [Unit]
@@ -66,7 +66,7 @@ ExecStart=/usr/bin/java -jar /var/www/html/server.jar
 WantedBy=multi-user.target
 ```
 Notice that server.jar is located in ```/var/www/html/``` and mediaplater.service file is located in ```/etc/systemd/system/```. You can now
-register mediaplater service by executing the following instructions : ```sudo systemctl daemon-reload``` and ```sudo systemctl start mediaplayer.service```,
+register mediaplayer service by executing the following instructions : ```sudo systemctl daemon-reload``` and ```sudo systemctl start mediaplayer.service```,
 then enable it on boot : ``` sudo systemctl enable mediaplayer```.
 
 You can now eventually restart you web-server and then specify your web-server adress in the plugin configuration file field : ```own-audio-server-handling-address```
