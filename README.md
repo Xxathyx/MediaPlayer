@@ -41,4 +41,4 @@ Notice that those integers represent the real location of the click according to
 ### How to have audio :
 
 In order to have audio, users must simply set their 'Server Resource Pack' to ```Prompt``` or ```Enabled```.
-### When everyone is ready you can type ```vid start``` to run the video, to force starting without waiting everyone to be ready you can type ```vid start``` anyways.
+### When everyone is ready you can type ```vid start``` to run the video, to force starting without waiting for everyone to be ready you can type ```vid start``` anyways.
