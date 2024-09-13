@@ -939,8 +939,12 @@ public class Screen {
 		plugin.getTasks().add(tasks[0]); plugin.getTasks().add(tasks[1]);
 		loadThumbnail();
 		
-		server = new Server(new File(videoData.getResourcePacksFolder(), video.getName() + ".zip"));
-		server.start();
+		File pack = new File(videoData.getResourcePacksFolder(), video.getName() + ".zip");
+		
+		if(pack.exists()) {
+			server = new Server(new File(videoData.getResourcePacksFolder(), video.getName() + ".zip"));
+			server.start();
+		}
 				
 		if(!frames.isEmpty()) for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(itemStacks.getMap(ids[i]));
 				
@@ -970,7 +974,7 @@ public class Screen {
 						Player player = ((Player)entity);
 						
 						if(!listeners.contains(player.getUniqueId())) {
-						    player.setResourcePack(server.url());
+							if(video.isAudioEnabled()) player.setResourcePack(server.url());
 							listeners.add(player.getUniqueId());
 						}
 					}
@@ -979,16 +983,18 @@ public class Screen {
 				if(!running) {
 					
 					ArrayList<UUID> ready = new ArrayList<>();
+					if(!video.isAudioEnabled()) ready.addAll(listeners);
 					
 					if(System.currentTimeMillis() - settings.time >= 1000) {
 						
 	                	settings.time = System.currentTimeMillis();
-						
-						for(UUID uuid : listeners) {
-							if(!plugin.getPlayersScreens().containsKey(uuid)) {
-								new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
-							}else if(!ready.contains(uuid)){
-								ready.add(uuid);
+						if(video.isAudioEnabled()) {
+							for(UUID uuid : listeners) {
+								if(!plugin.getPlayersScreens().containsKey(uuid)) {
+									new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
+								}else if(!ready.contains(uuid)){
+									ready.add(uuid);
+								}
 							}
 						}
 						if(ready.size() == listeners.size()) new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
