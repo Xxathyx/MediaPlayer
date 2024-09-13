@@ -1,0 +1,175 @@
+messages:
+  plugin-outdated: "&cThe used version of the plugin is out of date, activate the
+    auto-update option from the configuration, or do it manually from: https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1"
+  video-load-requested: "&aLoad request sent, you will be informed about the
+    progress of the load."
+  video-load-notice: "&7(The longer a video is, the more it will load)"
+  video-offset-notice: "&7(You notice that the audio plays for a while after displaying,
+  to define an image and audio offset : /video %video%&7 set offset <seconds>)"
+  video-offset-start: "&aThis video will start in %offset%&a seconds."
+  video-unloaded: "&aThe video &l%video% &has just been unloaded."
+  video-downloaded: "&aYou have just downloaded the video &l%video%&a."
+  video-deleted: "&aThe video &l%video% &has been successfully deleted."
+  video-already-loaded: "&cThe video &l%video% &cis already loaded."
+  video-already-loading: "&cThe video &l%video% &cis already being loaded."
+  video-not-loaded: "&cVideo &l%video% &cis not loaded, &l/video load %video%."
+  video-invalid: "&cThe video &l%video% &cis not found."
+  video-invalid-index: "&cThe index video &l%index% &ccis not found."
+  video-selected: "&aYou have just selected the video &l%video%&a, assign it
+    by clicking on the top left corner of a screen."
+  video-assigned: "&aYou have just assigned the video &l%video% &a to this screen, &l/video
+    start &to play it."
+  video-not-enought-space: "&cYou don't have enough space to load &l%video%&c."
+  video-description-updated: "&aYou have just updated the description of &l%video%&c
+    &ainto %description%&a."
+  video-framerate-updated: "&aYou have just updated the refresh time
+    of &l%video% &ato &l%framerate%&a."
+  video-speed-updated: "&aYou have just updated the playback speed of &l%video%&a to &l%speed%&a.
+    &ato &l%speed%x&a."
+  video-volume-updated: "&aYou have just updated the volume of &l%video% &ato
+    &l%volume%x&a."
+  video-audio-offset-updated: "&aYou have just updated the audio offset of &l%video% &ato
+    &l%offset%&a seconds."
+  video-compress-disabled: "&aThe &l%video% &acompression is no longer enabled."
+  video-compress-enabled: "&aThe &l%video% &acompression is now enabled."
+  video-age-limit-disabled: "&aThe &l%video% &a is no longer restricted to a certain
+    audience."
+  video-age-limit-enabled: "&aThe &l%video% &ais now restricted to a certain
+    audience."
+  video-audio-disabled: "&aYou have just disabled the audio track of &l%video%&a."
+  video-audio-enabled: "&aYou have just enabled the audio track of &l%video%&a."
+  video-loop-enabled: "&aYou have just activated the repeat of &l%video%&a."
+  video-loop-disabled: "&aYou have just disabled the repeat of &l%video%&a."
+  video-real-time-rendering-enabled: "&aYou have just enabled real time rendering
+    of &l%video%&a."
+  video-real-time-rendering-disabled: "&aYou have just disabled real-time rendering of &l%video%&a.
+    rendering of &l%video%&a."
+  video-skip-duplicated-frames-enabled: "&aYou have just enabled skipping of duplicated frames
+    of &l%video%&a."
+  video-skip-duplicated-frames-disabled: "&aYou have just deactivated the frame
+    of &l%video%&a."
+  video-show-informations-enabled: "&aYou have enabled the display of information
+    of &l%video%&a."
+  video-show-informations-disabled: "&aYou have just disabled the display of information
+    of &l%video%&a."
+  video-show-fps-enabled: "&aYou have just enabled the display of the number of frames
+    per second of &l%video%&a."
+  video-show-fps-disabled: "&aYou have just disabled the display of the frame rate of &l%video%&a.
+    per second of &l%video%&a."
+  video-run-on-startup-enabled: "&aYou have just enabled the run-on-startup
+    of &l%video%&a."
+  video-run-on-startup-disabled: "&aYou have just deactivated the startup of &l%video%&a.
+    of &l%video%&a."
+  video-processing-frames-starting: "&7The extraction of frames from &l%video% &7has just started. (1/3)"
+  video-processing-frames-finished: "&7The extraction of the &l%video% &7frames has
+    finished."
+  video-processing-estimated-time: "&7(Total estimated loading time of : &l%time%±1
+    &7minutes)"
+  video-processing-audio-starting: "&7The extraction of the audio file from &l%video%
+    &7has just started. (2/3)"
+  video-processing-audio-finished: "&7The extraction of the audio file from &l%video%
+    &7is finished."
+  video-processing-minecraft-starting: "&7The conversion to Minecraft of &l%video%
+    &7has just started. (3/3)"
+  video-processing-minecraft-finished: "&7The conversion to Minecraft of &l%video%
+    &7is finished (3/3)"
+  video-processing-finished: "&7Video loading &l%video% &7completed in &l%time%
+    &7minute(s)."
+  video-instance-started: "&aYou have just started the video &l%video% &on the
+    ID screen: &l%id%&a."
+  video-instance-stopped: "&aYou just stopped the video &l%video%&a."
+  video-instance-pause: "&aYou have just paused the video &l%video%&a."
+  video-instance-resume: "&aYou have just restarted the video &l%video%&a."
+  video-instance-not-on-screen: "&This video is not assigned to any screen, assign it
+    with the /screen create."
+  videos-reload-requested: "&aReload request for videos received."
+  screens-reload-requested: "&aRequest to reload screens received."
+  videos-reloaded: "&aThe list of saved videos has been refreshed."
+  screens-reloaded: "&aThe list of registered screens has been refreshed."
+  videos-empty-registered: "&cNo videos have been detected and registered."
+  videos-canceled-tasks: "&aAll running tasks have been cancelled.
+    &8(%tasks%)"
+  videos-notice: "&7(You can perform the same action, simply through a
+    graphical interface: /videos)"
+  screen-created: "&aYou have just created a screen dimension: &l%dimension%&a."
+  screen-removed: "&aYou have just removed the index screen: &l%index%&a."
+  screen-deleted: "&aYou have just deleted the screen: &l%screen%&a."
+  screen-teleport: "&aYou have just teleported to the screen: &l%screen%&a."
+  screen-invalid-index: "&cThe index screen &l%index% &cis not found."
+  screen-cannot-create: "&cCannot create a screen in this location, blocks are probably in the way.
+    blocks are probably blocking the space."
+  screen-not-ready: "&c&l%player% &chasn't downloaded all the necessary addons yet."
+  screen-everyone-ready: "&aAll users are ready, you can start the
+    video: &a&l/video start&a."
+  image-rendered: "&aThe image rendering &l%image% &ais finished."
+  image-deleted: "&aYou have just deleted the &l%image%&a."
+  image-received: "&aYou have just received the image poster: &l%image%&a."
+  image-gived: "&you have just sent a poster of the image &l%image%&a to &l%player%&a."
+  image-placed: "&you have just placed the image: &l%image%&a."
+  image-removed: "&aYou have just removed the image: &l%image%&a."
+  image-not-found: "&cThe specified image cannot be found."
+  image-invalid: "&cThe address, index or filename entered is invalid."
+  image-cannot-read: "&cCannot retrieve the entered image, check the redirection
+    of the url."
+  image-invalid-screen: "&cThe selected screen does not contain a sufficient number
+    of frames."
+  image-already-rendered: "&cThe rendering of the &l%image% &has already been done, do
+    /image give &l%image%&c."
+  item:
+    previous-page:
+      name: "&4&lPrevious-page"
+      lore: "&Click here to go to the previous page."
+    refresh-page:
+      name: "&6&lRefresh"
+      lore: "&eClick here to refresh the page."
+    next-page:
+      name: "&2&lNext page"
+      lore: "&aClick here to go to the next page."
+    play:
+      name: "&2&lPlay"
+      lore: "&aClick here to play the video."
+    switcher:
+      name: "&6&lChange content"
+      lore: "&aClick here to change the displayed content."
+    remote:
+      name: "&2&lPause or continue"
+      lore: "&aClick here to pause or continue the video."
+    load:
+      name: "&6&lLoad"
+      lore: "&eClick here to load the video."
+    teleport:
+      name: "&5&lTeleport"
+      lore: "&dClick here to teleport to the screen."
+    delete:
+      name: "&4&lDelete"
+      lore-1: "&Click here to delete the video."
+      lore-2: "&c&l[!] No going back once deleted."
+    remove:
+      name: "&4&lDelete"
+      lore-1: "&Click here to delete the screen."
+      lore-2: "&c&l[!] No going back once deleted."
+    poster:
+      lore-1: "&eRight-click with the card on the corner frame"
+      lore-2: "&eTop left of screen to spread image."
+      lore-3: "&eTo remove the image, crouch down then click-"
+      lore-4: "&right on the top left corner of the screen."
+  libraries-not-installed: The libraries needed for the plugin to work properly are not
+    not installed, please wait for the installation to be completed,
+    then try again later.
+  age-limit-warning: "&c[!] Contains explicit content."
+  incompatible: "&4[!] This video is not compatible."
+  impossible-connection: "&cCannot connect to the requested server."
+  no-page-left: "&cYou can't turn the page because this page doesn't seem to exist."
+  too-much-loading: "&cCannot load, too many videos are being loaded."
+  too-much-playing: "&cNot possible to launch, too many videos are playing."
+  no-screen-playing: "&cNo screens registered."
+  not-number: "&cThe number chosen is invalid."
+  available-images: "&2List of available images:"
+  available-videos: "&2List of available videos:"
+  loaded: "&aLoaded."
+  not-loaded: "&cNot-loaded."
+  negative-number: "&cThe selected number cannot be negative."
+  offline-player: "&cThe %player% is offline."
+  invalid-url: "&cThe url entered: &l%url% &cis invalid."
+  invalid-sender: "&cThis command is only available in game."
+  insufficient-permissions: "&cYou do not have permission to run this command."

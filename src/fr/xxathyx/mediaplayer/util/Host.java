@@ -69,7 +69,7 @@ public class Host {
     public String websiteData(String website) {
         try {
             StringBuilder stringBuilder = new StringBuilder("");
-            URL url = new URL(website);
+			URL url = new URL(website);
             
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
             

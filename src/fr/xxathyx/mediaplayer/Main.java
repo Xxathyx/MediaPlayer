@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
@@ -41,7 +41,6 @@ import fr.xxathyx.mediaplayer.screen.listeners.PlayerBreakScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerDamageScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerDisconnectScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerInteractScreen;
-import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadImages;
 import fr.xxathyx.mediaplayer.tasks.TaskSyncLoadScreens;
@@ -57,7 +56,7 @@ import fr.xxathyx.mediaplayer.video.listeners.PlayerInteractVideo;
 import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 
 /*
- * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2023)
+ * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2024)
  *
  * This software is a computer program add the possibility to use various
  * media on minecraft
@@ -98,7 +97,7 @@ import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 * @since   2021-08-23 
 */
 
-public class Main extends JavaPlugin {
+public class Main extends JavaPlugin implements Listener {
 	
 	private final ArrayList<Integer> tasks = new ArrayList<>();
 	private final ArrayList<Process> process = new ArrayList<>();
@@ -135,7 +134,6 @@ public class Main extends JavaPlugin {
 	private final MapColorSpaceData mapColorSpaceData = new MapColorSpaceData();
 	
 	private Configuration configuration;
-	private Client client;
 	
 	private Ffmpeg ffmpeg;
 	private Ffprobe ffprobe;
@@ -159,9 +157,7 @@ public class Main extends JavaPlugin {
 	*/
 	
 	public void onEnable() {
-		
-		client = new Client();
-		
+				
 		configuration = new Configuration();
 		configuration.setup();
 				
@@ -241,7 +237,7 @@ public class Main extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDamageScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDisconnectScreen(), this);
-		
+				
 		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
 		new TaskSyncLoadScreens().runTask(this);
@@ -249,21 +245,7 @@ public class Main extends JavaPlugin {
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
-		if(configuration.plugin_external_communication()) {
-			if(configuration.plugin_free_audio_server_handling()) {
-				
-				Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-					@Override
-					public void run() {
-						
-						client.connect();
-						
-						client.write("mediaplayer.connect: ", configuration.free_audio_server_token());
-						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
-					}
-				});
-			}
-		}
+		if(!configuration.plugin_packet_compression()) {}
 	}
 	
 	/**
@@ -301,34 +283,6 @@ public class Main extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
-		if(configuration.plugin_external_communication() && client.getSocket() != null) {
-			try {
-				client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
-				client.getSocket().close();
-			}catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-    /**
-     * Sets client if it can't be set, its only used on first time creation.
-     *
-     * @param client Client instance.
-     */
-	
-	public void setClient(Client client) {
-		this.client = client;
-	}
-	
-    /**
-     * Gets server-client that should be connected to the free audio server.
-     *
-     * @return the client instance.
-     */
-	
-	public Client getClient() {
-		return client;
 	}
 	
     /**
@@ -393,9 +347,9 @@ public class Main extends JavaPlugin {
 	}
 	
     /**
-     * Gets whether the plugin has been reloaded one a time.
+     * Gets whether the plugin has been reloaded one time.
      *
-     * @return Whether the plugin has been reloaded one a time.
+     * @return Whether the plugin has been reloaded one time.
      */
 	
 	public boolean isReloaded() {

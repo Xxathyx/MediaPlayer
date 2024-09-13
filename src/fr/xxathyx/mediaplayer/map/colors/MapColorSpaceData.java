@@ -4,6 +4,10 @@ import java.awt.Color;
 import java.awt.image.IndexColorModel;
 import java.util.Arrays;
 
+/*
+ * https://github.com/bergerhealer/BKCommonLib
+ */
+
 public class MapColorSpaceData implements Cloneable {
 	
     private final Color[] colors = new Color[256];

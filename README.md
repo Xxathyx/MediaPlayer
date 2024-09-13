@@ -1,11 +1,8 @@
 # MediaPlayer
 
-<h1 align="center">
-  <img src="https://i.postimg.cc/gj8Pj7mb/icon.png" alt="MediaPlayer">
-</h1>
+[![icon.png](https://i.postimg.cc/gj8Pj7mb/icon.png)](https://postimg.cc/tnqcm2sB)
 
-Allows you to play and use various medias such as videos with audio on Minecraft (1.7-1.20.6).
-For better performance, set network-compression-threshold to -1 in server.properties
+Allows you to play and use various medias such as videos on Minecraft.
 
 Videos : https://youtu.be/LYVOkX7uQ5M
 
@@ -14,17 +11,6 @@ Livestreams : https://youtu.be/swcMQTto5rI
 
 Download compiled plugin : https://www.dropbox.com/s/xchs5b54d71k0oh/MediaPlayer.jar?dl=1
 
-### How to use Mediaplyer
-
-1. Make sure the video format is compatible, here are the compatible formats : mp4, mov, m4v, avi, webm, mkv, gif, m3u8, ts, wmv
-2. Drag your video into the videos folder, in the plugin folder.
-3. Type the command /videos reload.
-4. Then type /video load video-name-without-extension (the video should not include space, otherwise you have to get the video index) this usually take time
-5. Type /video play video-name-without-extension
-6. Then click on the chat-message that says create a screen.
-7. Right click on the top right corner of the screen, the screen display should change into the video thumbnail.
-8. Then type /video start
-9. To stop it : /video stop
 
 ### How to use MediaPlayer API
 
@@ -65,11 +51,6 @@ ExecStart=/usr/bin/java -jar /var/www/html/server.jar
 [Install]
 WantedBy=multi-user.target
 ```
-Notice that server.jar is located in ```/var/www/html/``` and mediaplater.service file is located in ```/etc/systemd/system/```. You can now
-register mediaplater service by executing the following instructions : ```sudo systemctl daemon-reload``` and ```sudo systemctl start mediaplayer.service```,
-then enable it on boot : ``` sudo systemctl enable mediaplayer```.
 
 You can now eventually restart you web-server and then specify your web-server adress in the plugin configuration file field : ```own-audio-server-handling-address```
 and the port in ```own-audio-server-handling-port```, and restart your server.
-
-### Notice that if you already have a token, you would have to delete the plugin folder in order to generate a new one for the newly created audio-server.

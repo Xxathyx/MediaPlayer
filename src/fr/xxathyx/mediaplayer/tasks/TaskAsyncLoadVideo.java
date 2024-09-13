@@ -249,6 +249,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
     	    			ZipOutputStream zout = new ZipOutputStream(fout);
     	    			
     	    			for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+    	    				
     	    			    ZipEntry ze = new ZipEntry(String.valueOf(j) + ".cache");
     	    			    zout.putNextEntry(ze);
     	    			    zout.write(MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]));

@@ -2,6 +2,10 @@ package fr.xxathyx.mediaplayer.map.colors;
 
 import org.bukkit.map.MapPalette;
 
+/*
+ * https://github.com/bergerhealer/BKCommonLib
+ */
+
 public class MCSDGenBukkit extends MapColorSpaceData {
 	
     @SuppressWarnings("deprecation")

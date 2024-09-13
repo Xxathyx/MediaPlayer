@@ -53,6 +53,7 @@ import fr.xxathyx.mediaplayer.screen.content.Content;
 import fr.xxathyx.mediaplayer.screen.content.ContentType;
 import fr.xxathyx.mediaplayer.screen.part.Part;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
+import fr.xxathyx.mediaplayer.server.Server;
 import fr.xxathyx.mediaplayer.stream.Stream;
 import fr.xxathyx.mediaplayer.util.ImageUtil;
 import fr.xxathyx.mediaplayer.video.Video;
@@ -81,6 +82,7 @@ import fr.xxathyx.mediaplayer.util.FacingLocation;
 public class Screen {
 
 	private final Main plugin = Main.getPlugin(Main.class);
+	private Server server;
 	
 	private final Configuration configuration = new Configuration();
 	private final ItemStacks itemStacks = new ItemStacks();
@@ -935,9 +937,11 @@ public class Screen {
 	public void display() {
 		
 		plugin.getTasks().add(tasks[0]); plugin.getTasks().add(tasks[1]);
-		
 		loadThumbnail();
 		
+		server = new Server(new File(videoData.getResourcePacksFolder(), video.getName() + ".zip"));
+		server.start();
+				
 		if(!frames.isEmpty()) for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(itemStacks.getMap(ids[i]));
 				
 		if(video.isStreamed()) {
@@ -966,7 +970,7 @@ public class Screen {
 						Player player = ((Player)entity);
 						
 						if(!listeners.contains(player.getUniqueId())) {
-						    player.setResourcePack(new String("http://" + configuration.plugin_free_audio_server_address() + "/mediaplayer/users/" + configuration.free_audio_server_token() + "/" + video.getName() + ".zip").replace(" ", "%20"));
+						    player.setResourcePack(server.url());
 							listeners.add(player.getUniqueId());
 						}
 					}

@@ -10,9 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.xxathyx.mediaplayer.Main;
-import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.util.Host;
-import fr.xxathyx.mediaplayer.util.RandomToken;
 
 /** 
 * The Configuration class allow a direct bridge between plugin configuration and
@@ -54,21 +52,14 @@ public class Configuration {
 	public void setup() {
 		
 		if(!configurationFile.exists()) {
-			
-			String token = new RandomToken().random(10);
-			
+						
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
 			fileconfiguration.set("plugin.force-permissions", true);
 			fileconfiguration.set("plugin.external-communication", true);
-			fileconfiguration.set("plugin.free-audio-server-handling", true);
-			fileconfiguration.set("plugin.free-audio-server-address", "51.77.210.10");
-			fileconfiguration.set("plugin.free-audio-server-port", 2048);
-			fileconfiguration.set("plugin.free-audio-server-token", token);
-			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
-			fileconfiguration.set("plugin.own-audio-server-handling-port", 2048);
-			fileconfiguration.set("plugin.alternative-server", "http://51.77.210.10/");
+			fileconfiguration.set("plugin.packet-compression", true);
+			fileconfiguration.set("plugin.alternative-server", "http://54.38.185.225/");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -101,21 +92,6 @@ public class Configuration {
 			}catch (IOException e) {
 				e.printStackTrace();
 			}
-						
-			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-				@Override
-				public void run() {
-										
-					Client client = new Client();
-					client.connect();
-					
-					plugin.setClient(client);
-					
-					client.write("mediaplayer.register: ", token);
-					
-					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
-				}
-			});
 		}
 		
 		if(!videosFolder.exists()) {
@@ -329,28 +305,8 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.external-communication");
 	}
 	
-	public boolean plugin_free_audio_server_handling() {
-		return getConfigFile().getBoolean("plugin.free-audio-server-handling");
-	}
-	
-	public String plugin_free_audio_server_address() {
-		return getConfigFile().getString("plugin.free-audio-server-address");
-	}
-	
-	public int plugin_free_audio_server_port() {
-		return getConfigFile().getInt("plugin.free-audio-server-port");
-	}
-	
-	public String free_audio_server_token() {
-		return getConfigFile().getString("plugin.free-audio-server-token");
-	}
-	
-	public String own_audio_server_handling_address() {
-		return getConfigFile().getString("plugin.own-audio-server-handling-address");
-	}
-	
-	public int own_audio_server_handling_port() {
-		return getConfigFile().getInt("plugin.own-audio-server-handling-port");
+	public boolean plugin_packet_compression() {
+		return getConfigFile().getBoolean("plugin.packet-compression");
 	}
 	
 	public String plugin_alternative_server() {

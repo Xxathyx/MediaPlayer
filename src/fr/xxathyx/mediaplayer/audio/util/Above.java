@@ -8,6 +8,6 @@ public class Above implements AudioUtil {
 
 	@Override
 	public void stopAudio(Player player, String sound) {
-		player.stopSound(sound);
+		if(player != null) player.stopSound(sound);
 	}
 }
