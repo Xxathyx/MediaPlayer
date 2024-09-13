@@ -14,9 +14,6 @@ Videos : https://youtu.be/LYVOkX7uQ5M
 Livestreams : https://youtu.be/swcMQTto5rI
 
 
-Download compiled plugin : https://www.dropbox.com/s/xchs5b54d71k0oh/MediaPlayer.jar?dl=1
-
-
 ### How to use MediaPlayer API
 
 First of all, you need to add MediaPlayer.jar plugin as a library in your Java project, and add it as a plugin
