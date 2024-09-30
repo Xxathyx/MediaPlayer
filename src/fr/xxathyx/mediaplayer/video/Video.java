@@ -1053,7 +1053,7 @@ public class Video {
 	*/
 	
 	public boolean isAudioEnabled() {
-		return getConfigFile().getBoolean("video-enable-audio");
+		return getConfigFile().getBoolean("video.enable-audio");
 	}
 		
 	/**

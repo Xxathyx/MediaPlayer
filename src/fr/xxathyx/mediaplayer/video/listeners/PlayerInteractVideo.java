@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Rotation;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -203,7 +204,28 @@ public class PlayerInteractVideo implements Listener {
 					if(plugin.getServerVersion().equals("v1_16_R1")) ((org.bukkit.craftbukkit.v1_16_R1.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 				}
 				
-				Screen screen = plugin.getScreensFrames().get((ItemFrame)event.getRightClicked());
+				Screen screen = plugin.getScreensFrames().containsKey((ItemFrame)event.getRightClicked())
+						? plugin.getScreensFrames().get((ItemFrame)event.getRightClicked()) : null;
+				
+				if(screen == null) {
+					
+					ArrayList<Block> blocks = new ArrayList<>();
+					
+					for(ItemFrame frame : frames) blocks.add(frame.getLocation().getBlock().getRelative(frame.getAttachedFace()).getLocation().getBlock());
+					
+					screen = new Screen(UUID.randomUUID(), videoInstance.getVideo().getVideoData().getMinecraftWidth(), videoInstance.getVideo().getVideoData().getMinecraftHeight(), frames, blocks);
+					screen.createConfiguration(FacingLocation.getCardinalDirection(player), frames.get(0).getLocation());
+					
+					for(ItemFrame frame : frames) {
+						plugin.getScreensFrames().put(frame, screen);
+						plugin.getScreensBlocks().put(frame.getLocation().getBlock(), screen);
+					}
+										
+					plugin.getRegisteredScreens().add(screen);
+					
+			        player.sendMessage(configuration.screen_created(videoInstance.getVideo().getVideoData().getMinecraftWidth() + "x" + videoInstance.getVideo().getVideoData().getMinecraftHeight()));
+					SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+				}
 								
 				try {
 					videoInstance.setScreen(screen);

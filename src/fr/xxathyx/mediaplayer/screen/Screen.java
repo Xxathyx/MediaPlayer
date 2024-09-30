@@ -242,7 +242,7 @@ public class Screen {
 			}
 		}
 		
-		frames = sorted;
+		if(frames.size()==sorted.size()) frames = sorted;
 				
 		if(facingDirection.equals("E") || facingDirection.equals("W")) {
 			
@@ -255,6 +255,11 @@ public class Screen {
 				}
 			}
 			frames=temp;
+		}
+		
+		if(blocks.size()!=frames.size()) {
+			blocks.clear();
+			for(ItemFrame frame : frames) blocks.add(frame.getLocation().getBlock().getRelative(frame.getAttachedFace()).getLocation().getBlock());
 		}
 		
 		for(int i = 0; i < blocks.size(); i++) new Part(new File(getPartsFolder(), i + ".yml")).createConfiguration(uuid, blocks.get(i), frames.get(i), configuration.glowing_screen_frames_support(), configuration.visible_screen_frames_support(), i);
@@ -974,7 +979,9 @@ public class Screen {
 						Player player = ((Player)entity);
 						
 						if(!listeners.contains(player.getUniqueId())) {
-							if(video.isAudioEnabled()) player.setResourcePack(server.url());
+							if(video.isAudioEnabled()) {
+								player.setResourcePack(server.url());
+							}
 							listeners.add(player.getUniqueId());
 						}
 					}
@@ -988,15 +995,22 @@ public class Screen {
 					if(System.currentTimeMillis() - settings.time >= 1000) {
 						
 	                	settings.time = System.currentTimeMillis();
-						if(video.isAudioEnabled()) {
-							for(UUID uuid : listeners) {
+	                	
+	                	ArrayList<UUID> offline = new ArrayList<>();
+	                	
+						for(UUID uuid : listeners) {
+							if(Bukkit.getPlayer(uuid) != null) {
 								if(!plugin.getPlayersScreens().containsKey(uuid)) {
-									new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
+									if(video.isAudioEnabled()) new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
 								}else if(!ready.contains(uuid)){
 									ready.add(uuid);
 								}
+							}else {
+								ready.remove(uuid);
+								offline.add(uuid);
 							}
 						}
+						listeners.removeAll(offline);
 						if(ready.size() == listeners.size()) new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
 					}
 				}

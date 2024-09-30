@@ -1,16 +1,26 @@
 package fr.xxathyx.mediaplayer;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -20,6 +30,7 @@ import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
 import fr.xxathyx.mediaplayer.audio.util.AudioUtilVersion;
 import fr.xxathyx.mediaplayer.commands.MediaPlayerCommands;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.configuration.updater.ConfigurationUpdater;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffprobe;
 import fr.xxathyx.mediaplayer.group.Group;
@@ -184,6 +195,36 @@ public class Main extends JavaPlugin implements Listener {
 		updater = new Updater();
 		updater.update();
 		
+        String langage = new Configuration().plugin_langage();
+		
+		File updateFolder = new File(getDataFolder(), "updater/");
+		File updateTranslation = new File(updateFolder, langage + ".yml");
+		
+		updateFolder.mkdir();
+		
+		try {
+			URI uri = Main.class.getResource("translations/" + langage + ".yml").toURI();
+			if("jar".equals(uri.getScheme())) {
+			    for(FileSystemProvider provider: FileSystemProvider.installedProviders()) {
+			        if(provider.getScheme().equalsIgnoreCase("jar")) {
+			            try {
+			                provider.getFileSystem(uri);
+			            }catch (FileSystemNotFoundException e) {
+			                provider.newFileSystem(uri, Collections.emptyMap());
+			            }
+			        }
+			    }
+			}
+			Path source = Paths.get(uri);
+			
+			Files.copy(source, updateTranslation.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			
+			new ConfigurationUpdater(new File(getDataFolder() + "/translations/", langage + ".yml"), updateTranslation, "messages").update();
+			
+		}catch (URISyntaxException | IOException | InvalidConfigurationException e) {
+	        Bukkit.getLogger().warning("[MediaPlayer]: If you are reloading the plugin skip this message. Failed to verify configurations.");
+		}
+		
 		mapUtil = new MapUtilVersion().getMapUtil();
 		actionBar = new ActionBarVersion().getActionBar();
 		audioUtil = new AudioUtilVersion().getAudioUtil();
@@ -232,7 +273,6 @@ public class Main extends JavaPlugin implements Listener {
 		
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractImage(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractVideo(), this);
-				
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerBreakScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDamageScreen(), this);

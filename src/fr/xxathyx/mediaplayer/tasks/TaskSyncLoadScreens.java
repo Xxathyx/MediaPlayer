@@ -82,16 +82,17 @@ public class TaskSyncLoadScreens extends BukkitRunnable {
 				if(!part.getBlock().getType().equals(screen.getBlockType())) {
 					part.getBlock().setType(screen.getBlockType());
 				}
-				if(part.getItemFrame() == null) {
+				ItemFrame itemFrame = part.getItemFrame();
+				if(itemFrame == null) {
 					
-					for(Entity entity : entities) {						
-						if(entity.getLocation().distance(location) == 0) {
+					for(Entity entity : entities) {	
+						if(entity.getLocation().distance(location)<0.01) {
 							plugin.getScreensFrames().put((ItemFrame) entity, screen);
 							frames.add((ItemFrame) entity);
 							existant.add(entity.getLocation());
 						}						
 					}
-				}				
+				}else plugin.getScreensFrames().put(itemFrame, screen);
 				plugin.getScreensBlocks().put(part.getBlock(), screen);
 			}
 			

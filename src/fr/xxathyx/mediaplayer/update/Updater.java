@@ -76,7 +76,7 @@ public class Updater {
 	
 	public boolean isOutdated() {
 	    try {
-			HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=79033").openConnection();
+			HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119570").openConnection();
 			InputStreamReader input = new InputStreamReader(httpURLConnection.getInputStream());
 			BufferedReader bufferedReader = new BufferedReader(input);
 			String newVersion = bufferedReader.readLine();
