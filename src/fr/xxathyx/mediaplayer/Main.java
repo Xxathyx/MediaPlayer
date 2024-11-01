@@ -19,12 +19,19 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.craftbukkit.v1_20_R4.entity.CraftPlayer;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.bergerkiller.bukkit.common.map.MapColorPalette;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
 import fr.xxathyx.mediaplayer.audio.util.AudioUtilVersion;
@@ -60,11 +67,17 @@ import fr.xxathyx.mediaplayer.update.Updater;
 import fr.xxathyx.mediaplayer.util.ActionBar;
 import fr.xxathyx.mediaplayer.util.AudioUtil;
 import fr.xxathyx.mediaplayer.util.MapUtil;
+import fr.xxathyx.mediaplayer.util.ServerVersion;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.commands.VideoCommands;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
 import fr.xxathyx.mediaplayer.video.listeners.PlayerInteractVideo;
 import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 
 /*
  * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2024)
@@ -157,6 +170,9 @@ public class Main extends JavaPlugin implements Listener {
 	private ActionBar actionBar;
 	private AudioUtil audioUtil;
 	
+	private String serverVersion;
+	
+	private boolean isPaper = false;
 	private boolean legacy = true;
 	private boolean old = false;
 		
@@ -168,7 +184,13 @@ public class Main extends JavaPlugin implements Listener {
 	*/
 	
 	public void onEnable() {
-				
+		
+		serverVersion = ServerVersion.getServerVersion();
+		
+        try {
+            Class.forName("com.destroystokyo.paper.ParticleBuilder"); isPaper = true;
+        }catch (ClassNotFoundException ignored) {}
+		
 		configuration = new Configuration();
 		configuration.setup();
 				
@@ -238,7 +260,7 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		});
 		
-        String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        String serverVersion = getServerVersion();
 		
         if(serverVersion.equals("v1_21_R1") | serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
         		serverVersion.equals("v1_16_R2") | serverVersion.equals("v1_16_R1") | serverVersion.equals("v1_15_R1") | serverVersion.equals("v1_14_R1") | serverVersion.equals("v1_13_R1") | serverVersion.equals("v1_13_R2")) {
@@ -277,7 +299,9 @@ public class Main extends JavaPlugin implements Listener {
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDamageScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDisconnectScreen(), this);
-				
+		
+        //Bukkit.getServer().getPluginManager().registerEvents(this, this);
+		
 		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
 		new TaskSyncLoadScreens().runTask(this);
@@ -325,6 +349,43 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        injectPlayer(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent event){
+        removePlayer(event.getPlayer());
+    }
+    private void removePlayer(Player player) {
+        Channel channel = ((CraftPlayer) player).getHandle().b.a.m;
+        channel.eventLoop().submit(() -> {
+            channel.pipeline().remove(player.getName());
+            return null;
+        });
+    }
+	
+	private void injectPlayer(Player player) {
+    	
+        ChannelDuplexHandler channelDuplexHandler = new ChannelDuplexHandler() {
+        	
+            @Override
+            public void channelRead(ChannelHandlerContext channelHandlerContext, Object packet) throws Exception {
+                Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.YELLOW + "PACKET READ: " + ChatColor.RED + packet.toString());
+                super.channelRead(channelHandlerContext, packet);
+            }
+            
+			@Override
+            public void write(ChannelHandlerContext channelHandlerContext, Object packet, ChannelPromise channelPromise) throws Exception {
+                Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "PACKET WRITE: " + ChatColor.GREEN + packet.toString());
+        		super.write(channelHandlerContext, packet, channelPromise);
+            }
+        };
+        ChannelPipeline pipeline = ((CraftPlayer) player).getHandle().b.a.m.pipeline();
+        pipeline.addBefore("packet_handler", player.getName(), channelDuplexHandler);
+    }
+	
     /**
      * Gets access to the ffmpeg library.
      *
@@ -353,7 +414,7 @@ public class Main extends JavaPlugin implements Listener {
      */
 	
 	public String getServerVersion() {
-		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		return serverVersion;
 	}
 	
     /**
@@ -406,6 +467,16 @@ public class Main extends JavaPlugin implements Listener {
 				
 		if(tickvalue > 1) return true;	
 		return false;
+	}
+	
+    /**
+     * Gets whether this server is running under a PaperMC version.
+     *
+     * @return Whether this server is running under PaperMC.
+     */
+	
+	public boolean isPaper() {
+		return isPaper;
 	}
 	
     /**

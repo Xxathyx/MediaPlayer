@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -16,7 +18,6 @@ import org.json.simple.JSONObject;
 import com.google.gson.Gson;
 
 import dev.jeka.core.api.file.JkPathTree;
-
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
@@ -89,7 +90,16 @@ public class ResourcePack {
 		    
 			for(int i = 0; i < video.getAudioChannels(); i++) {
 				
-			    submab.put("sounds", new String[] { "mediaplayer/" + i });
+				List<Map<String, Object>> param = new ArrayList<Map<String, Object>>();
+
+			    Map<String, Object> inner = new HashMap<>();
+			    
+			    inner.put("name", "mediaplayer/" + i);
+			    inner.put("preload", true);
+				
+			    param.add(inner);
+			    
+			    submab.put("sounds", param);
 			    soundsMap.put("mediaplayer." + i, submab);
 			    
 			    com.google.common.io.Files.copy(new File(video.getAudioFolder(), i + ".ogg"), new File(assets, i + ".ogg"));

@@ -1,7 +1,5 @@
 package fr.xxathyx.mediaplayer.audio.util;
 
-import org.bukkit.Bukkit;
-
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.util.AudioUtil;
 
@@ -25,9 +23,11 @@ public class AudioUtilVersion {
      * @return AudioUtil of the server version.
      */
 	
+	private final Main plugin = Main.getPlugin(Main.class);
+	
 	public AudioUtil getAudioUtil() {
 		
-        final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        final String serverVersion = plugin.getServerVersion();
         
         if(serverVersion.equals("v1_9_R2")) {
         	return new v1_9_R2();

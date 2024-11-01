@@ -1,7 +1,5 @@
 package fr.xxathyx.mediaplayer.actionbar;
 
-import org.bukkit.Bukkit;
-
 import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.util.ActionBar;
 
@@ -27,9 +25,11 @@ public class ActionBarVersion {
      * @return ActionBar of the server version.
      */
 	
+	private final Main plugin = Main.getPlugin(Main.class);
+	
 	public ActionBar getActionBar() {
 		
-        final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        final String serverVersion = plugin.getServerVersion();
         
         if(serverVersion.equals("v1_21_R1")) {
         	return new v1_21_R1();
@@ -121,7 +121,6 @@ public class ActionBarVersion {
         if(serverVersion.equals("v1_7_R1")) {
         	return new v1_7_R4();
         }
-	    Bukkit.getLogger().warning("MediaPlayer do not support this server version! You may encounter issues.");
 	    return null;
 	}
 }

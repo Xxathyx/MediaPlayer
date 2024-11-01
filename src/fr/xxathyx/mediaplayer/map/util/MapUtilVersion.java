@@ -27,12 +27,14 @@ public class MapUtilVersion {
      * @return MapUtil of the server version.
      */
 	
+	private final Main plugin = Main.getPlugin(Main.class);
+	
 	public MapUtil getMapUtil() {
 		
-        final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-        
+        String serverVersion = plugin.getServerVersion();
+                        
         if(serverVersion.equals("v1_21_R1")) {
-        	System.out.print("MediaPlayer is running on the last minecraft version : " + serverVersion + "\n");
+        	System.out.print("MediaPlayer is running on the last minecraft version : " + Bukkit.getServer().getClass().getPackage().getName() + "\n");
         	return new v1_21_R1();
         }
         if(serverVersion.equals("v1_20_R4")) {
@@ -122,7 +124,7 @@ public class MapUtilVersion {
         if(serverVersion.equals("v1_7_R1")) {
         	return new v1_7_R4();
         }
-	    Bukkit.getLogger().warning("MediaPlayer do not support this server version! You may encounter issues.");
+	    Bukkit.getLogger().warning("MediaPlayer do not support this server version ! You may encounter issues.");
         return null;
 	}
 }

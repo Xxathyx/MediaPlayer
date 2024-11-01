@@ -103,6 +103,9 @@ public class Screen {
 	private VideoInstance videoInstance;
 	
 	private boolean compressed = false;
+	private boolean sent = false;
+	
+	private long start;
 	
 	private boolean running = false;
 	private boolean offset = false;
@@ -1001,7 +1004,7 @@ public class Screen {
 						for(UUID uuid : listeners) {
 							if(Bukkit.getPlayer(uuid) != null) {
 								if(!plugin.getPlayersScreens().containsKey(uuid)) {
-									if(video.isAudioEnabled()) new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
+									//if(video.isAudioEnabled()) new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
 								}else if(!ready.contains(uuid)){
 									ready.add(uuid);
 								}
@@ -1011,7 +1014,10 @@ public class Screen {
 							}
 						}
 						listeners.removeAll(offline);
-						if(ready.size() == listeners.size()) new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
+						if(ready.size() == listeners.size() && !sent) {
+							new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
+							sent = true;
+						}
 					}
 				}
 				
@@ -1026,6 +1032,7 @@ public class Screen {
 								Player player = Bukkit.getPlayer(uuid);
 								
 								for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(player.getLocation(), "mediaplayer." + i, 10, 1);
+								start = System.currentTimeMillis();
 							}
 						}
 					}
@@ -1037,8 +1044,8 @@ public class Screen {
 								settings.missed = 0;
 								settings.max = settings.differencial/2;
 								if(settings.framerate == 20) settings.max = 1;
-							}
-			                
+							}			            
+							
 			                if(System.currentTimeMillis() - settings.time >= 1000) {		                	
 		                		if(settings.fps < settings.framerate) {
 	                				if(settings.skipDuplicatedFrames) {
@@ -1060,9 +1067,18 @@ public class Screen {
 			                	settings.fps = 0;
 			                	settings.time = System.currentTimeMillis();
 			                }
+			                
+							long elapsed = System.currentTimeMillis()-start;
+							int delay = 0;
 							
-			                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed);
-			                		                
+							if(Math.pow(10, -3)*elapsed*video.getOriginalFrameRate() > settings.count) {
+								double brut = Math.pow(10, -3)*elapsed*video.getOriginalFrameRate()-settings.count;
+								delay = (int) brut + 1;
+							}
+							
+			                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed)+delay;
+			                settings.framerate = settings.framerate+delay;
+			                
 							for(int i = 0; i < settings.max; i++) {
 								if(settings.count < settings.total && settings.fps < settings.framerate) {
 									
@@ -1145,6 +1161,7 @@ public class Screen {
 									settings.fps++;
 								}
 							}
+							settings.framerate = video.getFrameRate();
 							settings.max = 1;
 						}else {
 							if(video.isLoopping()) settings.count = 0;

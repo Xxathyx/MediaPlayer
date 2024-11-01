@@ -76,18 +76,24 @@ public class Updater {
 	
 	public boolean isOutdated() {
 	    try {
+	    	
 			HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119570").openConnection();
 			InputStreamReader input = new InputStreamReader(httpURLConnection.getInputStream());
 			BufferedReader bufferedReader = new BufferedReader(input);
 			String newVersion = bufferedReader.readLine();
 	        httpURLConnection.disconnect();
 	        input.close();
-
-	        if(!newVersion.equals(plugin.getDescription().getVersion())) {
+	        
+			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());						
+			URL onlineJar = new URL("https://www.dropbox.com/scl/fi/vpwd2jg4c82w3ialikipn/MediaPlayer.jar?rlkey=uuik96o8rwypliu6q3d54s1gn&st=y0rnbnal&dl=1");
+			
+			long onlineLength = onlineJar.openConnection().getContentLengthLong();
+	        
+	        if(!newVersion.equals(plugin.getDescription().getVersion()) | onlineLength!=jar.length()) {
 	            return true;
 	        }
 	    }catch (Exception e) {
-	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't verify plugin version, try again later maybe Spigot is down.");
+	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't verify plugin version, try again later maybe no internet access or Spigot is down.");
 	    }
 	    return false;
 	}
@@ -113,10 +119,17 @@ public class Updater {
 		try {
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 			File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
+						
+			URL onlineJar = new URL("https://www.dropbox.com/scl/fi/vpwd2jg4c82w3ialikipn/MediaPlayer.jar?rlkey=uuik96o8rwypliu6q3d54s1gn&st=y0rnbnal&dl=1");
+			long onlineLength = onlineJar.openConnection().getContentLengthLong();
 			
-			URL onlineJar = new URL("https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1");
+			if(onlineLength!=jar.length()) FileUtils.copyURLToFile(onlineJar, newJar);
 	    	
-	    	FileUtils.copyURLToFile(onlineJar, newJar);
+	    	if(onlineLength == jar.length()) {
+	    		newJar.delete();
+		        Bukkit.getLogger().info("[MediaPlayer]: You are using the latest plugin version : " + plugin.getDescription().getVersion());
+	    		return false;
+	    	}
 	    	
 		}catch (URISyntaxException | IOException e) {
 			
@@ -125,7 +138,7 @@ public class Updater {
 				File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
 				
 				URL onlineJar = new URL(configuration.plugin_alternative_server() + "mediaplayer/download/MediaPlayer.jar");
-		    	FileUtils.copyURLToFile(onlineJar, newJar);
+		    	if(onlineJar.openConnection().getContentLengthLong()!=jar.length()) FileUtils.copyURLToFile(onlineJar, newJar);
 		    	
 		    	if(newJar.length() == jar.length()) {
 		    		newJar.delete();

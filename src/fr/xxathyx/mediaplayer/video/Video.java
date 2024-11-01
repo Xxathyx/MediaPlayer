@@ -303,6 +303,7 @@ public class Video {
 			fileconfiguration.set("video.audio-offset", 0.0);
 			fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 			fileconfiguration.set("video.frame-rate", framerate);
+			fileconfiguration.set("video.original-frame-rate", stream.r_frame_rate.doubleValue());
 			fileconfiguration.set("video.frames", frames);
 			fileconfiguration.set("video.format", format);
 			fileconfiguration.set("video.width", originalWidth);
@@ -366,6 +367,7 @@ public class Video {
 		fileconfiguration.set("video.audio-offset", 0.0);
 		fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 		fileconfiguration.set("video.frame-rate", source.getFramerate());
+		fileconfiguration.set("video.original-frame-rate", source.getFramerate());
 		fileconfiguration.set("video.frames", source.getTotalFrames());
 		fileconfiguration.set("video.format", "none");
 		fileconfiguration.set("video.width", source.getWidth());
@@ -1099,13 +1101,23 @@ public class Video {
 	}
 	
 	/**
-	* Gets the video number of frames per second.
+	* Gets the video number of frames per second, this is rounded.
 	*  
 	* @return The video number of frames per second.
 	*/
 	
 	public int getFrameRate() {
 		return getConfigFile().getInt("video.frame-rate");
+	}
+	
+	/**
+	* Gets the original video framerate, this is not rounded.
+	*  
+	* @return The original video number of frames per second.
+	*/
+	
+	public int getOriginalFrameRate() {
+		return getConfigFile().contains("video.original-frame-rate") ? getConfigFile().getInt("video.original-frame-rate") : getFrameRate();
 	}
 	
 	/**
