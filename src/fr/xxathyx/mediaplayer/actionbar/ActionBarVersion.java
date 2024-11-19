@@ -31,6 +31,9 @@ public class ActionBarVersion {
 		
         final String serverVersion = plugin.getServerVersion();
         
+        if(serverVersion.equals("v1_21_R2")) {
+        	return new v1_21_R2();
+        }
         if(serverVersion.equals("v1_21_R1")) {
         	return new v1_21_R1();
         }

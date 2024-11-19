@@ -244,7 +244,7 @@ public class Main extends JavaPlugin implements Listener {
 			new ConfigurationUpdater(new File(getDataFolder() + "/translations/", langage + ".yml"), updateTranslation, "messages").update();
 			
 		}catch (URISyntaxException | IOException | InvalidConfigurationException e) {
-	        Bukkit.getLogger().warning("[MediaPlayer]: If you are reloading the plugin skip this message. Failed to verify configurations.");
+	        Bukkit.getLogger().warning("[MediaPlayer]: If you are reloading the plugin skip this message otherwise failed to verify configurations.");
 		}
 		
 		mapUtil = new MapUtilVersion().getMapUtil();
@@ -262,7 +262,7 @@ public class Main extends JavaPlugin implements Listener {
 		
         String serverVersion = getServerVersion();
 		
-        if(serverVersion.equals("v1_21_R1") | serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
+        if(serverVersion.equals("v1_21_R2") | serverVersion.equals("v1_21_R1") | serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
         		serverVersion.equals("v1_16_R2") | serverVersion.equals("v1_16_R1") | serverVersion.equals("v1_15_R1") | serverVersion.equals("v1_14_R1") | serverVersion.equals("v1_13_R1") | serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
