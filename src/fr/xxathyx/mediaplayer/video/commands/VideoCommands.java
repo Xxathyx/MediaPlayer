@@ -441,7 +441,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							sender.sendMessage(ChatColor.DARK_PURPLE + "creation: " + ChatColor.LIGHT_PURPLE + video.getCreation());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "data-folder: " + ChatColor.LIGHT_PURPLE + video.getDataFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "show-informations: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getShowInformations()));
-							sender.sendMessage(ChatColor.DARK_PURPLE + "show-informations: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getShowFPS()));
+							sender.sendMessage(ChatColor.DARK_PURPLE + "show-fps: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getShowFPS()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "run-on-startup: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getRunOnStartup()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "views: " + ChatColor.LIGHT_PURPLE + video.getViews());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "index: " + ChatColor.LIGHT_PURPLE + video.getIndex());

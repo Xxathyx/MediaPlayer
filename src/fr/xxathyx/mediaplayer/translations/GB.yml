@@ -75,8 +75,8 @@ messages:
     &7is finished (3/3)"
   video-processing-finished: "&7Video loading &l%video% &7completed in &l%time%
     &7minute(s)."
-  video-instance-started: "&aYou have just started the video &l%video% &on the
-    ID screen: &l%id%&a."
+  video-instance-started: "&aYou have just started the video &l%video% &aon the
+    screen-id: &l%id%&a."
   video-instance-stopped: "&aYou just stopped the video &l%video%&a."
   video-instance-pause: "&aYou have just paused the video &l%video%&a."
   video-instance-resume: "&aYou have just restarted the video &l%video%&a."

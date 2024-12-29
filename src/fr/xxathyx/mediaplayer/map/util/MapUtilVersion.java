@@ -32,9 +32,12 @@ public class MapUtilVersion {
 	public MapUtil getMapUtil() {
 		
         String serverVersion = plugin.getServerVersion();
-                   
-        if(serverVersion.equals("v1_21_R2")) {
+        
+        if(serverVersion.equals("v1_21_R3")) {
         	System.out.print("MediaPlayer is running on the last minecraft version : " + Bukkit.getServer().getClass().getPackage().getName() + "\n");
+        	return new v1_21_R3();
+        }
+        if(serverVersion.equals("v1_21_R2")) {
         	return new v1_21_R2();
         }
         if(serverVersion.equals("v1_21_R1")) {
