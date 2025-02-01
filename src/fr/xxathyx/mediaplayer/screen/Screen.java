@@ -111,6 +111,8 @@ public class Screen {
 	private boolean offset = false;
 	private boolean linked = true;
 		
+	private boolean streamed = false;
+	
 	public int[] tasks = {Bukkit.getScheduler().getPendingTasks().size(), Bukkit.getScheduler().getPendingTasks().size()+1};
 		
 	private int[] ids;
@@ -947,6 +949,8 @@ public class Screen {
 		plugin.getTasks().add(tasks[0]); plugin.getTasks().add(tasks[1]);
 		loadThumbnail();
 		
+		streamed = video.isStreamed();
+		
 		File pack = new File(videoData.getResourcePacksFolder(), video.getName() + ".zip");
 		
 		if(pack.exists()) {
@@ -982,7 +986,7 @@ public class Screen {
 						Player player = ((Player)entity);
 						
 						if(!listeners.contains(player.getUniqueId())) {
-							if(video.isAudioEnabled()) {
+							if(video.isAudioEnabled() && !video.isStreamed()) {
 								player.setResourcePack(server.url());
 							}
 							listeners.add(player.getUniqueId());
@@ -1076,22 +1080,25 @@ public class Screen {
 								delay = (int) brut + 1;
 							}
 							
-			                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed)+delay;
-			                settings.framerate = settings.framerate+delay;
-			                
+							if(delay<0) delay = 0;
+							
+			                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed)+(streamed ? 0 : delay);
+			                settings.framerate = settings.framerate+(streamed ? 0 : delay);
+			                			                
 							for(int i = 0; i < settings.max; i++) {
-								if(settings.count < settings.total && settings.fps < settings.framerate) {
-									
+
+								if((settings.count < settings.total || streamed) && settings.fps < settings.framerate) {
+																		
 									BukkitTask[] bukkitTask = {null};
 									bukkitTask[0] = Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 																			
 										@Override
 										public void run() {
-															
+																										
 											plugin.getTasks().add(bukkitTask[0].getTaskId());
 											
 											if(settings.realtimeRendering) {
-												
+																								
 												try {
 													
 													BufferedImage frame = ImageIO.read(new File(video.getFramesFolder(), settings.count + settings.framesExtension));
@@ -1214,6 +1221,7 @@ public class Screen {
 		if(video != null) {
 			for(UUID uuid : listeners) { for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i); }
 			plugin.getPlayingVideos().remove(video.getName());
+			if(video.isStreamed()) new File(getContentsFolder(), video.getName()+".yml");
 		}
 		
 		if(configuration.remove_screen_on_end()) {

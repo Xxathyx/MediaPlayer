@@ -296,7 +296,7 @@ public class Video {
 			fileconfiguration.set("video.file-video-path", videoFile.getPath());
 			fileconfiguration.set("video.stream", Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.stream-url", url);
-			fileconfiguration.set("video.enable-audio", true);
+			fileconfiguration.set("video.enable-audio", !Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 			fileconfiguration.set("video.audio-volume", 1.0);
 			fileconfiguration.set("video.audio-channels", audioChannels);
@@ -816,6 +816,16 @@ public class Video {
 	    Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GRAY + getName() + " successfully unloaded.");
 	}
 	
+	boolean deleteDirectory(File directoryToBeDeleted) {
+	    File[] allContents = directoryToBeDeleted.listFiles();
+	    if (allContents != null) {
+	        for (File file : allContents) {
+	            deleteDirectory(file);
+	        }
+	    }
+	    return directoryToBeDeleted.delete();
+	}
+	
 	/**
 	* Deletes a video and its video folder.
 	*  
@@ -828,7 +838,7 @@ public class Video {
 	public void delete() throws IOException {
 		
 		getVideoFile().delete();
-		FileUtils.deleteDirectory(file.getParentFile());
+		deleteDirectory(file.getParentFile());
 		
 		new TaskAsyncLoadConfigurations().runTaskAsynchronously(plugin);
 	}
@@ -1045,6 +1055,7 @@ public class Video {
 	*/
 	
 	public File getVideoFile() {
+		if(file != null) return file;
 		return new File(getConfigFile().getString("video.file-video-path"));
 	}
 	
