@@ -56,10 +56,11 @@ public class Configuration {
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
+			fileconfiguration.set("plugin.auto-update-libraries", true);
 			fileconfiguration.set("plugin.force-permissions", true);
 			fileconfiguration.set("plugin.external-communication", true);
 			fileconfiguration.set("plugin.packet-compression", true);
-			fileconfiguration.set("plugin.alternative-server", "http://54.38.185.225/");
+			fileconfiguration.set("plugin.alternative-server", "none");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -295,6 +296,10 @@ public class Configuration {
 	
 	public boolean plugin_auto_update() {
 		return getConfigFile().getBoolean("plugin.auto-update");
+	}
+	
+	public boolean plugin_auto_update_libraries() {
+		return getConfigFile().getBoolean("plugin.auto-update-libraries");
 	}
 	
 	public boolean plugin_force_permissions() {

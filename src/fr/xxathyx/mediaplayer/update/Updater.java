@@ -132,24 +132,9 @@ public class Updater {
 	    	}
 	    	
 		}catch (URISyntaxException | IOException e) {
-			
-			try {
-				File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-				File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
-				
-				URL onlineJar = new URL(configuration.plugin_alternative_server() + "mediaplayer/download/MediaPlayer.jar");
-		    	if(onlineJar.openConnection().getContentLengthLong()!=jar.length()) FileUtils.copyURLToFile(onlineJar, newJar);
-		    	
-		    	if(newJar.length() == jar.length()) {
-		    		newJar.delete();
-			        Bukkit.getLogger().info("[MediaPlayer]: You are using the latest plugin version : " + plugin.getDescription().getVersion());
-		    		return false;
-		    	}
-			}catch (URISyntaxException | IOException e1) {
-		        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin, download it manually or join our discord support server.");
-				e1.printStackTrace();
-		        return false;
-			}
+	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin, download it manually or join our discord support server.");
+			e.printStackTrace();
+	        return false;
 		}
 		return true;
 	}

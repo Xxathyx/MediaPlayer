@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.FileOutputStream;
 import java.util.zip.ZipOutputStream;
+import java.util.Arrays;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
@@ -110,6 +111,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	    				FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
 	            
 	            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
+	            Bukkit.getLogger().info(Arrays.toString(videoCommand).replace(",", ""));
 	                     
 	            try {
 	            	ProgressBar progressBar = new ProgressBar(framesCount, video.getTotalFrames(), video.getName(),
@@ -174,6 +176,7 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	            				"-vn", FilenameUtils.separatorsToUnix(new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath())};
 	                	
 	                    ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
+	    	            Bukkit.getLogger().info(Arrays.toString(audioCommand).replace(",", ""));
 	                    
 	                    try {
 	                    	Process process = audioProcessBuilder.inheritIO().start();
@@ -255,39 +258,45 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	        	
 	        	while(count < total) {
 	    			try {
-	    				imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), count + framesExtension)));
-	    	    		imageRenderer.calculateDimensions();
-	    	    		imageRenderer.splitImages();
 	    				
-	    	    		if(!video.isCacheCompressed()) {
-	    	    			
-	        				File file = new File(videoData.getCacheFolder(), String.valueOf(count));
-	        				file.mkdir();
-	        	    		
-	        				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
-	        					new Cache(new File(file, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
-	        				}
-	    	    		}else {
-	    	    			
-	    	    			FileOutputStream fout = new FileOutputStream(video.getVideoData().getCacheFolder() + "/" + String.valueOf(count) + ".zip");
-	    	    			ZipOutputStream zout = new ZipOutputStream(fout);
-	    	    			
-	    	    			for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
-	    	    				
-	    	    			    ZipEntry ze = new ZipEntry(String.valueOf(j) + ".cache");
-	    	    			    zout.putNextEntry(ze);
-	    	    			    zout.write(MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]));
-	    	    			    zout.closeEntry();
-	    	    			}
-	    	    			zout.close();
-	    	    			fout.close();
-	    	    		}
-	    	    		
-	                	ProgressBar progressBar = new ProgressBar(count, total, video.getName(),
-	                			'▉', net.md_5.bungee.api.ChatColor.RED, net.md_5.bungee.api.ChatColor.GREEN);
-	    	    		
-	                	progressBar.setProgress(count);
-	                	progressBar.send(group, progressBar.build(), net.md_5.bungee.api.ChatColor.GRAY + "(3/3)");
+	    				File frame = new File(video.getFramesFolder(), count + framesExtension);
+	    				
+	    				if(frame.exists()) {
+	    					
+		    				imageRenderer = new ImageRenderer(ImageIO.read(frame));
+		    	    		imageRenderer.calculateDimensions();
+		    	    		imageRenderer.splitImages();
+		    				
+		    	    		if(!video.isCacheCompressed()) {
+		    	    			
+		        				File file = new File(videoData.getCacheFolder(), String.valueOf(count));
+		        				file.mkdir();
+		        	    		
+		        				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+		        					new Cache(new File(file, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
+		        				}
+		    	    		}else {
+		    	    			
+		    	    			FileOutputStream fout = new FileOutputStream(video.getVideoData().getCacheFolder() + "/" + String.valueOf(count) + ".zip");
+		    	    			ZipOutputStream zout = new ZipOutputStream(fout);
+		    	    			
+		    	    			for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+		    	    				
+		    	    			    ZipEntry ze = new ZipEntry(String.valueOf(j) + ".cache");
+		    	    			    zout.putNextEntry(ze);
+		    	    			    zout.write(MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]));
+		    	    			    zout.closeEntry();
+		    	    			}
+		    	    			zout.close();
+		    	    			fout.close();
+		    	    		}
+		    	    		
+		                	ProgressBar progressBar = new ProgressBar(count, total, video.getName(),
+		                			'▉', net.md_5.bungee.api.ChatColor.RED, net.md_5.bungee.api.ChatColor.GREEN);
+		    	    		
+		                	progressBar.setProgress(count);
+		                	progressBar.send(group, progressBar.build(), net.md_5.bungee.api.ChatColor.GRAY + "(3/3)");
+	    				}
 	                	
 	    				count++;
 	    			}catch (IOException | InvalidConfigurationException e) {
@@ -312,7 +321,8 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	            	    		imageRenderer.splitImages();
 	        					
 	            				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
-	            					new Cache(new File(next, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
+	            					File cache = new File(next, String.valueOf(j) + ".cache");
+	            					if(cache.exists()) new Cache(cache).createCache(imageRenderer.getBufferedImages()[j]);
 	            				}        	    		
 	        				}
 	        				count++;

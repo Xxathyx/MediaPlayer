@@ -1055,7 +1055,6 @@ public class Video {
 	*/
 	
 	public File getVideoFile() {
-		if(file != null) return file;
 		return new File(getConfigFile().getString("video.file-video-path"));
 	}
 	
