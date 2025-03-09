@@ -31,8 +31,15 @@ public class Server {
     public boolean start() {
     	
     	ip = plugin.getServer().getIp(); if (ip == null || ip.equals("")) ip = "localhost";
+    	
     	if(!configuration.plugin_alternative_server().equals("http://54.38.185.225/")
-    			&& !configuration.plugin_alternative_server().equals("none")) ip = configuration.plugin_alternative_server();
+    			&& !configuration.plugin_alternative_server().equals("none")) {
+    		
+    		String[] elements = configuration.plugin_alternative_server().split(":");
+    		
+    		ip = elements[0];
+    		port = Integer.parseInt(elements[1]);
+    	}
     	
         try {
         	HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
