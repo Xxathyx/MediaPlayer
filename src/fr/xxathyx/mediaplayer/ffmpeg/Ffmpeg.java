@@ -42,7 +42,7 @@ public class Ffmpeg {
      */
 	
 	public boolean isInstalled() {
-		return getLibraryFile().exists();
+		return getLibraryFile().getAbsoluteFile().exists();
 	}
 	
     /**

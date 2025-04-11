@@ -19,6 +19,7 @@ public class ServerVersion {
         	
         	String brut = Bukkit.getBukkitVersion();
         	
+        	if(brut.equals("1.21.5-R0.1-SNAPSHOT")) version = "v1_21_R4";
         	if(brut.equals("1.21.4-R0.1-SNAPSHOT")) version = "v1_21_R3";
         	if(brut.equals("1.21.2-R0.1-SNAPSHOT") | brut.equals("1.21.3-R0.1-SNAPSHOT")) version = "v1_21_R2";
         	if(brut.equals("1.21-R0.1-SNAPSHOT") | brut.equals("1.21.1-R0.1-SNAPSHOT")) version = "v1_21_R1";

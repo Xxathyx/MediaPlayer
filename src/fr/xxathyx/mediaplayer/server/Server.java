@@ -23,6 +23,7 @@ public class Server {
 	
     private String ip = "localhost";
     private int port = getRandomNumber(1000, 8000);
+    private String arg = "";
     	
     public Server(File file) {
     	Server.file=file;
@@ -35,10 +36,24 @@ public class Server {
     	if(!configuration.plugin_alternative_server().equals("http://54.38.185.225/")
     			&& !configuration.plugin_alternative_server().equals("none")) {
     		
-    		String[] elements = configuration.plugin_alternative_server().split(":");
+    		String[] elements = configuration.plugin_alternative_server().split("&");
     		
-    		ip = elements[0];
-    		port = Integer.parseInt(elements[1]);
+    		if(elements.length > 0) {
+    			
+        		arg = elements[1];
+        		
+    			String[] inner = elements[0].split(":");
+    			
+        		ip = inner[0];
+        		port = Integer.parseInt(inner[1]);
+    			
+    		}else {
+    			
+    			elements = configuration.plugin_alternative_server().split(":");
+    			
+        		ip = elements[0];
+        		port = Integer.parseInt(elements[1]);
+    		}    		
     	}
     	
         try {
@@ -80,7 +95,7 @@ public class Server {
     }
     
     public String url() {
-    	return "http://"+ip+":"+port;
+    	return "http://"+ip+":"+port+"/"+arg;
     }
     
 	public static int getRandomNumber(int min, int max) {

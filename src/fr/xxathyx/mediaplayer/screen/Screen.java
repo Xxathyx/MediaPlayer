@@ -1001,7 +1001,7 @@ public class Screen {
 						
 						if(!listeners.contains(player.getUniqueId())) {
 							if(video.isAudioEnabled() && !video.isStreamed()) {
-								player.setResourcePack(server.url());
+								player.setResourcePack(server.url().replaceAll("%name%", video.getName()+".zip"));
 							}
 							listeners.add(player.getUniqueId());
 						}
