@@ -30,15 +30,15 @@ public class v1_21_R4 implements MapUtil {
 	private Constructor<?> mapIdConstructor;
 	private Constructor<?> initWorldMap;
 	
-	private boolean isPaper = false;
+	private boolean isPaper = true;
 	
 	public v1_21_R4() {
 		try {
 			
 			mapIdConstructor = Class.forName("net.minecraft.world.level.saveddata.maps.MapId").getConstructors()[0];
-			initWorldMap = net.minecraft.world.level.saveddata.maps.WorldMap.class.getDeclaredClasses()[2].getConstructors()[0];
-			initWorldMap.setAccessible(true);
 	        try {Class.forName("com.destroystokyo.paper.ParticleBuilder"); isPaper = true;}catch (ClassNotFoundException ignored) {}
+			initWorldMap = isPaper ? Class.forName("net.minecraft.world.level.saveddata.maps.MapItemSavedData$MapPatch").getConstructors()[0] : net.minecraft.world.level.saveddata.maps.WorldMap.class.getDeclaredClasses()[2].getConstructors()[0];
+			initWorldMap.setAccessible(true);
 	        if(isPaper) {
 				serverGamePacketListenerImpl = Class.forName("net.minecraft.server.network.ServerGamePacketListenerImpl");
 				sendPacket = serverGamePacketListenerImpl.getMethod("b", net.minecraft.network.protocol.Packet.class);

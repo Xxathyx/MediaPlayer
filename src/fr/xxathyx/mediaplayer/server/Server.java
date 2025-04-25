@@ -24,6 +24,7 @@ public class Server {
     private String ip = "localhost";
     private int port = getRandomNumber(1000, 8000);
     private String arg = "";
+    private boolean secure = false;
     	
     public Server(File file) {
     	Server.file=file;
@@ -47,6 +48,8 @@ public class Server {
         		ip = inner[0];
         		port = Integer.parseInt(inner[1]);
     			
+        		if(elements.length > 1) secure = elements[2].equals("s");
+        		
     		}else {
     			
     			elements = configuration.plugin_alternative_server().split(":");
@@ -95,7 +98,7 @@ public class Server {
     }
     
     public String url() {
-    	return "http://"+ip+":"+port+"/"+arg;
+    	return "http" + (secure ? "s" : "") +"://"+ip+":"+port+"/"+arg;
     }
     
 	public static int getRandomNumber(int min, int max) {
