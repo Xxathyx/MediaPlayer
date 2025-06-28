@@ -3,19 +3,25 @@ package fr.xxathyx.mediaplayer.screen;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import org.bukkit.Bukkit;
@@ -49,6 +55,7 @@ import fr.xxathyx.mediaplayer.screen.content.Content;
 import fr.xxathyx.mediaplayer.screen.content.ContentType;
 import fr.xxathyx.mediaplayer.screen.part.Part;
 import fr.xxathyx.mediaplayer.screen.settings.ScreenSettings;
+import fr.xxathyx.mediaplayer.server.Server;
 import fr.xxathyx.mediaplayer.stream.Stream;
 import fr.xxathyx.mediaplayer.util.ImageUtil;
 import fr.xxathyx.mediaplayer.video.Video;
@@ -77,6 +84,7 @@ import fr.xxathyx.mediaplayer.util.FacingLocation;
 public class Screen {
 
 	private final Main plugin = Main.getPlugin(Main.class);
+	private Server server;
 	
 	private final Configuration configuration = new Configuration();
 	private final ItemStacks itemStacks = new ItemStacks();
@@ -96,9 +104,18 @@ public class Screen {
 	private Content content;
 	private VideoInstance videoInstance;
 	
+	private boolean compressed = false;
+	private boolean sent = false;
+	
+	private long start;
+	private int segment;
+	
 	private boolean running = false;
+	private boolean offset = false;
 	private boolean linked = true;
 		
+	private boolean streamed = false;
+	
 	public int[] tasks = {Bukkit.getScheduler().getPendingTasks().size(), Bukkit.getScheduler().getPendingTasks().size()+1};
 		
 	private int[] ids;
@@ -115,7 +132,7 @@ public class Screen {
 	private ArrayList<ItemFrame> frames = new ArrayList<>();
 	private ArrayList<Block> blocks = new ArrayList<>();
 	
-	private ArrayList<UUID> listeners = new ArrayList<>();
+	public ArrayList<UUID> listeners = new ArrayList<>();
 	
 	/**
 	* Constructor for Screen class, creates an Screen variable according
@@ -233,9 +250,25 @@ public class Screen {
 			}
 		}
 		
-		frames = sorted;
+		if(frames.size()==sorted.size()) frames = sorted;
 				
-		if(facingDirection.equals("E") || facingDirection.equals("W")) Collections.reverse(frames);
+		if(facingDirection.equals("E") || facingDirection.equals("W")) {
+			
+			Collections.reverse(frames);
+			ArrayList<ItemFrame> temp = new ArrayList<>();
+			
+			for(int j = height; j>0; j--) {
+				for(int i = 0; i<width; i++) {
+					temp.add(frames.get((j-1)*width+i));
+				}
+			}
+			frames=temp;
+		}
+		
+		if(blocks.size()!=frames.size()) {
+			blocks.clear();
+			for(ItemFrame frame : frames) blocks.add(frame.getLocation().getBlock().getRelative(frame.getAttachedFace()).getLocation().getBlock());
+		}
 		
 		for(int i = 0; i < blocks.size(); i++) new Part(new File(getPartsFolder(), i + ".yml")).createConfiguration(uuid, blocks.get(i), frames.get(i), configuration.glowing_screen_frames_support(), configuration.visible_screen_frames_support(), i);
 		createThumbnail();
@@ -275,6 +308,15 @@ public class Screen {
 	
 	public File getFile() {
 		return file;
+	}
+	
+	public void setVideoName(String name) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("screen.video.name", name);
+		fileconfiguration.save(file);
 	}
 	
 	/**
@@ -700,6 +742,7 @@ public class Screen {
 		this.video = video;
 		this.videoData = video.getVideoData();
 		this.videoInstance = videoInstance;
+		this.compressed = video.isCacheCompressed();
 		this.ids = getIds();
 		this.width = video.getVideoData().getMinecraftWidth();
 		this.height = video.getVideoData().getMinecraftHeight();
@@ -784,6 +827,7 @@ public class Screen {
 			
 			this.frames = getFrames();
 			this.settings = new ScreenSettings(video);
+			this.compressed = video.isCacheCompressed();
 			this.id = plugin.getRegisteredScreens().size();
 			this.video = video;
 			this.videoData = video.getVideoData();
@@ -899,7 +943,7 @@ public class Screen {
 		
 		plugin.getRegisteredScreens().remove(this);
 		remove();
-		
+				
 		try {
 			FileUtils.deleteDirectory(getFile().getParentFile());
 		}catch (IOException e) {
@@ -915,9 +959,17 @@ public class Screen {
 	public void display() {
 		
 		plugin.getTasks().add(tasks[0]); plugin.getTasks().add(tasks[1]);
-		
 		loadThumbnail();
 		
+		streamed = video.isStreamed();
+		
+		File pack = new File(videoData.getResourcePacksFolder(), video.getName() + ".zip");
+		
+		if(pack.exists()) {
+			server = new Server(new File(videoData.getResourcePacksFolder(), video.getName() + ".zip"));
+			server.start();
+		}
+				
 		if(!frames.isEmpty()) for(int i = 0; i < frames.size(); i++) frames.get(i).setItem(itemStacks.getMap(ids[i]));
 				
 		if(video.isStreamed()) {
@@ -925,10 +977,12 @@ public class Screen {
 			stream = new Stream(video);
 			stream.update();
 			
+			segment = video.getTotalFrames();
+			
 			tasks[0] = Bukkit.getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {  
 				@Override
 				public void run() {
-					settings.total = settings.total + video.getTotalFrames();
+					settings.total += segment;
 				}
 			}, (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20), (int) (Math.round(video.getTotalFrames()/video.getFrameRate())*20));
 		}
@@ -946,7 +1000,9 @@ public class Screen {
 						Player player = ((Player)entity);
 						
 						if(!listeners.contains(player.getUniqueId())) {
-						    player.setResourcePack(new String("http://" + configuration.plugin_free_audio_server_address() + "/mediaplayer/users/" + configuration.free_audio_server_token() + "/" + video.getName() + ".zip").replace(" ", "%20"));
+							if(video.isAudioEnabled() && !video.isStreamed()) {
+								player.setResourcePack(server.url().replaceAll("%name%", video.getName()+".zip"));
+							}
 							listeners.add(player.getUniqueId());
 						}
 					}
@@ -955,19 +1011,31 @@ public class Screen {
 				if(!running) {
 					
 					ArrayList<UUID> ready = new ArrayList<>();
+					if(!video.isAudioEnabled()) ready.addAll(listeners);
 					
 					if(System.currentTimeMillis() - settings.time >= 1000) {
 						
 	                	settings.time = System.currentTimeMillis();
-						
+	                	
+	                	ArrayList<UUID> offline = new ArrayList<>();
+	                	
 						for(UUID uuid : listeners) {
-							if(!plugin.getPlayersScreens().containsKey(uuid)) {
-								new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
-							}else if(!ready.contains(uuid)){
-								ready.add(uuid);
+							if(Bukkit.getPlayer(uuid) != null) {
+								if(!plugin.getPlayersScreens().containsKey(uuid)) {
+									//if(video.isAudioEnabled()) new Notification(NotificationType.WAITING_PLAYER, false).send(new Group(listeners), new String[] {Bukkit.getPlayer(uuid).getName()}, false);
+								}else if(!ready.contains(uuid)){
+									ready.add(uuid);
+								}
+							}else {
+								ready.remove(uuid);
+								offline.add(uuid);
 							}
 						}
-						if(ready.size() == listeners.size()) new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
+						listeners.removeAll(offline);
+						if(ready.size() == listeners.size() && !sent) {
+							new Notification(NotificationType.EVERYONE_READY, false).send(new Group(listeners), null, false);
+							sent = true;
+						}
 					}
 				}
 				
@@ -982,103 +1050,148 @@ public class Screen {
 								Player player = Bukkit.getPlayer(uuid);
 								
 								for(int i = 0; i < video.getAudioChannels(); i++) player.playSound(player.getLocation(), "mediaplayer." + i, 10, 1);
+								start = System.currentTimeMillis();
 							}
 						}
 					}
 					
-					if(settings.count <= settings.total) {
-						if(settings.missed == settings.differencial) {
-							settings.missed = 0;
-							settings.max = settings.differencial/2;
-							if(settings.framerate == 20) settings.max = 1;
-						}
-		                
-		                if(System.currentTimeMillis() - settings.time >= 1000) {		                	
-	                		if(settings.fps < settings.framerate) {
-                				if(settings.skipDuplicatedFrames) {
-                					if(videoData.getDuplicated().contains(settings.count)) {
-                						settings.count++;
-                					}
-                				}else {
-		                			settings.count = settings.count + (settings.framerate-settings.fps);
-                				}
-	                		}
-		                	
-		                	if(settings.showInformations) {
-								String message = ChatColor.GREEN + "" + ChatColor.BOLD + settings.name + ": " + ChatColor.GREEN + getTimeLeft(settings.count) + ", " + settings.description;
-								if(settings.showFPS) {
-									message = message + ChatColor.GREEN + " - " + ChatColor.BOLD + settings.fps + ChatColor.GREEN + " FPS";
-								}
-			                	for(Player player : Bukkit.getOnlinePlayers()) plugin.getActionBar().send(player, message);
-		                	}
-		                	settings.fps = 0;
-		                	settings.time = System.currentTimeMillis();
-		                }
+					if(offset) {
 						
-		                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed);
-		                		                
-						for(int i = 0; i < settings.max; i++) {
-							if(settings.count < settings.total && settings.fps < settings.framerate) {
-								
-								BukkitTask[] bukkitTask = {null};
-								bukkitTask[0] = Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+						if(settings.count <= settings.total) {
+							if(settings.missed == settings.differencial) {
+								settings.missed = 0;
+								settings.max = settings.differencial/2;
+								if(settings.framerate == 20) settings.max = 1;
+							}			            
+							
+			                if(System.currentTimeMillis() - settings.time >= 1000) {		                	
+		                		if(settings.fps < settings.framerate) {
+	                				if(settings.skipDuplicatedFrames) {
+	                					if(videoData.getDuplicated().contains(settings.count)) {
+	                						settings.count++;
+	                					}
+	                				}else {
+			                			settings.count = settings.count + (settings.framerate-settings.fps);
+	                				}
+		                		}
+			                	
+			                	if(settings.showInformations) {
+									String message = ChatColor.GREEN + "" + ChatColor.BOLD + settings.name + ": " + ChatColor.GREEN + getTimeLeft(settings.count) + ", " + settings.description;
+									if(settings.showFPS) {
+										message = message + ChatColor.GREEN + " - " + ChatColor.BOLD + settings.fps + ChatColor.GREEN + " FPS";
+									}
+				                	for(Player player : Bukkit.getOnlinePlayers()) plugin.getActionBar().send(player, message);
+			                	}
+			                	settings.fps = 0;
+			                	settings.time = System.currentTimeMillis();
+			                }
+			                
+							long elapsed = System.currentTimeMillis()-start;
+							int delay = 0;
+							
+							if(Math.pow(10, -3)*elapsed*video.getOriginalFrameRate() > settings.count) {
+								double brut = Math.pow(10, -3)*elapsed*video.getOriginalFrameRate()-settings.count;
+								delay = (int) brut + 1;
+							}
+							
+							if(delay<0) delay = 0;
+							
+			                settings.max = (int) Math.round(settings.max*(settings.framerate/20)*settings.speed)+(streamed ? 0 : delay);
+			                settings.framerate = settings.framerate+(streamed ? 0 : delay);
+			                			                
+							for(int i = 0; i < settings.max; i++) {
+
+								if((settings.count < settings.total || streamed) && settings.fps < settings.framerate) {
 																		
-									@Override
-									public void run() {
-														
-										plugin.getTasks().add(bukkitTask[0].getTaskId());
-										
-										if(settings.realtimeRendering) {
+									BukkitTask[] bukkitTask = {null};
+									bukkitTask[0] = Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+																			
+										@Override
+										public void run() {
+																										
+											plugin.getTasks().add(bukkitTask[0].getTaskId());
 											
-											try {
-												
-												BufferedImage frame = ImageIO.read(new File(video.getFramesFolder(), settings.count + settings.framesExtension));
-												
-												ImageRenderer imageRenderer = new ImageRenderer(frame);
-							    	    		imageRenderer.calculateDimensions();
-							    	    		imageRenderer.splitImages();
-							    	    									    	    		
-							    	    		byte[] buffer;
-							    	    		
-							    	    		for(int j = 0; j < ids.length; j++) {
-							    	    			
-													buffer = MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]);
-													
-													for(Entity entity : entities) {
-														if(entity.getType() == EntityType.PLAYER) plugin.getMapUtil().update((Player)entity, ids[j], buffer);
-													}
-							    	    		}
-											}catch (IOException e) {
-												e.printStackTrace();
-											}
-										}else {
-											byte[] buffer;
-											
-											for(int j = 0; j < ids.length; j++) {
+											if(settings.realtimeRendering) {
+																								
 												try {
 													
-													buffer = FileUtils.readFileToByteArray(new File(videoData.getCacheFolder() + "/" + settings.count + "/", String.valueOf(j) + ".cache"));
+													File file = new File(video.getFramesFolder(), settings.count + settings.framesExtension);
 													
-													for(Entity entity : entities) {
-														if(entity.getType() == EntityType.PLAYER) plugin.getMapUtil().update((Player)entity, ids[j], buffer);
+													if(file.exists()) {
+														BufferedImage frame = ImageIO.read(file);
+														
+														ImageRenderer imageRenderer = new ImageRenderer(frame);
+									    	    		imageRenderer.calculateDimensions();
+									    	    		imageRenderer.splitImages();
+									    	    									    	    		
+									    	    		byte[] buffer;
+									    	    		
+									    	    		for(int j = 0; j < ids.length; j++) {
+									    	    			
+															buffer = MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]);
+															
+															for(Entity entity : entities) {
+																if(entity.getType() == EntityType.PLAYER) {
+																	Player player = (Player)entity;
+																	if(player.isOnline()) plugin.getMapUtil().update(player, ids[j], buffer);
+																}
+															}
+									    	    		}
 													}
 												}catch (IOException e) {
 													e.printStackTrace();
 												}
+											}else {
+												byte[] buffer = null;
+											    ZipFile zipFile = null; Enumeration<?extends ZipEntry> entries = null;
+												
+											    if(compressed) {
+											        try {
+														zipFile = new ZipFile(videoData.getCacheFolder() + "/" + String.valueOf(settings.count) + ".zip");
+													}catch (IOException e) {
+														e.printStackTrace();
+													}
+											        if(zipFile != null) entries = zipFile.entries();
+											    }
+												
+												for(int j = 0; j < ids.length; j++) {
+													try {
+														
+														if(!compressed) {
+															buffer = FileUtils.readFileToByteArray(new File(videoData.getCacheFolder() + "/" + settings.count + "/", String.valueOf(j) + ".cache"));
+														}else {
+															if(entries.hasMoreElements()) {
+														        InputStream stream = zipFile.getInputStream(entries.nextElement());
+														        buffer = stream.readAllBytes();
+														        stream.close();
+															}
+														}
+														
+														for(Entity entity : entities) {
+															if(entity.getType() == EntityType.PLAYER) {
+																Player player = (Player)entity;
+																if(player.isOnline()) plugin.getMapUtil().update(player, ids[j], buffer);
+															}
+														}
+													}catch (IOException e) {
+														e.printStackTrace();
+													}
+												}
+												buffer = null;
 											}
-											buffer = null;
 										}
-									}
-								});
-								settings.count++;
-								settings.missed++;
-								settings.fps++;
+									});
+									settings.count++;
+									settings.missed++;
+									settings.fps++;
+								}
 							}
+							settings.framerate = video.getFrameRate();
+							settings.max = 1;
+						}else {
+							if(video.isLoopping()) settings.count = 0;
+							if(!video.isStreamed()) end();
 						}
-						settings.max = 1;
-					}else {
-						if(video.isLoopping()) settings.count = 0;
-						if(!video.isStreamed()) end();
 					}
 				}
 			}
@@ -1117,18 +1230,26 @@ public class Screen {
 		Bukkit.getScheduler().cancelTask(tasks[1]);
 		
 		running = false;
-				
-		videoData.loadThumbnail();
-		
-		Object[] ids = videoData.getMaps().getIds().toArray();
+		loadThumbnail();
 		
 		for(int i = 0; i < frames.size(); i++) {
-			frames.get(i).setItem(itemStacks.getMap((int) ids[i]));
+			frames.get(i).setItem(itemStacks.getMap(getIds()[i]));
 		}
 		
-		for(UUID uuid : listeners) { for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i); }
-		
-		plugin.getPlayingVideos().remove(video.getName());
+		if(video != null) {
+			for(UUID uuid : listeners) { for(int i = 0; i < video.getAudioChannels(); i++) plugin.getAudioUtil().stopAudio(Bukkit.getPlayer(uuid), "mediaplayer." + i); }
+			plugin.getPlayingVideos().remove(video.getName());
+			if(video.isStreamed()) {
+				try {
+					setVideoName("none");
+				}catch (IOException | InvalidConfigurationException e) {
+					e.printStackTrace();
+				}
+				for(File file : getContentsFolder().listFiles()) {
+					if(FilenameUtils.removeExtension(file.getName()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")) file.delete();
+				}
+			}
+		}
 		
 		if(configuration.remove_screen_on_end()) {
 			remove();
@@ -1155,6 +1276,17 @@ public class Screen {
 	
 	public void setRunning(boolean running) {
 		this.running = running;
+	}
+	
+	/**
+	* Sets whether the current video will be displayed after
+	* synchronization with audio.
+	* 
+	* @param offset Whether audio is in time
+	*/
+	
+	public void setOffset(boolean offset) {
+		this.offset = offset;
 	}
 	
 	/**

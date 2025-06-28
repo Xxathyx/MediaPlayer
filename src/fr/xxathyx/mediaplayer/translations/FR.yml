@@ -4,6 +4,9 @@ messages:
   video-load-requested: "&aRequête de chargement envoyé, vous serez informé sur la
     progression du chargement."
   video-load-notice: "&7(Plus une vidéo est longue plus le chargement en est de même)"
+  video-offset-notice: "&7(Si vous remarquez que l'audio se joue un certain temps après l'affichage,
+  pour définir un décalage image et audio : /video %video%&7 set offset <secondes>)"
+  video-offset-start: "&aLa vidéo démarrera dans %offset%&a secondes."
   video-unloaded: "&aLa vidéo &l%video% &avient d'être déchargée."
   video-downloaded: "&aVous venez de télécharger la video &l%video%&a."
   video-deleted: "&aLa vidéo &l%video% &aa été supprimée avec succès."
@@ -25,6 +28,10 @@ messages:
     &aen &l%speed%x&a."
   video-volume-updated: "&aVous venez de mettre à jour le volume de &l%video% &aà
     &l%volume%x&a."
+  video-audio-offset-updated: "&aVous venez de mettre à jour le decalage audio de &l%video% &aà
+    &l%offset%&a secondes."
+  video-compress-disabled: "&aLa compression du cache de &l%video% &an'est plus active."
+  video-compress-enabled: "&aLa compression du cache &l%video% &aest active."
   video-age-limit-disabled: "&aLa vidéo &l%video% &an'est plus réservée à un certain
     publique."
   video-age-limit-enabled: "&aLa vidéo &l%video% &aest maintenant réservée à un certain
@@ -156,7 +163,7 @@ messages:
   no-page-left: "&cVous ne pouvez pas tourner la page car cette page semble inexistante."
   too-much-loading: "&cChargement impossible, trop de vidéos sont en cours de chargements."
   too-much-playing: "&cLancement impossible, trop de vidéos sont jouées."
-  no-screen-playing: "&cAucun écran n'est en train de jouer une vidéo."
+  no-screen-playing: "&cAucun écran n'est enregistré."
   not-number: "&cLe nombre choisi est invalide."
   available-images: "&2Liste des images disponnibles:"
   available-videos: "&2Liste des vidéos disponnibles:"

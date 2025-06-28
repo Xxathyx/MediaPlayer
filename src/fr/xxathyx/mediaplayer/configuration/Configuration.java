@@ -10,9 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.xxathyx.mediaplayer.Main;
-import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.util.Host;
-import fr.xxathyx.mediaplayer.util.RandomToken;
 
 /** 
 * The Configuration class allow a direct bridge between plugin configuration and
@@ -54,34 +52,15 @@ public class Configuration {
 	public void setup() {
 		
 		if(!configurationFile.exists()) {
-			
-			String token = new RandomToken().random(10);
-			
-			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-				@Override
-				public void run() {
-										
-					Client client = new Client();
-					client.connect();
-					
-					plugin.setClient(client);
-					
-					client.write("mediaplayer.register: ", token);
-					
-					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
-				}
-			});
-			
+						
 			fileconfiguration = new YamlConfiguration();
 			
 			fileconfiguration.set("plugin.auto-update", true);
-			fileconfiguration.set("plugin.force-permissions", false);
-			fileconfiguration.set("plugin.free-audio-server-handling", true);
-			fileconfiguration.set("plugin.free-audio-server-address", "37.187.196.226");
-			fileconfiguration.set("plugin.free-audio-server-token", token);
-			fileconfiguration.set("plugin.own-audio-server-handling-address", "localhost");
-			fileconfiguration.set("plugin.own-audio-server-handling-port", "41");
-			fileconfiguration.set("plugin.alternative-server", "http://37.187.196.226/");
+			fileconfiguration.set("plugin.auto-update-libraries", true);
+			fileconfiguration.set("plugin.force-permissions", true);
+			fileconfiguration.set("plugin.external-communication", true);
+			fileconfiguration.set("plugin.packet-compression", true);
+			fileconfiguration.set("plugin.alternative-server", "none");
 			fileconfiguration.set("plugin.system", fr.xxathyx.mediaplayer.system.System.getSystemType().toString());
 	    	fileconfiguration.set("plugin.langage", "GB");
 	    	
@@ -221,6 +200,10 @@ public class Configuration {
 			a = a.replaceAll("%video%", b);
 		}
 		
+		if(a.contains("%offset%")) {
+			a = a.replaceAll("%offset%", b);
+		}
+		
 		if(a.contains("%screen%")) {
 			a = a.replaceAll("%screen%", b);
 		}
@@ -291,6 +274,10 @@ public class Configuration {
 			a = a.replaceAll("%volume%", c);
 		}
 		
+		if(a.contains("%offset%")) {
+			a = a.replaceAll("%offset%", c);
+		}
+		
 		if(a.contains("%time%")) {
 			a = a.replaceAll("%time%", c);
 		}
@@ -311,28 +298,20 @@ public class Configuration {
 		return getConfigFile().getBoolean("plugin.auto-update");
 	}
 	
+	public boolean plugin_auto_update_libraries() {
+		return getConfigFile().getBoolean("plugin.auto-update-libraries");
+	}
+	
 	public boolean plugin_force_permissions() {
 		return getConfigFile().getBoolean("plugin.force-permissions");
 	}
 	
-	public boolean plugin_free_audio_server_handling() {
-		return getConfigFile().getBoolean("plugin.free-audio-server-handling");
+	public boolean plugin_external_communication() {
+		return getConfigFile().getBoolean("plugin.external-communication");
 	}
 	
-	public String plugin_free_audio_server_address() {
-		return getConfigFile().getString("plugin.free-audio-server-address");
-	}
-	
-	public String free_audio_server_token() {
-		return getConfigFile().getString("plugin.free-audio-server-token");
-	}
-	
-	public String own_audio_server_handling_address() {
-		return getConfigFile().getString("plugin.own-audio-server-handling-address");
-	}
-	
-	public int own_audio_server_handling_port() {
-		return getConfigFile().getInt("plugin.own-audio-server-handling-port");
+	public boolean plugin_packet_compression() {
+		return getConfigFile().getBoolean("plugin.packet-compression");
 	}
 	
 	public String plugin_alternative_server() {
@@ -417,6 +396,14 @@ public class Configuration {
 		return getMessage(getMessagesFile().getString("messages.video-load-notice"));
 	}
 	
+	public String video_offset_notice(String video) {
+		return getMessage(getMessagesFile().getString("messages.video-offset-notice"), video);
+	}
+	
+	public String video_offset_start(String offset) {
+		return getMessage(getMessagesFile().getString("messages.video-offset-start"), offset);
+	}
+	
 	public String video_unloaded(String video) {
 		return getMessage(getMessagesFile().getString("messages.video-unloaded"), video);
 	}
@@ -465,8 +452,20 @@ public class Configuration {
 		return getMessage(getMessagesFile().getString("messages.video-speed-updated"), video, speed);
 	}
 	
+	public String video_compress_enabled(String video) {
+		return getMessage(getMessagesFile().getString("messages.video-compress-enabled"), video);
+	}
+	
+	public String video_compress_disabled(String video) {
+		return getMessage(getMessagesFile().getString("messages.video-compress-disabled"), video);
+	}
+	
 	public String video_volume_updated(String video, String volume) {
 		return getMessage(getMessagesFile().getString("messages.video-volume-updated"), video, volume);
+	}
+	
+	public String video_audio_offset_updated(String video, String volume) {
+		return getMessage(getMessagesFile().getString("messages.video-audio-offset-updated"), video, volume);
 	}
 	
 	public String video_age_limit_disabled(String video) {
@@ -798,7 +797,7 @@ public class Configuration {
 	}
 	
 	public String impossible_connection() {
-		return getMessage(getMessagesFile().getString("messages.messages.impossible-connection"));
+		return getMessage(getMessagesFile().getString("messages.impossible-connection"));
 	}
 	
 	public String no_page_left() {

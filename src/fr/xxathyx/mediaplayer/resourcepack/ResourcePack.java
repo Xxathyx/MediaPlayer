@@ -2,13 +2,13 @@ package fr.xxathyx.mediaplayer.resourcepack;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -18,9 +18,7 @@ import org.json.simple.JSONObject;
 import com.google.gson.Gson;
 
 import dev.jeka.core.api.file.JkPathTree;
-
 import fr.xxathyx.mediaplayer.Main;
-import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 
@@ -36,7 +34,7 @@ import fr.xxathyx.mediaplayer.video.data.VideoData;
 public class ResourcePack {
 	
 	private final Main plugin = Main.getPlugin(Main.class);
-		
+	
 	/**
 	* Creates a resource-pack file base on a video, its used if the video is short enought during video loading.
 	* 
@@ -92,7 +90,16 @@ public class ResourcePack {
 		    
 			for(int i = 0; i < video.getAudioChannels(); i++) {
 				
-			    submab.put("sounds", new String[] { "mediaplayer/" + i });
+				List<Map<String, Object>> param = new ArrayList<Map<String, Object>>();
+
+			    Map<String, Object> inner = new HashMap<>();
+			    
+			    inner.put("name", "mediaplayer/" + i);
+			    inner.put("preload", true);
+				
+			    param.add(inner);
+			    
+			    submab.put("sounds", param);
 			    soundsMap.put("mediaplayer." + i, submab);
 			    
 			    com.google.common.io.Files.copy(new File(video.getAudioFolder(), i + ".ogg"), new File(assets, i + ".ogg"));
@@ -106,46 +113,8 @@ public class ResourcePack {
 		}catch (Exception ex) {
 		    ex.printStackTrace();
 		}
-		
 		JkPathTree.of(resourcePackFolder.toPath()).zipTo(zipFile.toPath());
-		
-		Client client = plugin.getClient();
-		
-		client.write("mediaplayer.upload: ", video.getName());
-		client.refresh();
-		
-		try {
-			DataOutputStream dataOutputStream = new DataOutputStream(plugin.getClient().getSocket().getOutputStream());
-
-	        sendFile(dataOutputStream, zipFile);
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
-	
-	/**
-	* Sends a file to the free audio server handling
-	* 
-	* @param dataOutputStream Specific to output data.
-	* @param file The file to be send.
-	*/
-	
-    private void sendFile(DataOutputStream dataOutputStream, File file) throws Exception {
-    	
-        int bytes = 0;
-        
-        FileInputStream fileInputStream = new FileInputStream(file);
-        dataOutputStream.writeLong(file.length());  
-        
-        byte[] buffer = new byte[4*1024];
-        
-        while((bytes=fileInputStream.read(buffer)) != -1) {
-        	plugin.getClient().refresh();
-            dataOutputStream.write(buffer, 0, bytes);
-            dataOutputStream.flush();
-        }
-        fileInputStream.close();
-    }
 	
 	/**
 	* Gets the resource pack-format according to the server running
@@ -153,20 +122,41 @@ public class ResourcePack {
 	* 
 	* <p> <strong>Note: </strong>
 	* 
-	* 1 is for versions 1.6.1 – 1.8.9,
-	* 2 is for versions 1.9 – 1.10.2,
-	* 3 is for versions 1.11 – 1.12.2,
-	* 4 is for versions 1.13 – 1.14.4,
-	* 5 is for versions 1.15 – 1.16.1,
-	* 6 is for versions 1.16.2 – 1.16.5,
+	* 1 is for versions 1.6.1 - 1.8.9,
+	* 2 is for versions 1.9 - 1.10.2,
+	* 3 is for versions 1.11 - 1.12.2,
+	* 4 is for versions 1.13 - 1.14.4,
+	* 5 is for versions 1.15 - 1.16.1,
+	* 6 is for versions 1.16.2 - 1.16.5,
     * 7 is for versions 1.17.x,
 	* 8 is for versions 1.18.x,
-	* 9 is for versions 1.19.x,
+	* 9 is for versions 1.19.1,
+	* 12 is for versions 1.19.2-3,
+	* 13 is for versions 1.19.4,
+	* 15 is for versions 1.20.1.
+	* 18 is for versions 1.20.2.
+	* 23 is for versions 1.20.3.
+	* 31 is for versions 1.20.4.
+	* 34 is for versions 1.21.1.
+	* 42 is for versions 1.21.3.
+	* 46 is for versions 1.21.4.
+	* 55 is for versions 1.21.5.
+	* 60 is for versions 1.21.6.
 	* 
 	* @return The resource pack-format.
 	*/
 	
 	public int getResourcePackFormat() {
+        if(plugin.getServerVersion().equals("v1_21_R5")) return 60;
+        if(plugin.getServerVersion().equals("v1_21_R4")) return 55;
+        if(plugin.getServerVersion().equals("v1_21_R3")) return 46;
+        if(plugin.getServerVersion().equals("v1_21_R2")) return 42;
+        if(plugin.getServerVersion().equals("v1_21_R1")) return 34;
+        if(plugin.getServerVersion().equals("v1_20_R4")) return 31;
+        if(plugin.getServerVersion().equals("v1_20_R3")) return 23;
+        if(plugin.getServerVersion().equals("v1_20_R2")) return 18;
+        if(plugin.getServerVersion().equals("v1_20_R1")) return 15;
+        if(plugin.getServerVersion().equals("v1_19_R3")) return 13;
         if(plugin.getServerVersion().equals("v1_19_R2")) return 12;
         if(plugin.getServerVersion().equals("v1_19_R1")) return 9;
         if(plugin.getServerVersion().equals("v1_18_R1") || plugin.getServerVersion().equals("v1_18_R2")) return 8;

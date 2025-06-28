@@ -282,6 +282,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 		
 		String entityName = "item_frame";
 		if(configuration.glowing_screen_frames_support()) entityName = "glow_item_frame";
+		Screen screen = null;
 		
 		try {
 			for(int i = 0; i < width; i++) {
@@ -316,7 +317,7 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 				}
 			}
 						
-			Screen screen = new Screen(UUID.randomUUID(), width, height, frames, blocks);
+			screen = new Screen(UUID.randomUUID(), width, height, frames, blocks);
 			screen.createConfiguration(FacingLocation.getCardinalDirection(player), frames.get(0).getLocation());
 						
 			for(Block block : blocks) plugin.getScreensBlocks().put(block, screen);
@@ -324,7 +325,9 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 			
 			plugin.getRegisteredScreens().add(screen);
 		}catch (IllegalArgumentException | NullPointerException e) {
+			e.printStackTrace();
 			player.sendMessage(configuration.screen_cannot_create());
+			if(screen != null) screen.delete();
 		}
 		return frames;
 	}
@@ -367,20 +370,20 @@ public class ScreenCommands implements CommandExecutor, TabCompleter {
 	public void sendHelp(CommandSender sender, String cmd) {
 		sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "Screen's commands");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " create (selected-video)");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " create <video-index>");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " create <width> <height>");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " create (selected-video)");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " create <video-index>");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " create <width> <height>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " info (selected-screen)");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " info <screen-index>");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " info (selected-screen)");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " info <screen-index>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " teleport (selected-screen)");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " teleport <screen-index>");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " teleport (selected-screen)");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " teleport <screen-index>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " remove (selected-screen)");
-		sender.sendMessage(ChatColor.GOLD + "» /" + cmd + ChatColor.YELLOW + " remove <screen-index>");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " remove (selected-screen)");
+		sender.sendMessage(ChatColor.GOLD + "/" + cmd + ChatColor.YELLOW + " remove <screen-index>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.GOLD + "» /screens reload");
-		sender.sendMessage(ChatColor.GOLD + "» /screens");
+		sender.sendMessage(ChatColor.GOLD + "/screens reload");
+		sender.sendMessage(ChatColor.GOLD + "/screens");
 	}
 }

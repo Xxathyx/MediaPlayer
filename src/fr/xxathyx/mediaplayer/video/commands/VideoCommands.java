@@ -22,6 +22,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StringUtil;
 
 import fr.xxathyx.mediaplayer.Main;
@@ -79,6 +80,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							public void run() {
 								if(ImageHelper.isURL(arg3[1])) {
 									try {
+										@SuppressWarnings("deprecation")
 										URL url = new URL(arg3[1]);
 										
 										FileUtils.copyURLToFile(url, new File(configuration.getVideosFolder(), FilenameUtils.getName(url.getPath())));
@@ -104,6 +106,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								if(ImageHelper.isURL(arg3[1])) {
 
 									try {
+										@SuppressWarnings("deprecation")
 										URL url = new URL(arg3[1]);
 										UUID uuid = UUID.randomUUID();
 										
@@ -210,9 +213,21 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								
 								//if(!Bukkit.getScheduler().isCurrentlyRunning(videoPlayer.getScreen().task[0])) videoPlayer.getScreen().setSettings(new ScreenSettings(videoPlayer.getScreen().getVideo())); videoPlayer.getScreen().display();
 								
-								videoPlayer.getScreen().setRunning(true);
+								if(videoPlayer.getScreen().getVideo().getAudioOffset() > 0) {
+									player.sendMessage(configuration.video_offset_start(String.valueOf(videoPlayer.getScreen().getVideo().getAudioOffset())));
+									new BukkitRunnable() {
+								        public void run() {
+								        	videoPlayer.getScreen().setOffset(true);
+								        	}
+								    }.runTaskLater(plugin, (long) (videoPlayer.getScreen().getVideo().getAudioOffset()*20L));
+								}else {
+						        	videoPlayer.getScreen().setOffset(true);
+								}
+							    
+							    videoPlayer.getScreen().setRunning(true);
 								player.sendMessage(configuration.video_instance_started(videoPlayer.getScreen().getVideoInstance().getVideo().getName(), String.valueOf(videoPlayer.getScreen().getId())));
 								if(sender instanceof Player) SoundPlayer.playSound(player, SoundType.NOTIFICATION_UP);
+								player.sendMessage(configuration.video_offset_notice(videoPlayer.getScreen().getVideoInstance().getVideo().getName()));
 								return true;
 							}
 							
@@ -413,6 +428,7 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							sender.sendMessage(ChatColor.DARK_PURPLE + "enable-audio: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isAudioEnabled()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-folder-path: " + ChatColor.LIGHT_PURPLE + video.getAudioFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-volume: " + ChatColor.LIGHT_PURPLE + video.getVolume());
+							sender.sendMessage(ChatColor.DARK_PURPLE + "audio-offset: " + ChatColor.LIGHT_PURPLE + video.getAudioOffset());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "frames-folder: " + ChatColor.LIGHT_PURPLE + video.getFramesFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "frame-rate: " + ChatColor.LIGHT_PURPLE + video.getFrameRate());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "frames: " + ChatColor.LIGHT_PURPLE + video.getTotalFrames());
@@ -422,11 +438,12 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 							sender.sendMessage(ChatColor.DARK_PURPLE + "duration: " + ChatColor.LIGHT_PURPLE + video.getDuration());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "speed: " + ChatColor.LIGHT_PURPLE + video.getSpeed());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "size: " + ChatColor.LIGHT_PURPLE + video.getSize());
+							sender.sendMessage(ChatColor.DARK_PURPLE + "compress: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isCacheCompressed()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "age-limit: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.isRestricted()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "creation: " + ChatColor.LIGHT_PURPLE + video.getCreation());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "data-folder: " + ChatColor.LIGHT_PURPLE + video.getDataFolder().getPath());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "show-informations: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getShowInformations()));
-							sender.sendMessage(ChatColor.DARK_PURPLE + "show-informations: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getShowFPS()));
+							sender.sendMessage(ChatColor.DARK_PURPLE + "show-fps: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getShowFPS()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "run-on-startup: " + ChatColor.LIGHT_PURPLE + Boolean.toString(video.getVideoData().getRunOnStartup()));
 							sender.sendMessage(ChatColor.DARK_PURPLE + "views: " + ChatColor.LIGHT_PURPLE + video.getViews());
 							sender.sendMessage(ChatColor.DARK_PURPLE + "index: " + ChatColor.LIGHT_PURPLE + video.getIndex());
@@ -582,6 +599,52 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 								}catch (IOException | InvalidConfigurationException e) {
 									e.printStackTrace();
 								}
+							}
+							
+							if(arg3[2].equalsIgnoreCase("offset")) {
+						        try { 
+						            Double.parseDouble(arg3[3]); 
+						        } catch (NumberFormatException e) { 
+						        	sender.sendMessage(configuration.not_number());
+						            return false;
+						        }
+						        
+						        if(Double.parseDouble(arg3[3]) < 0) {
+						        	sender.sendMessage(configuration.negative_number());
+						        	return false;
+						        }
+						        
+						        double offset = Double.parseDouble(arg3[3]);
+						        
+						        try {
+									video.setAudioOffset(offset);
+									sender.sendMessage(configuration.video_audio_offset_updated(video.getName(), String.valueOf(offset)));
+									return true;
+								}catch (IOException | InvalidConfigurationException e) {
+									e.printStackTrace();
+								}
+							}
+							
+							if(arg3[2].equalsIgnoreCase("compress") | arg3[2].equalsIgnoreCase("cp")) {
+								if(arg3[3].equalsIgnoreCase("true")) {
+									try {
+										video.setCompress(true);
+										sender.sendMessage(configuration.video_compress_enabled(video.getName()));
+										return true;
+									}catch (IOException | InvalidConfigurationException e) {
+										e.printStackTrace();
+									}
+								}
+								
+								if(arg3[3].equalsIgnoreCase("false")) {
+									try {
+										video.setCompress(false);
+										sender.sendMessage(configuration.video_compress_disabled(video.getName()));
+										return true;
+									}catch (IOException | InvalidConfigurationException e) {
+										e.printStackTrace();
+									}
+								}	
 							}
 							
 							if(arg3[2].equalsIgnoreCase("age-limit") | arg3[2].equalsIgnoreCase("al")) {
@@ -846,8 +909,8 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
             
             if(args.length > 2) {
             	
-                String[] modifiers = { "description", "frame-rate", "speed", "volume", "age-limit", "audio",  "looping", "real-time-rendering",
-                		"skip-duplicated-frames", "show-informations", "show-fps", "run-on-startup" };
+                String[] modifiers = { "description", "frame-rate", "speed", "volume", "age-limit", "compress", "audio", "offset", "looping",
+                		"real-time-rendering", "skip-duplicated-frames", "show-informations", "show-fps", "run-on-startup" };
                 
                 StringUtil.copyPartialMatches(args[2], Arrays.asList(modifiers), completions);
             }
@@ -868,38 +931,40 @@ public class VideoCommands implements CommandExecutor, TabCompleter {
 	public void sendHelp(CommandSender sender, String cmd) {
 		sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "Video's commands");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " play <video>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " load <video>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " unload <video>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " info <video>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " play <video>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " load <video>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " unload <video>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " info <video>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " delete <video>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " delete <video>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " start (selected-video)");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " stop (selected-video)");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " start (selected-video)");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " stop (selected-video)");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " pause (selected-video)");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " resume (selected-video)");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " pause (selected-video)");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " resume (selected-video)");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " download <url>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " download <url>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set description <description>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set frame-rate <integer>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set speed <double>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set volume <double>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set age-limit <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set audio <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set looping <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set real-time-rendering <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set skip-duplicated-frames <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set show-informations <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set show-fps <true|false>");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " <video> set run-on-startup <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set description <description>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set frame-rate <integer>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set speed <double>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set volume <double>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set offset <seconds>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set compress <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set age-limit <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set audio <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set looping <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set real-time-rendering <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set skip-duplicated-frames <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set show-informations <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set show-fps <true|false>");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " <video> set run-on-startup <true|false>");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /" + cmd + ChatColor.AQUA + " list");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/" + cmd + ChatColor.AQUA + " list");
 		sender.sendMessage("");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /videos");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /videos" + ChatColor.AQUA + " reload");
-		sender.sendMessage(ChatColor.DARK_AQUA + "» /videos" + ChatColor.AQUA + " cancel-tasks");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/videos");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/videos" + ChatColor.AQUA + " reload");
+		sender.sendMessage(ChatColor.DARK_AQUA + "/videos" + ChatColor.AQUA + " cancel-tasks");
 	}
 }

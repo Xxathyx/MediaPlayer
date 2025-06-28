@@ -44,23 +44,25 @@ public class Updater {
 	*/
 	
 	public void update() {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-			@Override
-			public void run() {
-				if(isOutdated()) {
-					Updater.createFolders();
-					if(configuration.plugin_auto_update()) {
-						if(!download()) return;
-						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "The new plugin version has been downloaded,"
-								+ " and will be applied on the next server restart.");
-						return;
+		if(configuration.plugin_external_communication()) {
+			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+				@Override
+				public void run() {
+					if(isOutdated()) {
+						Updater.createFolders();
+						if(configuration.plugin_auto_update()) {
+							if(!download()) return;
+							Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "The new plugin version has been downloaded,"
+									+ " and will be applied on the next server restart.");
+							return;
+						}
+					    Bukkit.getLogger().warning("[MediaPlayer]: Plugin version is out of date. Please enable auto-update in configuration, or update it manually from: " + plugin.getDescription().getWebsite());
+					    return;
 					}
-				    Bukkit.getLogger().warning("[MediaPlayer]: Plugin version is out of date. Please enable auto-update in configuration, or update it manually from: " + plugin.getDescription().getWebsite());
-				    return;
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "You are using the last version of the plugin (" + plugin.getDescription().getVersion() + ")");
 				}
-				Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + "You are using the last version of the plugin (" + plugin.getDescription().getVersion() + ")");
-			}
-		});
+			});
+		}
 	}
 	
 	/** 
@@ -74,15 +76,26 @@ public class Updater {
 	
 	public boolean isOutdated() {
 	    try {
-	        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=79033").openConnection();
-	        String newVersion = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).readLine();
+	    	
+			@SuppressWarnings("deprecation")
+			HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119570").openConnection();
+			InputStreamReader input = new InputStreamReader(httpURLConnection.getInputStream());
+			BufferedReader bufferedReader = new BufferedReader(input);
+			String newVersion = bufferedReader.readLine();
 	        httpURLConnection.disconnect();
-
-	        if(!newVersion.equals(plugin.getDescription().getVersion())) {
+	        input.close();
+	        
+			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());						
+			@SuppressWarnings("deprecation")
+			URL onlineJar = new URL("https://www.dropbox.com/scl/fi/vpwd2jg4c82w3ialikipn/MediaPlayer.jar?rlkey=uuik96o8rwypliu6q3d54s1gn&st=y0rnbnal&dl=1");
+			
+			long onlineLength = onlineJar.openConnection().getContentLengthLong();
+	        
+	        if(!newVersion.equals(plugin.getDescription().getVersion()) | onlineLength!=jar.length()) {
 	            return true;
 	        }
 	    }catch (Exception e) {
-	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't verify plugin version, try again later maybe Spigot is down.");
+	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't verify plugin version, try again later maybe no internet access or Spigot is down.");
 	    }
 	    return false;
 	}
@@ -108,26 +121,23 @@ public class Updater {
 		try {
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 			File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
+						
+			@SuppressWarnings("deprecation")
+			URL onlineJar = new URL("https://www.dropbox.com/scl/fi/vpwd2jg4c82w3ialikipn/MediaPlayer.jar?rlkey=uuik96o8rwypliu6q3d54s1gn&st=y0rnbnal&dl=1");
+			long onlineLength = onlineJar.openConnection().getContentLengthLong();
 			
-	    	URL onlineJar = new URL("https://www.dropbox.com/s/zt4acgwcdd8flx5/MediaPlayer.jar?dl=1");
+			if(onlineLength!=jar.length()) FileUtils.copyURLToFile(onlineJar, newJar);
 	    	
-	    	FileUtils.copyURLToFile(onlineJar, newJar);
+	    	if(onlineLength == jar.length()) {
+	    		newJar.delete();
+		        Bukkit.getLogger().info("[MediaPlayer]: You are using the latest plugin version : " + plugin.getDescription().getVersion());
+	    		return false;
+	    	}
 	    	
 		}catch (URISyntaxException | IOException e) {
-			
-			try {
-				File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-				File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
-				
-				URL onlineJar = new URL(configuration.plugin_alternative_server() + "mediaplayer/download/MediaPlayer.jar");
-				
-		    	FileUtils.copyURLToFile(onlineJar, newJar);
-		    	
-			}catch (URISyntaxException | IOException e1) {
-		        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin, download it manually or join our discord support server.");
-				e1.printStackTrace();
-		        return false;
-			}
+	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin, download it manually or join our discord support server.");
+			e.printStackTrace();
+	        return false;
 		}
 		return true;
 	}

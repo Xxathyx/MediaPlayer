@@ -1,10 +1,19 @@
 package fr.xxathyx.mediaplayer;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -12,14 +21,23 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.craftbukkit.v1_20_R4.entity.CraftPlayer;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.bergerkiller.bukkit.common.map.MapColorPalette;
 
 import fr.xxathyx.mediaplayer.actionbar.ActionBarVersion;
 import fr.xxathyx.mediaplayer.audio.util.AudioUtilVersion;
 import fr.xxathyx.mediaplayer.commands.MediaPlayerCommands;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
+import fr.xxathyx.mediaplayer.configuration.updater.ConfigurationUpdater;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffmpeg;
 import fr.xxathyx.mediaplayer.ffmpeg.Ffprobe;
 import fr.xxathyx.mediaplayer.group.Group;
@@ -39,8 +57,8 @@ import fr.xxathyx.mediaplayer.screen.Screen;
 import fr.xxathyx.mediaplayer.screen.commands.ScreenCommands;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerBreakScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerDamageScreen;
+import fr.xxathyx.mediaplayer.screen.listeners.PlayerDisconnectScreen;
 import fr.xxathyx.mediaplayer.screen.listeners.PlayerInteractScreen;
-import fr.xxathyx.mediaplayer.server.Client;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadConfigurations;
 import fr.xxathyx.mediaplayer.tasks.TaskAsyncLoadImages;
 import fr.xxathyx.mediaplayer.tasks.TaskSyncLoadScreens;
@@ -49,14 +67,20 @@ import fr.xxathyx.mediaplayer.update.Updater;
 import fr.xxathyx.mediaplayer.util.ActionBar;
 import fr.xxathyx.mediaplayer.util.AudioUtil;
 import fr.xxathyx.mediaplayer.util.MapUtil;
+import fr.xxathyx.mediaplayer.util.ServerVersion;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.commands.VideoCommands;
 import fr.xxathyx.mediaplayer.video.instance.VideoInstance;
 import fr.xxathyx.mediaplayer.video.listeners.PlayerInteractVideo;
 import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 
 /*
- * Copyright or © or Copr. xxathyxlive@gmail.com (2022)
+ * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2024)
  *
  * This software is a computer program add the possibility to use various
  * media on minecraft
@@ -97,7 +121,7 @@ import fr.xxathyx.mediaplayer.video.player.VideoPlayer;
 * @since   2021-08-23 
 */
 
-public class Main extends JavaPlugin {
+public class Main extends JavaPlugin implements Listener {
 	
 	private final ArrayList<Integer> tasks = new ArrayList<>();
 	private final ArrayList<Process> process = new ArrayList<>();
@@ -134,7 +158,6 @@ public class Main extends JavaPlugin {
 	private final MapColorSpaceData mapColorSpaceData = new MapColorSpaceData();
 	
 	private Configuration configuration;
-	private Client client;
 	
 	private Ffmpeg ffmpeg;
 	private Ffprobe ffprobe;
@@ -147,6 +170,9 @@ public class Main extends JavaPlugin {
 	private ActionBar actionBar;
 	private AudioUtil audioUtil;
 	
+	private String serverVersion;
+	
+	private boolean isPaper = false;
 	private boolean legacy = true;
 	private boolean old = false;
 		
@@ -159,7 +185,11 @@ public class Main extends JavaPlugin {
 	
 	public void onEnable() {
 		
-		client = new Client();
+		serverVersion = ServerVersion.getServerVersion();
+		
+        try {
+            Class.forName("com.destroystokyo.paper.ParticleBuilder"); isPaper = true;
+        }catch (ClassNotFoundException ignored) {}
 		
 		configuration = new Configuration();
 		configuration.setup();
@@ -187,6 +217,36 @@ public class Main extends JavaPlugin {
 		updater = new Updater();
 		updater.update();
 		
+        String langage = new Configuration().plugin_langage();
+		
+		File updateFolder = new File(getDataFolder(), "updater/");
+		File updateTranslation = new File(updateFolder, langage + ".yml");
+		
+		updateFolder.mkdir();
+		
+		try {
+			URI uri = Main.class.getResource("translations/" + langage + ".yml").toURI();
+			if("jar".equals(uri.getScheme())) {
+			    for(FileSystemProvider provider: FileSystemProvider.installedProviders()) {
+			        if(provider.getScheme().equalsIgnoreCase("jar")) {
+			            try {
+			                provider.getFileSystem(uri);
+			            }catch (FileSystemNotFoundException e) {
+			                provider.newFileSystem(uri, Collections.emptyMap());
+			            }
+			        }
+			    }
+			}
+			Path source = Paths.get(uri);
+			
+			Files.copy(source, updateTranslation.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			
+			new ConfigurationUpdater(new File(getDataFolder() + "/translations/", langage + ".yml"), updateTranslation, "messages").update();
+			
+		}catch (URISyntaxException | IOException | InvalidConfigurationException e) {
+	        Bukkit.getLogger().warning("[MediaPlayer]: If you are reloading the plugin skip this message otherwise failed to verify configurations.");
+		}
+		
 		mapUtil = new MapUtilVersion().getMapUtil();
 		actionBar = new ActionBarVersion().getActionBar();
 		audioUtil = new AudioUtilVersion().getAudioUtil();
@@ -200,14 +260,14 @@ public class Main extends JavaPlugin {
 			}
 		});
 		
-        String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        String serverVersion = getServerVersion();
 		
-        if(serverVersion.equals("v1_19_R2") || serverVersion.equals("v1_19_R1") || serverVersion.equals("v1_18_R2") || serverVersion.equals("v1_18_R1") || serverVersion.equals("v1_17_R1") || serverVersion.equals("v1_16_R3") ||
-        		serverVersion.equals("v1_16_R2") || serverVersion.equals("v1_16_R1") || serverVersion.equals("v1_15_R1") || serverVersion.equals("v1_14_R1") || serverVersion.equals("v1_13_R1") || serverVersion.equals("v1_13_R2")) {
+        if(serverVersion.equals("v1_21_R5") | serverVersion.equals("v1_21_R4") | serverVersion.equals("v1_21_R3") | serverVersion.equals("v1_21_R2") | serverVersion.equals("v1_21_R1") | serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
+        		serverVersion.equals("v1_16_R2") | serverVersion.equals("v1_16_R1") | serverVersion.equals("v1_15_R1") | serverVersion.equals("v1_14_R1") | serverVersion.equals("v1_13_R1") | serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
         
-        if(serverVersion.equals("v1_7_R4") || serverVersion.equals("v1_7_R3") || serverVersion.equals("v1_7_R2") || serverVersion.equals("v1_7_R1")) {
+        if(serverVersion.equals("v1_7_R4") | serverVersion.equals("v1_7_R3") | serverVersion.equals("v1_7_R2") | serverVersion.equals("v1_7_R1")) {
         	old = true;
 	        Bukkit.getLogger().warning("[MediaPlayer]: The server running version is old and isn't well supported, you may encounter future issues while playing videos.");
         }
@@ -235,11 +295,11 @@ public class Main extends JavaPlugin {
 		
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractImage(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractVideo(), this);
-				
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerBreakScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerInteractScreen(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDamageScreen(), this);
-		
+		Bukkit.getServer().getPluginManager().registerEvents(new PlayerDisconnectScreen(), this);
+				
 		if(!old) Bukkit.getServer().getPluginManager().registerEvents(new ResourcePackStatus(), this);
 				
 		new TaskSyncLoadScreens().runTask(this);
@@ -247,19 +307,7 @@ public class Main extends JavaPlugin {
 		if(legacy) new TaskAsyncLoadImages().runTaskAsynchronously(this);
 		if(!legacy) new TaskAsyncLoadImages().runTask(this);
 		
-		if(configuration.plugin_free_audio_server_handling() && client.getSocket() == null) {
-			
-			Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
-				@Override
-				public void run() {
-					
-					client.connect();
-					
-					client.write("mediaplayer.connect: ", configuration.free_audio_server_token());
-					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GREEN + client.getResponse());
-				}
-			});
-		}
+		if(!configuration.plugin_packet_compression()) {}
 	}
 	
 	/**
@@ -279,7 +327,7 @@ public class Main extends JavaPlugin {
 		}
 		
 		for(Screen screen : registeredScreens) {
-			screen.end();
+			//screen.end();
 			if(configuration.remove_screen_on_restart()) {
 				screen.remove();
 			}
@@ -288,7 +336,7 @@ public class Main extends JavaPlugin {
 		for(Process process : process) {
 			process.destroy();
 		}
-		
+				
 		for(Video video : playedStreams) {
 			
 			try {
@@ -297,34 +345,44 @@ public class Main extends JavaPlugin {
 				e.printStackTrace();
 			}
 		}
-		
-		try {
-			client.write("mediaplayer.disconnect: ", configuration.free_audio_server_token());
-			client.getSocket().close();
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 	
-    /**
-     * Sets client if it can't be set, its only used on first time creation.
-     *
-     * @param client Client instance.
-     */
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        injectPlayer(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent event){
+        removePlayer(event.getPlayer());
+    }
+    private void removePlayer(Player player) {
+        Channel channel = ((CraftPlayer) player).getHandle().b.a.m;
+        channel.eventLoop().submit(() -> {
+            channel.pipeline().remove(player.getName());
+            return null;
+        });
+    }
 	
-	public void setClient(Client client) {
-		this.client = client;
-	}
-	
-    /**
-     * Gets server-client that should be connected to the free audio server.
-     *
-     * @return the client instance.
-     */
-	
-	public Client getClient() {
-		return client;
-	}
+	private void injectPlayer(Player player) {
+    	
+        ChannelDuplexHandler channelDuplexHandler = new ChannelDuplexHandler() {
+        	
+            @Override
+            public void channelRead(ChannelHandlerContext channelHandlerContext, Object packet) throws Exception {
+                Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.YELLOW + "PACKET READ: " + ChatColor.RED + packet.toString());
+                super.channelRead(channelHandlerContext, packet);
+            }
+            
+			@Override
+            public void write(ChannelHandlerContext channelHandlerContext, Object packet, ChannelPromise channelPromise) throws Exception {
+                Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "PACKET WRITE: " + ChatColor.GREEN + packet.toString());
+        		super.write(channelHandlerContext, packet, channelPromise);
+            }
+        };
+        ChannelPipeline pipeline = ((CraftPlayer) player).getHandle().b.a.m.pipeline();
+        pipeline.addBefore("packet_handler", player.getName(), channelDuplexHandler);
+    }
 	
     /**
      * Gets access to the ffmpeg library.
@@ -354,7 +412,7 @@ public class Main extends JavaPlugin {
      */
 	
 	public String getServerVersion() {
-		return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		return serverVersion;
 	}
 	
     /**
@@ -388,9 +446,9 @@ public class Main extends JavaPlugin {
 	}
 	
     /**
-     * Gets whether the plugin has been reloaded one a time.
+     * Gets whether the plugin has been reloaded one time.
      *
-     * @return Whether the plugin has been reloaded one a time.
+     * @return Whether the plugin has been reloaded one time.
      */
 	
 	public boolean isReloaded() {
@@ -407,6 +465,16 @@ public class Main extends JavaPlugin {
 				
 		if(tickvalue > 1) return true;	
 		return false;
+	}
+	
+    /**
+     * Gets whether this server is running under a PaperMC version.
+     *
+     * @return Whether this server is running under PaperMC.
+     */
+	
+	public boolean isPaper() {
+		return isPaper;
 	}
 	
     /**

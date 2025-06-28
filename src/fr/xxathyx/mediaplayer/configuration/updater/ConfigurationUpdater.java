@@ -2,7 +2,10 @@ package fr.xxathyx.mediaplayer.configuration.updater;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Set;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,6 +26,10 @@ import fr.xxathyx.mediaplayer.util.YamlConfigurationManager;
 public class ConfigurationUpdater {
 		
 	private File file;
+	private File update;
+	
+	private String section;
+	
 	private FileConfiguration fileconfiguration;
 	
 	/**
@@ -35,7 +42,7 @@ public class ConfigurationUpdater {
     * @throws InvalidConfigurationException When non-respect of YAML syntax.
 	*/
 	
-	public ConfigurationUpdater(File file)  {
+	public ConfigurationUpdater(File file, File update, String section)  {
 		fileconfiguration = new YamlConfiguration();
 		try {
 			fileconfiguration.load(file);
@@ -43,18 +50,55 @@ public class ConfigurationUpdater {
 			e.printStackTrace();
 		}
 		this.file = file;
+		this.update = update;
+		this.section = section;
 	}
 	
 	/**
 	* Checks whether a configuration is outdated or not using her sections.
 	* 
-	* @param newSection The new introduced configuration section by an updated.
+    * @return True if the configuration is outdated.
+	* @throws URISyntaxException 
+	* @throws IOException 
+	* @throws InvalidConfigurationException 
+	*/
+	
+	public boolean update() throws URISyntaxException, IOException, InvalidConfigurationException {
+		
+		FileConfiguration update = new YamlConfiguration();
+		update.load(this.update);
+		
+		String d = section.equals("messages") ? "\"" : "";
+		String spaces = "  ";
+		
+		for(int i=0; i<section.codePoints().filter(c -> c == '.').count(); i++) spaces=spaces+"  ";
+		
+		Set<String> keys = update.getConfigurationSection(section).getKeys(true);
+		keys.removeAll(fileconfiguration.getConfigurationSection(section).getKeys(true));
+				
+		if(!keys.isEmpty()) {
+		    FileWriter writer = new FileWriter(file, true);
+			for(String key : keys) {
+			    writer.write(spaces+key+": " +d+update.get(section+"."+key)+d+"\n");
+			}
+			writer.close();
+		}
+		
+		this.update.delete();
+		
+		return keys.isEmpty();
+	}
+	
+	/**
+	* Checks whether a configuration contains a specific section.
+	* 
+	* @param newSection The configuration section.
 	* 
     * @return True if the configuration contains the section or false if it doesn't.
 	*/
 	
-	public boolean isOutdated(String newSection) {
-		return !fileconfiguration.isConfigurationSection(newSection);
+	public boolean contains(String section) {
+		return !fileconfiguration.isConfigurationSection(section);
 	}
 	
 	/**

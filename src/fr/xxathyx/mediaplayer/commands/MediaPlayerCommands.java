@@ -43,7 +43,7 @@ public class MediaPlayerCommands implements CommandExecutor {
 				}
 				sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "MediaPlayer's informations");
 				sender.sendMessage("");
-				sender.sendMessage(ChatColor.YELLOW + "» Running version : " + plugin.getDescription().getVersion());
+				sender.sendMessage(ChatColor.YELLOW + "Running version : " + plugin.getDescription().getVersion());
 				return true;
 			}
 			sender.sendMessage(configuration.insufficient_permissions());

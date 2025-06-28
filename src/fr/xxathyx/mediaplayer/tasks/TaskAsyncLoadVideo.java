@@ -4,6 +4,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.io.FileOutputStream;
+import java.util.zip.ZipOutputStream;
+import java.util.Arrays;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 
@@ -18,6 +25,7 @@ import fr.xxathyx.mediaplayer.Main;
 import fr.xxathyx.mediaplayer.configuration.Configuration;
 import fr.xxathyx.mediaplayer.group.Group;
 import fr.xxathyx.mediaplayer.image.renderer.ImageRenderer;
+import fr.xxathyx.mediaplayer.map.colors.MapColorPalette;
 import fr.xxathyx.mediaplayer.notification.Notification;
 import fr.xxathyx.mediaplayer.notification.NotificationType;
 import fr.xxathyx.mediaplayer.resourcepack.ResourcePack;
@@ -27,6 +35,7 @@ import fr.xxathyx.mediaplayer.util.ImageUtil;
 import fr.xxathyx.mediaplayer.video.Video;
 import fr.xxathyx.mediaplayer.video.data.VideoData;
 import fr.xxathyx.mediaplayer.video.data.cache.Cache;
+import fr.xxathyx.mediaplayer.util.ProgressBar;
 
 /** 
 * The TaskAsyncLoadVideo class extends {@link BukkitRunnable} has a single constructor
@@ -65,236 +74,294 @@ public class TaskAsyncLoadVideo extends BukkitRunnable {
 	* The estimated time shown is a magnified average, it shouldn't be trusted anymore.
 	*/
     
+	@SuppressWarnings("deprecation")
 	public void run() {
 		
-		plugin.getTasks().add(getTaskId());
-		
-        long time = System.currentTimeMillis();
-                
-        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_STARTING, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
-        new Notification(NotificationType.VIDEO_PROCESSING_ESTIMATED_TIME, false).send(new Group("mediaplayer.permission.admin"), new String[] { String.valueOf(Math.round((video.getVideoFile().length()*Math.pow(10, -6)))) }, true);
-        
-        String framesExtension = video.getFramesExtension();
-        int framesCount = video.getFramesFolder().listFiles().length;
-                
-        VideoData videoData = new VideoData(video); 
-        
-        if(framesCount < video.getTotalFrames()) {
-        	
-        	if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX) || fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.OTHER)) {
-        		if(configuration.plugin_force_permissions()) {
-                	try {
-        				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
-        			}catch (InterruptedException | IOException e) {
-        				e.printStackTrace();
-        			}
-        		}
-        	}
-        	
-    		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())
-    				, "-hide_banner",
-    				"-loglevel", "error",
-    				"-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()),
-    				"-start_number", String.valueOf(framesCount),
-    				"-q:v", "0",
-    				FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
-            
-            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
-                     
-            try {
-    			Process process = videoProcessBuilder.inheritIO().start();
-    			plugin.getProcess().add(process);
-    			process.waitFor();
-    		}catch (IOException | InterruptedException e) {
-    			e.printStackTrace();
-    		}
-            
-            if(configuration.verify_files_on_load()) {
-            	
-            	int count = 0;
-            	int total = video.getTotalFrames();
-            	
-                while(count < total) {
-                	
-                	File previous = new File(video.getFramesFolder(), String.valueOf(count-1) + "." + video.getFramesExtension());
-                	File next = new File(video.getFramesFolder(), count + "." + video.getFramesExtension());
-                	
-                	if(!next.exists() && previous.exists()) {
-    					try {
-    						ImageIO.write(ImageIO.read(previous), video.getFramesExtension().replace(".", ""), next);
-    					}catch (IOException e) {
-    						e.printStackTrace();
-    					}
-                	}
-                	count++;
-                }
-            }
-        }
-        
-        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);        
-        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
-        
-		
-        if(!video.getFormat().equalsIgnoreCase("m3u8")) {
-            if(!video.getFormat().equalsIgnoreCase("gif")) {
-            	if(video.hasAudio()) {
-            		String[] audioCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath()),
-            				"-hide_banner",
-            				"-loglevel", "error",
-            				"-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()),
-            				"-f", "ogg",
-            				"-ab", "192000",
-            				"-vn", FilenameUtils.separatorsToUnix(new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath())};
-                	
-                    ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
-                    try {
-            			Process process = audioProcessBuilder.inheritIO().start();
-		    			plugin.getProcess().add(process);
-            			process.waitFor();
-            		}catch (IOException | InterruptedException e) {
-            			e.printStackTrace();
-            		}
-                    new ResourcePack().create(video);
-            	}
-            }else {
-            	try {
-    				GIFUtil.split(video.getVideoFile(), video.getFramesFolder());
-    			}catch (IOException e) {
-    				e.printStackTrace();
-    			}
-            }
-        }
-        
-        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
-        new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
-		                
-        try {
-        	if(!videoData.getThumbnail().exists()) {
-        		
-    	        videoData.createThumbnail();		        	        
-        		
-        		Bukkit.getScheduler().runTask(plugin, new Runnable() {
-					@Override
-					public void run() {
-		    			try {
-			    			videoData.createMaps();
-						}catch (IOException e) {
-							e.printStackTrace();
+		try {
+			plugin.getTasks().add(getTaskId());
+			
+	        long time = System.currentTimeMillis();
+	                
+	        //new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_STARTING, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+	        //new Notification(NotificationType.VIDEO_PROCESSING_ESTIMATED_TIME, false).send(new Group("mediaplayer.permission.admin"), new String[] { String.valueOf(Math.round((video.getVideoFile().length()*Math.pow(10, -6)))) }, true);
+	        
+	        String framesExtension = video.getFramesExtension();
+	        int framesCount = video.getFramesFolder().listFiles().length;
+	                
+	        VideoData videoData = new VideoData(video); 
+	        
+	        if(framesCount < video.getTotalFrames()) {
+	        	
+	        	if(fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.LINUX) || fr.xxathyx.mediaplayer.system.System.getSystemType().equals(SystemType.OTHER)) {
+	        		if(configuration.plugin_force_permissions()) {
+	                	try {
+	        				Runtime.getRuntime().exec("chmod -R 777 " + FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())).waitFor();
+	        			}catch (InterruptedException | IOException e) {
+	        				e.printStackTrace();
+	        			}
+	        		}
+	        	}
+	        	
+	    		String[] videoCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath())
+	    				, "-hide_banner",
+	    				"-loglevel", "error",
+	    				"-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()),
+	    				"-start_number", String.valueOf(framesCount),
+	    				"-q:v", "0",
+	    				FilenameUtils.separatorsToUnix(new File(video.getFramesFolder().getPath(), "%d.jpg").getAbsolutePath())};
+	            
+	            ProcessBuilder videoProcessBuilder = new ProcessBuilder(videoCommand);
+	            Bukkit.getLogger().info(Arrays.toString(videoCommand).replace(",", ""));
+	                     
+	            try {
+	            	ProgressBar progressBar = new ProgressBar(framesCount, video.getTotalFrames(), video.getName(),
+	            			'▉', net.md_5.bungee.api.ChatColor.RED, net.md_5.bungee.api.ChatColor.GREEN);
+	            	
+	    			Process process = videoProcessBuilder.inheritIO().start();
+	    			plugin.getProcess().add(process);
+	    			
+	    			Group group = new Group("mediaplayer.permission.admin");
+	    			
+	    			int task = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+							try (Stream<Path> files = Files.list(video.getFramesFolder().toPath())) {
+							    progressBar.setProgress((int)files.count());
+							    progressBar.send(group, progressBar.build(), net.md_5.bungee.api.ChatColor.GRAY + " (1/3)");
+							}catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
-					}
-        		});
-    			ImageRenderer imageRenderer = new ImageRenderer(ImageIO.read(video.getVideoData().getThumbnail()));
-    			imageRenderer.calculateDimensions();
-				
-				video.setMinecraftWidth(imageRenderer.columns);
-    			video.setMinecraftHeight(imageRenderer.lines);
-        	}
-        	
-        	if(configuration.detect_duplicated_frames()) {
-    			if(!new File(video.getFramesFolder(), "duplicated.txt").exists()) {
-    				
-    				new File(video.getFramesFolder(), "duplicated.txt").createNewFile();
-    				
-    			    FileWriter fileWriter = new FileWriter(video.getFramesFolder().getPath() + "/duplicated.txt", true);
-    			    
-    			    final double max = configuration.ressemblance_to_skip();
-    			    final int total = video.getTotalFrames()-1;
-    			    
-    			    for(int i = 0; i < total; i++) {
-    			    	
-    			    	BufferedImage original = ImageIO.read(new File(video.getFramesFolder(), i + framesExtension));
-    			    	BufferedImage next = ImageIO.read(new File(video.getFramesFolder(), (i+1) + framesExtension));
-    			    			    			    	
-    			    	if(ImageUtil.getResemblance(original, next) > max) {
-    			    		fileWriter.write((i+1) + "\n");
-    			    	}
-    			    }
-    			    fileWriter.close();	
-    			}
-        	} 
-		}catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
-                
-        if(!videoData.getRealTimeRendering()) {
-        	
-        	int total = video.getTotalFrames();
-        	int count = videoData.getCacheFolder().listFiles().length;
-        	
-        	ImageRenderer imageRenderer;
-        	
-        	while(count < total) {
-    			try {
-    				File file = new File(videoData.getCacheFolder(), String.valueOf(count));
-    				file.mkdir();
-    				
-    				imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), count + framesExtension)));
-    	    		imageRenderer.calculateDimensions();
-    	    		imageRenderer.splitImages();
-    						    		
-    				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
-    					new Cache(new File(file, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
-    				}
-    				count++;
-    			}catch (IOException | InvalidConfigurationException e) {
-    				e.printStackTrace();
-    			}
-        	}
-        	
-        	if(configuration.verify_files_on_load()) {
-        		
-            	count = 0;
-            	
-            	while(count < total) {
-        			try {
-        				
-        				File previous = new File(videoData.getCacheFolder(), String.valueOf(count-1));
-        				File next = new File(videoData.getCacheFolder(), String.valueOf(count));
-        				
-        				if(!next.exists() && previous.exists()) {
-        					
-            				imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), String.valueOf(count-1) + framesExtension)));
-            	    		imageRenderer.calculateDimensions();
-            	    		imageRenderer.splitImages();
-        					
-            				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
-            					new Cache(new File(next, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
-            				}        	    		
-        				}
-        				count++;
-        			}catch (IOException | InvalidConfigurationException e) {
-        				e.printStackTrace();
-        			}
-            	}
-        	}
-    		
-        	try {
-				video.setLoaded(true);
+	    			 }, 0L, 0L);
+	    			process.waitFor();
+	    			Bukkit.getScheduler().cancelTask(task);
+	    		}catch (IOException | InterruptedException e) {
+	    			e.printStackTrace();
+	    		}
+	            
+	            if(configuration.verify_files_on_load()) {
+	            	
+	            	int count = 0;
+	            	int total = video.getTotalFrames();
+	            	
+	                while(count < total) {
+	                	
+	                	File previous = new File(video.getFramesFolder(), String.valueOf(count-1) + "." + video.getFramesExtension());
+	                	File next = new File(video.getFramesFolder(), count + "." + video.getFramesExtension());
+	                	
+	                	if(!next.exists() && previous.exists()) {
+	    					try {
+	    						ImageIO.write(ImageIO.read(previous), video.getFramesExtension().replace(".", ""), next);
+	    					}catch (IOException e) {
+	    						e.printStackTrace();
+	    					}
+	                	}
+	                	count++;
+	                }
+	            }
+	        }
+	        
+	        new Notification(NotificationType.VIDEO_PROCESSING_FRAMES_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);        
+	        //new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+	        
+	        if(!video.getFormat().equalsIgnoreCase("m3u8")) {
+	            if(!video.getFormat().equalsIgnoreCase("gif")) {
+	            	if(video.hasAudio()) {
+	            		String[] audioCommand = {FilenameUtils.separatorsToUnix(plugin.getFfmpeg().getLibraryFile().getAbsolutePath()),
+	            				"-hide_banner",
+	            				"-loglevel", "error",
+	            				"-i", FilenameUtils.separatorsToUnix(video.getVideoFile().getAbsolutePath()),
+	            				"-f", "ogg",
+	            				"-ab", "192000",
+	            				"-vn", FilenameUtils.separatorsToUnix(new File(video.getAudioFolder(), video.getAudioFolder().listFiles().length + ".ogg").getAbsolutePath())};
+	                	
+	                    ProcessBuilder audioProcessBuilder = new ProcessBuilder(audioCommand);
+	    	            Bukkit.getLogger().info(Arrays.toString(audioCommand).replace(",", ""));
+	                    
+	                    try {
+	                    	Process process = audioProcessBuilder.inheritIO().start();
+			    			plugin.getProcess().add(process);
+	            			process.waitFor();
+	            		}catch (IOException | InterruptedException e) {
+	            			e.printStackTrace();
+	            		}
+	                    new ResourcePack().create(video);
+	            	}
+	            }else {
+	            	try {
+	    				GIFUtil.split(video.getVideoFile(), video.getFramesFolder());
+	    			}catch (IOException e) {
+	    				e.printStackTrace();
+	    			}
+	            }
+	        }
+	        
+	        new Notification(NotificationType.VIDEO_PROCESSING_AUDIO_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+	        //new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_STARTING, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+			                
+	        try {
+	        	if(!videoData.getThumbnail().exists()) {
+	        		
+	    	        videoData.createThumbnail();		        	        
+	        		
+	        		Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+			    			try {
+				    			videoData.createMaps();
+							}catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+	        		});
+	    			ImageRenderer imageRenderer = new ImageRenderer(ImageIO.read(video.getVideoData().getThumbnail()));
+	    			imageRenderer.calculateDimensions();
+					
+					video.setMinecraftWidth(imageRenderer.columns);
+	    			video.setMinecraftHeight(imageRenderer.lines);
+	        	}
+	        	
+	        	if(configuration.detect_duplicated_frames()) {
+	    			if(!new File(video.getFramesFolder(), "duplicated.txt").exists()) {
+	    				
+	    				new File(video.getFramesFolder(), "duplicated.txt").createNewFile();
+	    				
+	    			    FileWriter fileWriter = new FileWriter(video.getFramesFolder().getPath() + "/duplicated.txt", true);
+	    			    
+	    			    final double max = configuration.ressemblance_to_skip();
+	    			    final int total = video.getTotalFrames()-1;
+	    			    
+	    			    for(int i = 0; i < total; i++) {
+	    			    	
+	    			    	BufferedImage original = ImageIO.read(new File(video.getFramesFolder(), i + framesExtension));
+	    			    	BufferedImage next = ImageIO.read(new File(video.getFramesFolder(), (i+1) + framesExtension));
+	    			    			    			    	
+	    			    	if(ImageUtil.getResemblance(original, next) > max) {
+	    			    		fileWriter.write((i+1) + "\n");
+	    			    	}
+	    			    }
+	    			    fileWriter.close();	
+	    			}
+	        	} 
 			}catch (IOException | InvalidConfigurationException e) {
 				e.printStackTrace();
 			}
-        	
-        	if(!videoData.getRealTimeRendering()) {
-                if(configuration.frames_delete_on_loaded()) {
-            		try {
-    					FileUtils.deleteDirectory(video.getFramesFolder());
-    					video.getFramesFolder().mkdir();
-    				}catch (IOException e) {
-    					e.printStackTrace();
-    				}
-                }
-        	}
-        	
-            if(configuration.video_delete_on_loaded()) {
-            	video.getVideoFile().delete();
-            }
-        }
-        
-        new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
-        new Notification(NotificationType.VIDEO_PROCESSING_FINISHED, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName(), String.valueOf(Math.round(((System.currentTimeMillis() - time) / 1000)/60)) }, true);
-		
-        plugin.getLoadingVideos().remove(video.getName());
-        
-	    Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GRAY + video.getName() + " successfully loaded.");
+	                
+	        if(!videoData.getRealTimeRendering()) {
+	        	
+	        	int total = video.getTotalFrames();
+	        	int count = videoData.getCacheFolder().listFiles().length;
+	        	
+	        	ImageRenderer imageRenderer;
+	        	
+				Group group = new Group("mediaplayer.permission.admin");
+	        	
+	        	while(count < total) {
+	    			try {
+	    				
+	    				File frame = new File(video.getFramesFolder(), count + framesExtension);
+	    				
+	    				if(frame.exists()) {
+	    					
+		    				imageRenderer = new ImageRenderer(ImageIO.read(frame));
+		    	    		imageRenderer.calculateDimensions();
+		    	    		imageRenderer.splitImages();
+		    				
+		    	    		if(!video.isCacheCompressed()) {
+		    	    			
+		        				File file = new File(videoData.getCacheFolder(), String.valueOf(count));
+		        				file.mkdir();
+		        	    		
+		        				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+		        					new Cache(new File(file, String.valueOf(j) + ".cache")).createCache(imageRenderer.getBufferedImages()[j]);
+		        				}
+		    	    		}else {
+		    	    			
+		    	    			FileOutputStream fout = new FileOutputStream(video.getVideoData().getCacheFolder() + "/" + String.valueOf(count) + ".zip");
+		    	    			ZipOutputStream zout = new ZipOutputStream(fout);
+		    	    			
+		    	    			for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+		    	    				
+		    	    			    ZipEntry ze = new ZipEntry(String.valueOf(j) + ".cache");
+		    	    			    zout.putNextEntry(ze);
+		    	    			    zout.write(MapColorPalette.convertImage(imageRenderer.getBufferedImages()[j]));
+		    	    			    zout.closeEntry();
+		    	    			}
+		    	    			zout.close();
+		    	    			fout.close();
+		    	    		}
+		    	    		
+		                	ProgressBar progressBar = new ProgressBar(count, total, video.getName(),
+		                			'▉', net.md_5.bungee.api.ChatColor.RED, net.md_5.bungee.api.ChatColor.GREEN);
+		    	    		
+		                	progressBar.setProgress(count);
+		                	progressBar.send(group, progressBar.build(), net.md_5.bungee.api.ChatColor.GRAY + "(3/3)");
+	    				}
+	                	
+	    				count++;
+	    			}catch (IOException | InvalidConfigurationException e) {
+	    				e.printStackTrace();
+	    			}
+	        	}
+	        	
+	        	if(configuration.verify_files_on_load()) {
+	        		
+	            	count = 0;
+	            	
+	            	while(count < total) {
+	        			try {
+	        				
+	        				File previous = new File(videoData.getCacheFolder(), String.valueOf(count-1));
+	        				File next = new File(videoData.getCacheFolder(), String.valueOf(count));
+	        				
+	        				if(!next.exists() && previous.exists()) {
+	        					
+	            				imageRenderer = new ImageRenderer(ImageIO.read(new File(video.getFramesFolder(), String.valueOf(count-1) + framesExtension)));
+	            	    		imageRenderer.calculateDimensions();
+	            	    		imageRenderer.splitImages();
+	        					
+	            				for(int j = 0; j < imageRenderer.getBufferedImages().length; j++) {
+	            					File cache = new File(next, String.valueOf(j) + ".cache");
+	            					if(cache.exists()) new Cache(cache).createCache(imageRenderer.getBufferedImages()[j]);
+	            				}        	    		
+	        				}
+	        				count++;
+	        			}catch (IOException | InvalidConfigurationException e) {
+	        				e.printStackTrace();
+	        			}
+	            	}
+	        	}
+	    		
+	        	try {
+					video.setLoaded(true);
+				}catch (IOException | InvalidConfigurationException e) {
+					e.printStackTrace();
+				}
+	        	
+	        	if(!videoData.getRealTimeRendering()) {
+	                if(configuration.frames_delete_on_loaded()) {
+	            		try {
+	    					FileUtils.deleteDirectory(video.getFramesFolder());
+	    					video.getFramesFolder().mkdir();
+	    				}catch (IOException e) {
+	    					e.printStackTrace();
+	    				}
+	                }
+	        	}
+	        	
+	            if(configuration.video_delete_on_loaded()) {
+	            	video.getVideoFile().delete();
+	            }
+	        }
+	        
+	        //new Notification(NotificationType.VIDEO_PROCESSING_MINECRAFT_FINISHED, true).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName() }, true);
+	        new Notification(NotificationType.VIDEO_PROCESSING_FINISHED, false).send(new Group("mediaplayer.permission.admin"), new String[] { video.getName(), String.valueOf(Math.round(((System.currentTimeMillis() - time) / 1000)/60)) }, true);
+			
+	        plugin.getLoadingVideos().remove(video.getName());
+	        
+		    Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GRAY + video.getName() + " successfully loaded.");
+		}catch (Exception e) {
+			run();
+		}
     }
 }

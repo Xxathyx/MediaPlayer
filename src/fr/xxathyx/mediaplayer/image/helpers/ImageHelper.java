@@ -42,6 +42,7 @@ public class ImageHelper {
      * @return The image as {@link BufferedImage}.
      */
 	
+	@SuppressWarnings("deprecation")
 	public static BufferedImage getImage(String path) throws IOException {
 		
 		if(isURL(path)) {

@@ -151,6 +151,7 @@ public class Video {
     * @throws InvalidConfigurationException When non-respect of YAML syntax.
 	*/
 	
+	@SuppressWarnings("deprecation")
 	public void createConfiguration(File videoFile) throws FileNotFoundException, IOException, InvalidConfigurationException {
 		
 		String format = FilenameUtils.getExtension(videoFile.getName());
@@ -295,12 +296,14 @@ public class Video {
 			fileconfiguration.set("video.file-video-path", videoFile.getPath());
 			fileconfiguration.set("video.stream", Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.stream-url", url);
-			fileconfiguration.set("video.enable-audio", true);
+			fileconfiguration.set("video.enable-audio", !Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 			fileconfiguration.set("video.audio-volume", 1.0);
 			fileconfiguration.set("video.audio-channels", audioChannels);
+			fileconfiguration.set("video.audio-offset", 0.0);
 			fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 			fileconfiguration.set("video.frame-rate", framerate);
+			fileconfiguration.set("video.original-frame-rate", stream.r_frame_rate.doubleValue());
 			fileconfiguration.set("video.frames", frames);
 			fileconfiguration.set("video.format", format);
 			fileconfiguration.set("video.width", originalWidth);
@@ -312,6 +315,8 @@ public class Video {
 			fileconfiguration.set("video.looping", false);
 			fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
 			fileconfiguration.set("video.data-folder", getDataFolder().getPath());
+			fileconfiguration.set("video.instances-folder", getInstancesFolder().getPath());
+			fileconfiguration.set("video.compress-cache", true);
 			fileconfiguration.set("video.real-time-rendering", Format.getCompatibleStreamsFormats().contains(format));
 			fileconfiguration.set("video.skip-duplicated-frames", false);
 			fileconfiguration.set("video.show-informations", true);
@@ -359,8 +364,10 @@ public class Video {
 		fileconfiguration.set("video.file-audio-path", getAudioFolder().getPath());
 		fileconfiguration.set("video.audio-volume", 1.0);
 		fileconfiguration.set("video.audio-channels", 0);
+		fileconfiguration.set("video.audio-offset", 0.0);
 		fileconfiguration.set("video.frames-folder", getFramesFolder().getPath());
 		fileconfiguration.set("video.frame-rate", source.getFramerate());
+		fileconfiguration.set("video.original-frame-rate", source.getFramerate());
 		fileconfiguration.set("video.frames", source.getTotalFrames());
 		fileconfiguration.set("video.format", "none");
 		fileconfiguration.set("video.width", source.getWidth());
@@ -373,6 +380,7 @@ public class Video {
 		fileconfiguration.set("video.creation", date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear() + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond());
 		fileconfiguration.set("video.data-folder", getDataFolder().getPath());
 		fileconfiguration.set("video.instances-folder", getInstancesFolder().getPath());
+		fileconfiguration.set("video.compress-cache", true);
 		fileconfiguration.set("video.real-time-rendering", true);
 		fileconfiguration.set("video.skip-duplicated-frames", false);
 		fileconfiguration.set("video.show-informations", source.showInformations());
@@ -433,6 +441,29 @@ public class Video {
 		
 		fileconfiguration.load(file);
 		fileconfiguration.set("video.audio-volume", volume);
+		fileconfiguration.save(file);
+	}
+	
+	/**
+	* Sets the video-audio offset.
+	* 
+	* <p> <strong>Note: </strong>Audio offset is the countdown, once finished video frames
+	* will appear and thus the video begin, this is used to manually synchronize both audio
+	* and video.
+	* 
+	* @param offset The audio-offset in seconds.
+	* 
+	* @throws FileNotFoundException When the configuration {@link File#exists()} return false.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void setAudioOffset(double offset) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("video.audio-offset", offset);
 		fileconfiguration.save(file);
 	}
 	
@@ -499,6 +530,27 @@ public class Video {
 		
 		fileconfiguration.load(file);
 		fileconfiguration.set("video.speed", speed);
+		fileconfiguration.save(file);
+	}
+	
+	/**
+	* Sets compress status of the video-cache.
+	* 
+	* <p> <strong>Note: </strong>Video-cache is compressed by default.
+	* 
+	* @param restricted Whether the video-cache should be compressed or not.
+	* 
+	* @throws FileNotFoundException When the configuration {@link File#exists()} return false.
+	* @throws IOException When failed or interrupted I/O operations occurs.
+    * @throws InvalidConfigurationException When non-respect of YAML syntax.
+	*/
+	
+	public void setCompress(boolean compress) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		
+		fileconfiguration = new YamlConfiguration();
+		
+		fileconfiguration.load(file);
+		fileconfiguration.set("video.compress-cache", compress);
 		fileconfiguration.save(file);
 	}
 	
@@ -764,6 +816,16 @@ public class Video {
 	    Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.DARK_GRAY + "[MediaPlayer]: " + ChatColor.GRAY + getName() + " successfully unloaded.");
 	}
 	
+	boolean deleteDirectory(File directoryToBeDeleted) {
+	    File[] allContents = directoryToBeDeleted.listFiles();
+	    if (allContents != null) {
+	        for (File file : allContents) {
+	            deleteDirectory(file);
+	        }
+	    }
+	    return directoryToBeDeleted.delete();
+	}
+	
 	/**
 	* Deletes a video and its video folder.
 	*  
@@ -776,7 +838,7 @@ public class Video {
 	public void delete() throws IOException {
 		
 		getVideoFile().delete();
-		FileUtils.deleteDirectory(file.getParentFile());
+		deleteDirectory(file.getParentFile());
 		
 		new TaskAsyncLoadConfigurations().runTaskAsynchronously(plugin);
 	}
@@ -882,6 +944,7 @@ public class Video {
 	* @throws MalformedURLException 
 	*/
 	
+	@SuppressWarnings("deprecation")
 	public URL getStreamURL() throws MalformedURLException {
 		return new URL(getConfigFile().getString("video.stream-url"));
 	}
@@ -921,6 +984,18 @@ public class Video {
 	
 	public File getDataFolder() {
 		return new File(file.getParent() + "/data/");
+	}
+	
+	/**
+	* Gets wheter video-cache is compressed or not.
+	*  
+	* <p>Compression is enabled by default
+	* 
+	* @return Wheter video-cache is compressed or not.
+	*/
+	
+	public boolean isCacheCompressed() {
+		return getConfigFile().getBoolean("video.compress-cache");
 	}
 	
 	/**
@@ -991,7 +1066,7 @@ public class Video {
 	*/
 	
 	public boolean isAudioEnabled() {
-		return getConfigFile().getBoolean("video-enable-audio");
+		return getConfigFile().getBoolean("video.enable-audio");
 	}
 		
 	/**
@@ -1022,18 +1097,38 @@ public class Video {
 	* @return The number of audio channels
 	*/
 	
-	public double getAudioChannels() {
-		return getConfigFile().getDouble("video.audio-channels");
+	public int getAudioChannels() {
+		return getConfigFile().getInt("video.audio-channels");
 	}
 	
 	/**
-	* Gets the video number of frames per second.
+	* Gets audio-offset of the video in seconds. 
+	*  
+	* @return The audio-offset of the video
+	*/
+	
+	public double getAudioOffset() {
+		return getConfigFile().getDouble("video.audio-offset");
+	}
+	
+	/**
+	* Gets the video number of frames per second, this is rounded.
 	*  
 	* @return The video number of frames per second.
 	*/
 	
 	public int getFrameRate() {
 		return getConfigFile().getInt("video.frame-rate");
+	}
+	
+	/**
+	* Gets the original video framerate, this is not rounded.
+	*  
+	* @return The original video number of frames per second.
+	*/
+	
+	public int getOriginalFrameRate() {
+		return getConfigFile().contains("video.original-frame-rate") ? getConfigFile().getInt("video.original-frame-rate") : getFrameRate();
 	}
 	
 	/**

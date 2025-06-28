@@ -41,6 +41,7 @@ public class Reader {
 	* Reads the m3u8 livestream file in order to get links to the video sequences.
 	*/
 	
+	@SuppressWarnings("deprecation")
 	public void read() {
 		
 		try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file.getPath()))) {

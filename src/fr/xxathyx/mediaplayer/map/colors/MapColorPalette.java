@@ -10,6 +10,10 @@ import java.awt.image.ImageObserver;
 
 import fr.xxathyx.mediaplayer.Main;
 
+/*
+ * https://github.com/bergerhealer/BKCommonLib
+ */
+
 public class MapColorPalette {
 
     private static final MapColorSpaceData COLOR_MAP_DATA = Main.getPlugin(Main.class).getMapColorSpaceData();

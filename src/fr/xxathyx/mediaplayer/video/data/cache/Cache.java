@@ -71,6 +71,8 @@ public class Cache {
     */
 	
 	public void writeBytesToFile(String fileOutput, byte[] bytes) throws IOException {
+		File parent = new File(fileOutput).getParentFile();
+		if(parent.exists()) parent.mkdirs();
 		FileOutputStream fileOutputStream = new FileOutputStream(fileOutput);
 		fileOutputStream.write(bytes);
 		fileOutputStream.close();

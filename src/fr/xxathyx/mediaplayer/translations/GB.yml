@@ -4,6 +4,9 @@ messages:
   video-load-requested: "&aLoad request sent, you will be informed about the
     progress of the load."
   video-load-notice: "&7(The longer a video is, the more it will load)"
+  video-offset-notice: "&7(If you notice that the audio plays for a while after displaying,
+  to define an image and audio offset : /video %video%&7 set offset <seconds>)"
+  video-offset-start: "&aThis video will start in %offset%&a seconds."
   video-unloaded: "&aThe video &l%video% &has just been unloaded."
   video-downloaded: "&aYou have just downloaded the video &l%video%&a."
   video-deleted: "&aThe video &l%video% &has been successfully deleted."
@@ -25,6 +28,10 @@ messages:
     &ato &l%speed%x&a."
   video-volume-updated: "&aYou have just updated the volume of &l%video% &ato
     &l%volume%x&a."
+  video-audio-offset-updated: "&aYou have just updated the audio offset of &l%video% &ato
+    &l%offset%&a seconds."
+  video-compress-disabled: "&aThe &l%video% &acompression is no longer enabled."
+  video-compress-enabled: "&aThe &l%video% &acompression is now enabled."
   video-age-limit-disabled: "&aThe &l%video% &a is no longer restricted to a certain
     audience."
   video-age-limit-enabled: "&aThe &l%video% &ais now restricted to a certain
@@ -68,8 +75,8 @@ messages:
     &7is finished (3/3)"
   video-processing-finished: "&7Video loading &l%video% &7completed in &l%time%
     &7minute(s)."
-  video-instance-started: "&aYou have just started the video &l%video% &on the
-    ID screen: &l%id%&a."
+  video-instance-started: "&aYou have just started the video &l%video% &aon the
+    screen-id: &l%id%&a."
   video-instance-stopped: "&aYou just stopped the video &l%video%&a."
   video-instance-pause: "&aYou have just paused the video &l%video%&a."
   video-instance-resume: "&aYou have just restarted the video &l%video%&a."
@@ -155,7 +162,7 @@ messages:
   no-page-left: "&cYou can't turn the page because this page doesn't seem to exist."
   too-much-loading: "&cCannot load, too many videos are being loaded."
   too-much-playing: "&cNot possible to launch, too many videos are playing."
-  no-screen-playing: "&cNo screen is playing a video."
+  no-screen-playing: "&cNo screens registered."
   not-number: "&cThe number chosen is invalid."
   available-images: "&2List of available images:"
   available-videos: "&2List of available videos:"

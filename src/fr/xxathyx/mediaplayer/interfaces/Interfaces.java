@@ -94,6 +94,7 @@ public class Interfaces {
 			lore.add(ChatColor.DARK_AQUA + "quality: " + ChatColor.BOLD + ChatColor.AQUA + video.getWidth() + "x" + video.getHeight() + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "duration: " + ChatColor.BOLD + ChatColor.AQUA + video.getDuration() + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "views: " + ChatColor.BOLD + ChatColor.AQUA + video.getViews() + ChatColor.DARK_AQUA + ".");
+			lore.add(ChatColor.DARK_AQUA + "compress: " + ChatColor.BOLD + ChatColor.AQUA + String.valueOf(video.isCacheCompressed()) + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "speed: " + ChatColor.BOLD + ChatColor.AQUA + video.getSpeed() + "x" + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "size: " + ChatColor.BOLD + ChatColor.AQUA + video.getSize() + ChatColor.DARK_AQUA + ".");
 			lore.add(ChatColor.DARK_AQUA + "creation: " + ChatColor.BOLD + ChatColor.AQUA + video.getCreation() + ChatColor.DARK_AQUA + ".");
