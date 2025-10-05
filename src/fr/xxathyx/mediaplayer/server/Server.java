@@ -48,7 +48,7 @@ public class Server {
         		ip = inner[0];
         		port = Integer.parseInt(inner[1]);
     			
-        		if(elements.length > 1) secure = elements[2].equals("s");
+        		if(elements.length > 2) secure = elements[2].equals("s");
         		
     		}else {
     			

@@ -1,10 +1,7 @@
 package fr.xxathyx.mediaplayer.update;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -76,22 +73,14 @@ public class Updater {
 	
 	public boolean isOutdated() {
 	    try {
-	    	
-			@SuppressWarnings("deprecation")
-			HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119570").openConnection();
-			InputStreamReader input = new InputStreamReader(httpURLConnection.getInputStream());
-			BufferedReader bufferedReader = new BufferedReader(input);
-			String newVersion = bufferedReader.readLine();
-	        httpURLConnection.disconnect();
-	        input.close();
 	        
 			File jar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());						
 			@SuppressWarnings("deprecation")
-			URL onlineJar = new URL("https://www.dropbox.com/scl/fi/vpwd2jg4c82w3ialikipn/MediaPlayer.jar?rlkey=uuik96o8rwypliu6q3d54s1gn&st=y0rnbnal&dl=1");
+			URL onlineJar = new URL("https://github.com/Xxathyx/MediaPlayer/releases/download/release/MediaPlayer.jar");
 			
 			long onlineLength = onlineJar.openConnection().getContentLengthLong();
 	        
-	        if(!newVersion.equals(plugin.getDescription().getVersion()) | onlineLength!=jar.length()) {
+	        if(onlineLength!=jar.length()) {
 	            return true;
 	        }
 	    }catch (Exception e) {
@@ -123,7 +112,7 @@ public class Updater {
 			File newJar = new File(plugin.getDataFolder().getParentFile() + "/update/" + jar.getName());
 						
 			@SuppressWarnings("deprecation")
-			URL onlineJar = new URL("https://www.dropbox.com/scl/fi/vpwd2jg4c82w3ialikipn/MediaPlayer.jar?rlkey=uuik96o8rwypliu6q3d54s1gn&st=y0rnbnal&dl=1");
+			URL onlineJar = new URL("https://github.com/Xxathyx/MediaPlayer/releases/download/release/MediaPlayer.jar");
 			long onlineLength = onlineJar.openConnection().getContentLengthLong();
 			
 			if(onlineLength!=jar.length()) FileUtils.copyURLToFile(onlineJar, newJar);

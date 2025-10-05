@@ -14,9 +14,12 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -80,7 +83,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 
 /*
- * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2024)
+ * Copyright or Xxathyx or Copr. xxathyxlive@gmail.com (2025)
  *
  * This software is a computer program add the possibility to use various
  * media on minecraft
@@ -184,6 +187,32 @@ public class Main extends JavaPlugin implements Listener {
 	*/
 	
 	public void onEnable() {
+				
+		
+        String targetPackage = "net.minecraft.network.protocol.game";
+
+        // Récupère tout le classpath (jars et dossiers)
+        String[] entries = System.getProperty("java.class.path").split(File.pathSeparator);
+        for (String entry : entries) {
+            if (entry.endsWith(".jar")) {
+                try (JarFile jar = new JarFile(entry)) {
+                    Enumeration<JarEntry> e = jar.entries();
+                    while (e.hasMoreElements()) {
+                        JarEntry je = e.nextElement();
+                        String name = je.getName();
+                        if (name.endsWith(".class")) {
+                            String fqcn = name.replace('/', '.').replaceAll("\\.class$", "");
+                            if (fqcn.startsWith(targetPackage)) {
+                                System.out.println(fqcn + "  (jar:" + entry + ")");
+                            }
+                        }
+                    }
+                } catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+            }
+        }
 		
 		serverVersion = ServerVersion.getServerVersion();
 		
@@ -262,7 +291,7 @@ public class Main extends JavaPlugin implements Listener {
 		
         String serverVersion = getServerVersion();
 		
-        if(serverVersion.equals("v1_21_R5") | serverVersion.equals("v1_21_R4") | serverVersion.equals("v1_21_R3") | serverVersion.equals("v1_21_R2") | serverVersion.equals("v1_21_R1") | serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
+        if(serverVersion.equals("v1_21_R6") | serverVersion.equals("v1_21_R5") | serverVersion.equals("v1_21_R4") | serverVersion.equals("v1_21_R3") | serverVersion.equals("v1_21_R2") | serverVersion.equals("v1_21_R1") | serverVersion.equals("v1_20_R4") | serverVersion.equals("v1_20_R3") | serverVersion.equals("v1_20_R2") | serverVersion.equals("v1_20_R1") | serverVersion.equals("v1_19_R3") | serverVersion.equals("v1_19_R2") | serverVersion.equals("v1_19_R1") | serverVersion.equals("v1_18_R2") | serverVersion.equals("v1_18_R1") | serverVersion.equals("v1_17_R1") | serverVersion.equals("v1_16_R3") |
         		serverVersion.equals("v1_16_R2") | serverVersion.equals("v1_16_R1") | serverVersion.equals("v1_15_R1") | serverVersion.equals("v1_14_R1") | serverVersion.equals("v1_13_R1") | serverVersion.equals("v1_13_R2")) {
         	legacy = false;
         }
