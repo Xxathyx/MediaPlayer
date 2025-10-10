@@ -14,12 +14,9 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -187,32 +184,6 @@ public class Main extends JavaPlugin implements Listener {
 	*/
 	
 	public void onEnable() {
-				
-		
-        String targetPackage = "net.minecraft.network.protocol.game";
-
-        // Récupère tout le classpath (jars et dossiers)
-        String[] entries = System.getProperty("java.class.path").split(File.pathSeparator);
-        for (String entry : entries) {
-            if (entry.endsWith(".jar")) {
-                try (JarFile jar = new JarFile(entry)) {
-                    Enumeration<JarEntry> e = jar.entries();
-                    while (e.hasMoreElements()) {
-                        JarEntry je = e.nextElement();
-                        String name = je.getName();
-                        if (name.endsWith(".class")) {
-                            String fqcn = name.replace('/', '.').replaceAll("\\.class$", "");
-                            if (fqcn.startsWith(targetPackage)) {
-                                System.out.println(fqcn + "  (jar:" + entry + ")");
-                            }
-                        }
-                    }
-                } catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-            }
-        }
 		
 		serverVersion = ServerVersion.getServerVersion();
 		
