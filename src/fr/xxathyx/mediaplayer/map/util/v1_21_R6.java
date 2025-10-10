@@ -69,7 +69,7 @@ public class v1_21_R6 implements MapUtil {
 			if(isPaper) {
 				
 				Class<?> serverPlayerClass = Class.forName("net.minecraft.server.level.ServerPlayer");
-		        Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit.v1_21_R5.entity.CraftPlayer");
+		        Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit.v1_21_R" + (Bukkit.getBukkitVersion().equals("1.21.10-R0.1-SNAPSHOT") ? "6" : "5") + ".entity.CraftPlayer");
 		        
 		        Method getHandle = craftPlayerClass.getMethod("getHandle");		
 		        

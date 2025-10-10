@@ -149,7 +149,7 @@ public class PlayerInteractImage implements Listener {
 							for(int i = 0; i < frames.size(); i++) {
 								
 								if(plugin.getServerVersion().equals("v1_21_R6")) {
-									if(plugin.isPaper()) {
+									if(plugin.isPaper() && !Bukkit.getBukkitVersion().equals("1.21.10-R0.1-SNAPSHOT")) {
 										((org.bukkit.craftbukkit.v1_21_R5.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 									}else ((org.bukkit.craftbukkit.v1_21_R6.entity.CraftItemFrame) frames.get(i)).setVisible(visible);
 								}
@@ -191,7 +191,7 @@ public class PlayerInteractImage implements Listener {
 											itemFrame.setItem(new ItemStacks().getMap(image.getIds().get(0)));
 											
 											if(plugin.getServerVersion().equals("v1_21_R6")) {
-												if(plugin.isPaper()) {
+												if(plugin.isPaper() && !Bukkit.getBukkitVersion().equals("1.21.10-R0.1-SNAPSHOT")) {
 													((org.bukkit.craftbukkit.v1_21_R5.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 												}else ((org.bukkit.craftbukkit.v1_21_R6.entity.CraftItemFrame) itemFrame).setVisible(visibles[0]);
 											}

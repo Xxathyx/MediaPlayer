@@ -144,7 +144,7 @@ public class ResourcePack {
 	* 60 is for versions 1.21.6.
 	* 64 is for versions 1.21.7
 	* 64 is for versions 1.21.8
-	* 69 is for versions 1.21.9
+	* 69 is for versions 1.21.9 - 1.21.10
 	* 
 	* @return The resource pack-format.
 	*/

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.security.MessageDigest;
 
 import org.apache.commons.io.FileUtils;
 
@@ -114,16 +116,16 @@ public class Updater {
 			@SuppressWarnings("deprecation")
 			URL onlineJar = new URL("https://github.com/Xxathyx/MediaPlayer/releases/download/release/MediaPlayer.jar");
 			long onlineLength = onlineJar.openConnection().getContentLengthLong();
-			
+						
 			if(onlineLength!=jar.length()) FileUtils.copyURLToFile(onlineJar, newJar);
-	    	
-	    	if(onlineLength == jar.length()) {
+	    				
+	    	if(newJar.exists() && calculateFileHash(newJar).equals(calculateFileHash(jar))) {
 	    		newJar.delete();
 		        Bukkit.getLogger().info("[MediaPlayer]: You are using the latest plugin version : " + plugin.getDescription().getVersion());
 	    		return false;
 	    	}
 	    	
-		}catch (URISyntaxException | IOException e) {
+		}catch (Exception e) {
 	        Bukkit.getLogger().warning("[MediaPlayer]: Couldn't download the new version of the plugin, download it manually or join our discord support server.");
 			e.printStackTrace();
 	        return false;
@@ -146,4 +148,16 @@ public class Updater {
 			receptionFolder.mkdir();
 		}
 	}
+	
+    public static String calculateFileHash(File file) throws Exception {
+    	
+    	MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    	
+    	byte[] fileBytes = Files.readAllBytes(file.toPath());
+    	byte[] hashBytes = digest.digest(fileBytes);
+
+    	StringBuilder sb = new StringBuilder();
+    	for(byte b : hashBytes) sb.append(String.format("%02x", b));
+    	return sb.toString();
+    }
 }
